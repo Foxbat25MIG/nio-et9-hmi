@@ -111,14 +111,30 @@ section.screen .sub{color:var(--ink-2);margin:4px 0 16px}
 .hot{background:#fff}
 .vbtn{flex:1;height:72px;border-radius:var(--r-ctl);border:2px solid var(--wf-3);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:500 15px "Red Hat Text";color:var(--ink);white-space:nowrap}
 .vbtn .ms{font-size:24px}
+.aq{background:#fff;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
 .tyre{position:absolute;font-size:18px;color:var(--ink);background:#fff;border:2px solid var(--wf-2);border-radius:10px;padding:6px 12px}
+/* Drive-mode chip, dock NOMI + shortcut, level bars */
+.chip{font:500 15px "Red Hat Text";color:var(--ink);background:var(--wf-1);border-radius:999px;padding:4px 12px}
+.dk.nomi{border:2px solid var(--wf-3)}
+.dk.short{border:2px dashed var(--wf-3);position:relative}
+.lv{display:flex;gap:3px}.lv b{width:12px;height:4px;border-radius:2px;background:var(--ink-2)}.lv b.off{background:var(--wf-3)}
+.dk{width:88px}
+.viewsw{position:absolute;left:50%;top:24px;transform:translateX(-50%);display:flex;background:#fff;border-radius:var(--r-ctl);padding:4px;box-shadow:0 0 0 1px var(--line)}
+.viewsw div{height:52px;padding:0 20px;border-radius:10px;display:flex;align-items:center;font:500 17px "Red Hat Text";color:var(--ink-2)}
+.viewsw div.on{background:var(--wf-2);color:var(--ink)}
+.band{flex:1;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 22px "Red Hat Text"}
+.band.sel{box-shadow:inset 6px 0 0 #fff}
+.eff{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--wf-2);font-size:19px;color:var(--ink-2)}
+.eff b{color:var(--ink);font-weight:500}
+.tog{width:56px;height:32px;border-radius:16px;background:var(--wf-3);position:relative}.tog.on{background:var(--ink)}
+.tog::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff}.tog.on::after{left:28px}
 footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--ink-3);font-size:14px}
 </style>
 </head>
 <body>
 
 <header class="page">
-  <h1>NIO ET9 HMI — Wireframes, batch 1</h1>
+  <h1>NIO ET9 HMI — Wireframes, batch 1 (rev. 3)</h1>
   <p>Low-fidelity layouts for the ET9 centre screen (15.6 in, 2880 × 1800, drawn at 1440 × 900). Greyscale only: these settle layout and hierarchy, not colour or style. Numbered markers match the notes under each screen.</p>
   <div class="legend">
     <span><i class="sw" style="background:var(--wf-1)"></i>Surface / pane</span>
@@ -129,10 +145,13 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
 </header>
 <nav class="toc">
   <a href="#drive-navigation">1 · Drive: Navigation</a>
-  <a href="#home">2 · Home</a>
-  <a href="#car">3 · Car</a>
-  <a href="#parking-suggest">4 · Reserve parking, step 1</a>
-  <a href="#edit-layout">5 · Edit layout</a>
+  <a href="#blind-spot">2 · Drive: Blind spot view</a>
+  <a href="#home">3 · Home</a>
+  <a href="#car">4 · Car</a>
+  <a href="#car-driving">5 · Car: Driving modes</a>
+  <a href="#pet-mode">6 · Pet Mode</a>
+  <a href="#parking-suggest">7 · Reserve parking, step 1</a>
+  <a href="#edit-layout">8 · Edit layout</a>
 </nav>
 
 <!-- ======================= 1. DRIVE: NAVIGATION ======================= -->
@@ -141,9 +160,9 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
   <p class="sub">Driving, gear D. Emma is driving from Gare to Mudam for her 14:00 visit.</p>
   <div class="scaler"><div class="frame">
     <div class="status">
-      <div class="l"><div class="gear"><i>P</i><i>R</i><i>N</i><i class="on">D</i></div><span class="num" style="font-size:20px;color:var(--ink)">48 km/h</span></div>
+      <div class="l"><div class="gear"><i>P</i><i>R</i><i>N</i><i class="on">D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">48 km/h</span></div>
       <div class="time num">13:42</div>
-      <div class="r"><span class="ms">mic</span><span class="ms">signal_cellular_alt</span><span class="num">412 km</span><span class="ms">battery_5_bar</span></div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">412 km</span><span class="ms">battery_5_bar</span></div>
     </div>
     <span class="m" style="left:250px;top:7px">1</span>
 
@@ -152,6 +171,8 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
         <div class="map"></div>
         <div class="route" style="left:300px;top:120px;width:360px;height:440px"></div>
         <div class="car-arrow" style="left:632px;top:520px"></div>
+        <div class="viewsw" style="left:58%"><div>Calm</div><div class="on">Map</div><div>Car</div></div>
+        <span class="m" style="left:calc(58% + 150px);top:12px">8</span>
         <div class="over" style="left:24px;top:24px;width:430px">
           <div class="row"><span class="ms" style="font-size:56px;color:var(--ink)">turn_left</span>
             <div class="col" style="gap:2px"><span class="t1 num">300 m</span><span class="t3">Avenue de la Liberté</span></div></div>
@@ -176,7 +197,7 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
       <div class="pane ctx">
         <div class="card fill" style="display:flex;flex-direction:column;gap:16px">
           <span class="lbl">NOW PLAYING</span>
-          <div class="ph" style="width:100%;flex:1;min-height:150px">media/album-01_starman_david-bowie</div>
+          <div class="ph" style="width:100%;flex:1;min-height:120px">media/album-01_starman_david-bowie</div>
           <div class="col" style="gap:2px"><span class="t2">Starman</span><span class="t3">David Bowie</span></div>
           <div style="height:6px;border-radius:3px;background:var(--wf-2)"><div style="width:42%;height:100%;border-radius:3px;background:var(--ink-3)"></div></div>
           <div class="row" style="justify-content:space-between">
@@ -186,10 +207,13 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
           </div>
         </div>
         <span class="m" style="right:4px;top:66px">5</span>
-        <div class="card row" style="gap:16px">
-          <span class="ms">event</span>
-          <div class="col grow" style="gap:0"><span class="t2">Mudam visit</span><span class="t3 num">14:00 – 15:30</span></div>
-          <span class="ms">chevron_right</span>
+        <div class="card" style="display:flex;flex-direction:column;gap:10px">
+          <div class="row" style="justify-content:space-between"><span class="lbl">TRIP</span><span class="t3" style="font-size:16px">to Mudam · visit 14:00</span></div>
+          <div class="row" style="gap:20px">
+            <div class="col" style="gap:0"><span class="t2 num">4.1 km</span><span class="lbl">driven</span></div>
+            <div class="col" style="gap:0"><span class="t2 num">17.2</span><span class="lbl">kWh/100 km</span></div>
+            <div class="col" style="gap:0"><span class="t2 num">9 min</span><span class="lbl">drive time</span></div>
+          </div>
         </div>
         <span class="m" style="right:4px;bottom:70px">6</span>
       </div>
@@ -204,31 +228,90 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
         <div class="dk"><span class="ms">call</span>Phone</div>
         <div class="dk"><span class="ms">directions_car</span>Car</div>
         <div class="dk"><span class="ms">apps</span>Apps</div>
+        <div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div>
+        <div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div>
       </div>
       <div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div>
     </div>
     <span class="m" style="left:640px;bottom:96px">7</span>
   </div></div>
   <ol class="notes">
-    <li><span class="badge">1</span><span><b>Status bar.</b> Gear indicator (P R N D, active gear highlighted) and speed sit at the driver's side. Time centred. NOMI mic, signal, range on the right.</span></li>
+    <li><span class="badge">1</span><span><b>Status bar.</b> Gear indicator (P R N D, active gear highlighted), drive-mode chip (tap for a quick picker) and speed sit at the driver's side. Time centred. NOMI mic, signal, range on the right.</span></li>
     <li><span class="badge">2</span><span><b>Next turn.</b> Biggest text on screen while driving: distance + street. Readable in one glance.</span></li>
     <li><span class="badge">3</span><span><b>Trip bar.</b> Arrival, time and distance left, End route. Tabular numbers so values don't jump.</span></li>
     <li><span class="badge">4</span><span><b>Map controls.</b> Search, layers, voice guidance, re-centre. 64 pt targets on the edge furthest from the driver's hand path.</span></li>
     <li><span class="badge">5</span><span><b>Context pane: Now playing.</b> Album art placeholder named by slot. Three large controls only while driving.</span></li>
-    <li><span class="badge">6</span><span><b>Next event.</b> Ties the drive to Emma's calendar: the reason for this trip.</span></li>
-    <li><span class="badge">7</span><span><b>Dock.</b> Climate at both corners (driver/passenger), six app destinations. Selected item = filled icon + tinted pill, no glow.</span></li>
+    <li><span class="badge">6</span><span><b>Trip.</b> Distance driven, average consumption and drive time, tied to the reason for the trip (the 14:00 Mudam visit). Battery energy stays on the Car screen, so nothing is shown twice.</span></li>
+    <li><span class="badge">7</span><span><b>Dock.</b> Climate at both corners, six app destinations, a permanent NOMI button and one customisable shortcut slot (dashed; here Seat heat with level bars). Selected item = filled icon + tinted pill, no glow.</span></li>
+    <li><span class="badge">8</span><span><b>View switch.</b> Calm (essentials only), Map, Car: changes what both panes show. Borrowed from the Polestar Formula 2030.</span></li>
+  </ol>
+</section>
+
+<!-- ======================= DRIVE: BLIND SPOT ======================= -->
+<section class="screen" id="blind-spot">
+  <h2>2 · Drive: Blind spot view</h2>
+  <p class="sub">Driving, gear D. Emma indicates right onto Avenue John F. Kennedy while a car is in her right blind spot. The camera view takes over the top of the side pane, then steps away.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i>P</i><i>R</i><i>N</i><i class="on">D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">52 km/h</span></div>
+      <div class="time num">13:53</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">405 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app">
+        <div class="map"></div>
+        <div class="route" style="left:420px;top:150px;width:260px;height:330px;border-radius:0 0 0 0;border-color:transparent transparent var(--ink-3) var(--ink-3)"></div>
+        <div class="car-arrow" style="left:402px;top:420px"></div>
+        <div class="over" style="left:24px;top:24px;width:460px">
+          <div class="row"><span class="ms" style="font-size:56px;color:var(--ink)">turn_right</span>
+            <div class="col" style="gap:2px"><span class="t1 num">200 m</span><span class="t3">Avenue John F. Kennedy</span></div></div>
+        </div>
+        <div style="position:absolute;right:0;top:0;bottom:0;width:18px;background:var(--ink)"></div>
+        <div class="row" style="position:absolute;right:34px;top:50%;transform:translateY(-50%);gap:8px;background:var(--ink);color:#fff;border-radius:12px;padding:12px 16px"><span class="ms fill" style="color:#fff">warning</span><span style="font:500 19px 'Red Hat Text'">Vehicle on the right</span></div>
+        <span class="m" style="right:30px;top:calc(50% - 70px)">1</span>
+        <div class="over" style="left:24px;bottom:24px;right:120px;display:flex;align-items:center;justify-content:space-between">
+          <div class="row" style="gap:28px"><div class="col" style="gap:0"><span class="t1 num">13:58</span><span class="lbl">arrival</span></div>
+            <div class="col" style="gap:0"><span class="t1 num">5 min</span><span class="lbl">remaining</span></div>
+            <div class="col" style="gap:0"><span class="t1 num">2.2 km</span><span class="lbl">to Mudam</span></div></div>
+          <div class="btn ghost"><span class="ms">close</span>End</div>
+        </div>
+      </div>
+      <div class="pane ctx">
+        <div class="card fill" style="display:flex;flex-direction:column;gap:12px;background:#fff;box-shadow:0 0 0 3px var(--ink)">
+          <div class="row" style="justify-content:space-between"><div class="row" style="gap:10px"><span class="ms fill" style="color:var(--ink)">videocam</span><span class="lbl" style="color:var(--ink)">RIGHT BLIND SPOT</span></div><span class="t3" style="font-size:16px">live</span></div>
+          <div class="ph" style="flex:1;position:relative">camera/blindspot-right_live
+            <div style="position:absolute;left:12px;right:12px;bottom:12px;height:56px;border-radius:10px;background:var(--ink);color:#fff;display:flex;align-items:center;gap:10px;padding:0 16px;font:500 18px 'Red Hat Text'"><span class="ms fill" style="color:#fff">warning</span>Vehicle approaching · wait</div>
+            <div style="position:absolute;left:30%;top:20%;width:40%;height:40%;border:3px dashed var(--ink)"></div>
+          </div>
+          <span class="t3" style="font-size:16px">Closes 2 s after the indicator stops</span>
+        </div>
+        <span class="m" style="right:4px;top:6px">2</span>
+        <div class="card row" style="gap:16px;padding:14px 20px">
+          <div class="ph" style="width:56px;height:56px;font-size:9px">album-01</div>
+          <div class="col grow" style="gap:0"><span class="t2">Starman</span><span class="t3">David Bowie</span></div>
+          <div class="icobtn" style="background:var(--wf-3)"><span class="ms fill" style="color:var(--ink)">pause</span></div>
+        </div>
+        <span class="m" style="right:4px;bottom:40px">3</span>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk on"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+  </div></div>
+  <ol class="notes">
+    <li><span class="badge">1</span><span><b>Map-edge warning.</b> A solid bar on the side of the danger plus a short label. Works even if the camera card is moved or folded.</span></li>
+    <li><span class="badge">2</span><span><b>Camera takeover (temporary).</b> Indicating, or a vehicle entering the blind spot, puts the side camera at the top of the context pane, with the detected vehicle outlined. NIO already offers a Blind Spot Camera View; this places it on the centre screen.</span></li>
+    <li><span class="badge">3</span><span><b>Media steps down, not away.</b> Now playing shrinks to one row and returns to full size when the camera closes. Trip card hides for the moment.</span></li>
   </ol>
 </section>
 
 <!-- ======================= 2. HOME ======================= -->
 <section class="screen" id="home">
-  <h2>2 · Home</h2>
+  <h2>3 · Home</h2>
   <p class="sub">Parked, gear P. The "today" view Emma sees before setting off. Date and weather are live (Luxembourg).</p>
   <div class="scaler"><div class="frame">
     <div class="status">
-      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
       <div class="time num">13:25</div>
-      <div class="r"><span class="ms">mic</span><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
     </div>
     <div class="content">
       <div class="pane app" style="padding:28px 32px;display:flex;flex-direction:column;gap:22px;background:transparent;border:0">
@@ -236,9 +319,9 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
           <div class="ph" style="width:84px;height:84px;border-radius:50%">people/driver-01_emma</div>
           <div class="col grow" style="gap:2px"><span class="t1" style="font-size:34px">Good afternoon, Emma</span><span class="t3"><span class="num" data-live="date">Today</span> · <span class="ms" data-live="wicon" style="font-size:20px;vertical-align:-4px">partly_cloudy_day</span> <span class="num" data-live="temp">–– °C</span>, <span data-live="wtext">weather loading</span> in Luxembourg</span></div>
           <div class="row" style="gap:8px;padding:8px;border-radius:999px;background:var(--wf-1)">
-            <div class="ph" style="width:52px;height:52px;border-radius:50%;font-size:8px;box-shadow:0 0 0 3px var(--ink)">driver-01</div>
-            <div class="ph" style="width:52px;height:52px;border-radius:50%;font-size:8px">driver-02</div>
-            <div class="ph" style="width:52px;height:52px;border-radius:50%;font-size:8px">driver-03</div>
+            <div class="ph" style="width:52px;height:52px;border-radius:50%;font-size:8px;box-shadow:0 0 0 3px var(--ink)" title="Emma">driver-01_emma</div>
+            <div class="ph" style="width:52px;height:52px;border-radius:50%;font-size:8px" title="Pierre">driver-02_pierre</div>
+            <div class="ph" style="width:52px;height:52px;border-radius:50%;font-size:8px" title="Ashish">driver-03_ashish</div>
             <div class="icobtn" style="width:52px;height:52px;border-radius:50%;background:#fff"><span class="ms">swap_horiz</span></div>
           </div>
         </div>
@@ -299,13 +382,15 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
         <div class="dk"><span class="ms">call</span>Phone</div>
         <div class="dk"><span class="ms">directions_car</span>Car</div>
         <div class="dk"><span class="ms">apps</span>Apps</div>
+        <div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div>
+        <div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div>
       </div>
       <div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div>
     </div>
   </div></div>
   <ol class="notes">
     <li><span class="badge">1</span><span><b>Greeting.</b> Emma's photo placeholder. Date and Luxembourg weather update live on the day you view the page.</span></li>
-    <li><span class="badge">2</span><span><b>Driver profiles.</b> Emma is profile 1, with two more profiles. The active profile has a ring; the swap button opens the profile switcher (seat, mirrors, climate, music follow the profile).</span></li>
+    <li><span class="badge">2</span><span><b>Driver profiles.</b> Emma is profile 1, Pierre profile 2, Ashish profile 3. The active profile has a ring; the swap button opens the profile switcher (seat, mirrors, climate, music follow the profile).</span></li>
     <li><span class="badge">3</span><span><b>Today (the hero).</b> The next event is promoted with a one-tap Go; later events step back.</span></li>
     <li><span class="badge">4</span><span><b>Places.</b> Home, Work and a personal place (Parc Merl), so the list reads like Emma's life, not a commute.</span></li>
     <li><span class="badge">5</span><span><b>Continue listening.</b> Two podcasts with room for the show name and progress, instead of three cramped tiles.</span></li>
@@ -315,13 +400,13 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
 
 <!-- ======================= 3. CAR ======================= -->
 <section class="screen" id="car">
-  <h2>3 · Car</h2>
+  <h2>4 · Car</h2>
   <p class="sub">Parked. The app pane has its own side menu, as on the real ET9. Every control sits where it acts on the car.</p>
   <div class="scaler"><div class="frame">
     <div class="status">
-      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
       <div class="time num">13:27</div>
-      <div class="r"><span class="ms">mic</span><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
     </div>
     <div class="content">
       <div class="pane app" style="display:flex">
@@ -389,22 +474,33 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
           <div style="position:relative;height:14px;border-radius:7px;background:var(--wf-2)"><div style="width:78%;height:100%;border-radius:7px;background:var(--ink-3)"></div><i style="position:absolute;left:90%;top:-4px;width:2px;height:22px;background:var(--ink)"></i></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:4px">
             <div class="col" style="gap:0"><span class="lbl">AT MUDAM</span><span class="t2 num">76 % · 410 km</span></div>
-            <div class="col" style="gap:0"><span class="lbl">EFFICIENCY</span><span class="t2 num">18.4 kWh/100 km</span></div>
+            <div class="col" style="gap:0"><span class="lbl">HOME CHARGE TO 90 %</span><span class="t2 num">about 1 h 10 min</span></div>
             <div class="col" style="gap:0"><span class="lbl">NEXT CHARGE</span><span class="t2">Tonight, home</span></div>
             <div class="col" style="gap:0"><span class="lbl">SWAP STATION</span><span class="t2 num">placeholder</span></div>
           </div>
         </div>
         <span class="m" style="right:4px;top:70px">7</span>
-        <div class="card fill" style="display:flex;flex-direction:column;gap:12px">
-          <span class="lbl">CABIN</span>
-          <div class="row" style="gap:24px">
-            <div class="col" style="gap:0"><span class="t1 num">19 °C</span><span class="t3">inside</span></div>
-            <div class="col" style="gap:0"><span class="t1 num" data-live="temp">–– °C</span><span class="t3">outside</span></div>
+        <div class="card fill" style="display:flex;flex-direction:column;gap:14px">
+          <div class="row" style="justify-content:space-between"><span class="lbl">CABIN</span><div class="row" style="gap:6px"><span class="ms" style="font-size:22px">heat</span><span class="t3" style="font-size:16px">Precondition 13:45</span></div></div>
+          <div class="row" style="gap:28px">
+            <div class="col" style="gap:0"><span class="t1 num">19 °C</span><span class="lbl">inside</span></div>
+            <div class="col" style="gap:0"><span class="t1 num" data-live="temp">–– °C</span><span class="lbl">outside</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div class="aq"><span class="lbl">AIR INSIDE</span><span class="t2 num">PM2.5 6</span><span class="t3" style="font-size:15px">Good · simulated</span></div>
+            <div class="aq"><span class="lbl">AIR OUTSIDE</span><span class="t2 num" data-live="aqi">AQI ––</span><span class="t3" style="font-size:15px" data-live="aqitext">loading</span></div>
+            <div class="aq"><span class="lbl">POLLEN</span><span class="t2" data-live="pollen">––</span><span class="t3" style="font-size:15px" data-live="pollentext">loading</span></div>
           </div>
           <div class="grow"></div>
-          <div class="btn ghost"><span class="ms">heat</span>Precondition for 13:45</div>
+          <span class="lbl">PARKING MODES</span>
+          <div class="row" style="gap:10px">
+            <div class="vbtn"><span class="ms">pets</span>Pet Mode</div>
+            <div class="vbtn"><span class="ms">camping</span>Camping</div>
+            <div class="vbtn"><span class="ms">power_settings_new</span>Stay on</div>
+          </div>
         </div>
-        <span class="m" style="right:4px;bottom:110px">8</span>
+        
+<span class="m" style="right:4px;bottom:230px">8</span><span class="m" style="right:4px;bottom:92px">9</span>
       </div>
     </div>
     <div class="dock">
@@ -416,6 +512,8 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
         <div class="dk"><span class="ms">call</span>Phone</div>
         <div class="dk on"><span class="ms">directions_car</span>Car</div>
         <div class="dk"><span class="ms">apps</span>Apps</div>
+        <div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div>
+        <div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div>
       </div>
       <div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div>
     </div>
@@ -427,20 +525,121 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
     <li><span class="badge">4</span><span><b>Controls at their real positions.</b> Frunk above the nose, boot below the tail, each of the four doors beside its own door, joined by a short leader line.</span></li>
     <li><span class="badge">5</span><span><b>Tyre pressure at each wheel.</b> Replaces the oversized tyre widget; the reading sits next to the tyre it belongs to.</span></li>
     <li><span class="badge">6</span><span><b>Whole-car controls.</b> Windows, mirrors, charge port and child lock act on more than one place, so they sit in one row under the car.</span></li>
-    <li><span class="badge">7</span><span><b>Battery, more useful.</b> Charge vs. limit, range, charge left on arrival at Mudam, efficiency, next charge and nearest NIO Power Swap (placeholder).</span></li>
-    <li><span class="badge">8</span><span><b>Cabin.</b> Inside and live outside temperature, plus one-tap preconditioning before the next trip.</span></li>
+    <li><span class="badge">7</span><span><b>Battery, more useful.</b> Charge vs. limit, range, charge left on arrival at Mudam, time to charge at home, next charge and nearest NIO Power Swap (placeholder). Consumption lives on the Trip card.</span></li>
+    <li><span class="badge">8</span><span><b>Cabin.</b> Inside and live outside temperature, plus air quality: inside PM2.5 (simulated sensor), outside European AQI and pollen, both live for Luxembourg (Volvo-style). Preconditioning shown as a status line.</span></li>
+    <li><span class="badge">9</span><span><b>Parking modes (NIO).</b> Pet Mode, Camping Mode and Stay on (NIO's powered-on walk-away mode). Parked only; Pet Mode opens its own full-screen view.</span></li>
+
+  </ol>
+</section>
+
+<!-- ======================= CAR: DRIVING ======================= -->
+<section class="screen" id="car-driving">
+  <h2>5 · Car: Driving modes</h2>
+  <p class="sub">Parked. The ET9's own modes: Comfort, Sport, Eco, Snow, Custom. Each mode lists what it changes (an idea from the Polestar Formula 2030), drawn as a stepped grey "segmented fade".</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="time num">13:28</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app" style="display:flex">
+        <div style="width:250px;padding:20px 12px;display:flex;flex-direction:column;gap:4px;border-right:2px solid var(--wf-2)">
+          <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">tune</span>Quick controls</div>
+          <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">light_mode</span>Lights</div>
+          <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">airline_seat_recline_normal</span>Seats</div>
+          <div class="btn" style="justify-content:flex-start;height:60px;background:#fff"><span class="ms fill" style="color:var(--ink)">speed</span>Driving</div>
+          <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">ev_station</span>Charging</div>
+          <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">tire_repair</span>Tyres</div>
+          <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">settings</span>System</div>
+        </div>
+        <div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:20px">
+          <div class="row" style="gap:20px;align-items:stretch;flex:1">
+            <div class="col" style="flex:1;gap:0;border-radius:var(--r-card);overflow:hidden"><div class="band sel" style="background:#3a3a3a;color:#fff"><span>Comfort</span><span class='ms fill' style='color:#fff'>check</span></div><div class="band" style="background:#6a6a6a;color:#fff"><span>Sport</span></div><div class="band" style="background:#9a9a9a;color:var(--ink)"><span>Eco</span></div><div class="band" style="background:#bdbdbd;color:var(--ink)"><span>Snow</span></div><div class="band" style="background:#dcdcdc;color:var(--ink)"><span>Custom</span></div></div>
+            <span class="m" style="left:262px;top:80px">1</span>
+            <div class="card" style="flex:1.1;display:flex;flex-direction:column;gap:6px;background:#fff;box-shadow:0 0 0 1px var(--line)">
+              <span class="lbl">COMFORT CHANGES</span>
+              <div class="eff"><span>Steering</span><b>Light</b></div>
+              <div class="eff"><span>Suspension</span><b>Soft</b></div>
+              <div class="eff"><span>Power response</span><b>Smooth</b></div>
+              <div class="eff"><span>Regeneration</span><b>Standard</b></div>
+              <div class="eff" style="border:0"><span>Traction</span><b>Normal</b></div>
+            </div>
+            <span class="m" style="right:12px;top:80px">2</span>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column;gap:12px">
+            <span class="lbl">DRIVING ASSISTS</span>
+            <div class="row" style="gap:12px">
+              <div class="btn ghost grow" style="justify-content:space-between;background:#fff">Blind Spot Detection <span class="tog on"></span></div>
+              <div class="btn ghost grow" style="justify-content:space-between;background:#fff">Camera view on indicating <span class="tog on"></span></div>
+            </div>
+          </div>
+          <span class="m" style="left:262px;bottom:96px">3</span>
+        </div>
+      </div>
+      <div class="pane ctx">
+        <div class="card fill" style="display:flex;flex-direction:column;gap:16px">
+          <span class="lbl">NOW PLAYING</span>
+          <div class="ph" style="width:100%;flex:1;min-height:150px">media/album-01_starman_david-bowie</div>
+          <div class="col" style="gap:2px"><span class="t2">Starman</span><span class="t3">David Bowie</span></div>
+          <div class="row" style="justify-content:space-between">
+            <div class="icobtn"><span class="ms">skip_previous</span></div>
+            <div class="icobtn" style="background:var(--wf-3)"><span class="ms fill" style="color:var(--ink)">pause</span></div>
+            <div class="icobtn"><span class="ms">skip_next</span></div>
+          </div>
+        </div>
+        <div class="card row" style="gap:16px">
+          <span class="ms">battery_charging_80</span>
+          <div class="col grow" style="gap:0"><span class="t2 num">78 % · 418 km</span><span class="t3">Locked · all doors closed</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk on"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+  </div></div>
+  <ol class="notes">
+    <li><span class="badge">1</span><span><b>Mode stack, segmented fade.</b> Five stepped grey bands, darkest = most dynamic. The selected mode carries a check, not a colour. The same mode shows as the chip in the status bar.</span></li>
+    <li><span class="badge">2</span><span><b>What this mode changes.</b> Plain words for each system, so the choice is understandable before driving off. Values are design placeholders until checked against NIO's specs.</span></li>
+    <li><span class="badge">3</span><span><b>Driving assists.</b> Where Blind Spot Detection and the camera-on-indicating behaviour are switched, next to the modes they belong with.</span></li>
+  </ol>
+</section>
+
+<!-- ======================= PET MODE ======================= -->
+<section class="screen" id="pet-mode">
+  <h2>6 · Pet Mode</h2>
+  <p class="sub">Parked and locked, Emma away. The screen tells people passing by that the pet is safe. Dock and apps are hidden; nothing can be changed without unlocking.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status"><div class="l"></div><div class="time num">14:05</div><div class="r"><span class="num">76 %</span><span class="ms">battery_5_bar</span></div></div>
+    <div style="position:absolute;left:24px;right:24px;top:56px;bottom:24px;border-radius:var(--r-pane);background:var(--wf-1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center">
+      <span class="ms fill" style="font-size:72px;color:var(--ink)">pets</span>
+      <span class="t1" style="font-size:40px">My owner will be back soon</span>
+      <span class="num" style="font-size:180px;line-height:1;font-weight:500;color:var(--ink)">21 °C</span>
+      <span class="t3" style="font-size:24px">The air conditioning is keeping me comfortable</span>
+      <div class="row" style="gap:16px;margin-top:24px">
+        <div class="btn ghost" style="background:#fff"><span class="ms">ac_unit</span>Climate on</div>
+        <div class="btn ghost" style="background:#fff"><span class="ms">lock</span>Windows locked</div>
+        <div class="btn ghost" style="background:#fff"><span class="ms">thermostat</span><span>Outside <span class="num" data-live="temp">–– °C</span></span></div>
+      </div>
+    </div>
+    <span class="m" style="left:44px;top:76px">1</span>
+    <span class="m" style="left:calc(50% + 230px);top:420px">2</span>
+    <span class="m" style="left:calc(50% + 330px);bottom:120px">3</span>
+  </div></div>
+  <ol class="notes">
+    <li><span class="badge">1</span><span><b>Full-screen takeover.</b> Started from Car → Cabin → Parking modes → Pet Mode. Dock, apps and side pane are hidden while the car is locked.</span></li>
+    <li><span class="badge">2</span><span><b>Cabin temperature, huge.</b> Readable through the window from a few metres away; the message is written from the pet's side, as a reassurance.</span></li>
+    <li><span class="badge">3</span><span><b>Proof it's working.</b> Climate on, windows locked, live outside temperature. Battery stays in the corner; low battery alerts go to Emma's phone (NIO App).</span></li>
   </ol>
 </section>
 
 <!-- ======================= 4. RESERVE PARKING, STEP 1 ======================= -->
 <section class="screen" id="parking-suggest">
-  <h2>4 · Reserve parking, step 1: Suggest</h2>
+  <h2>7 · Reserve parking, step 1: Suggest</h2>
   <p class="sub">Driving, gear D, about 3 km from Mudam. The context pane offers parking; one tap or one voice command.</p>
   <div class="scaler"><div class="frame">
     <div class="status">
-      <div class="l"><div class="gear"><i>P</i><i>R</i><i>N</i><i class="on">D</i></div><span class="num" style="font-size:20px;color:var(--ink)">44 km/h</span></div>
+      <div class="l"><div class="gear"><i>P</i><i>R</i><i>N</i><i class="on">D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">44 km/h</span></div>
       <div class="time num">13:51</div>
-      <div class="r"><span class="ms">mic</span><span class="ms">signal_cellular_alt</span><span class="num">406 km</span><span class="ms">battery_5_bar</span></div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">406 km</span><span class="ms">battery_5_bar</span></div>
     </div>
     <div class="content">
       <div class="pane app">
@@ -493,6 +692,8 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
         <div class="dk"><span class="ms">call</span>Phone</div>
         <div class="dk"><span class="ms">directions_car</span>Car</div>
         <div class="dk"><span class="ms">apps</span>Apps</div>
+        <div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div>
+        <div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div>
       </div>
       <div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div>
     </div>
@@ -506,13 +707,13 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
 
 <!-- ======================= 5. EDIT LAYOUT ======================= -->
 <section class="screen" id="edit-layout">
-  <h2>5 · Edit layout (rearrangeable panes)</h2>
+  <h2>8 · Edit layout (rearrangeable panes)</h2>
   <p class="sub">Parked only. Long-press a pane, or Edit layout in Settings. Shown on Home with panes swapped to the 1/2 + 1/2 size.</p>
   <div class="scaler"><div class="frame">
     <div class="status">
-      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
       <div class="time num">13:26</div>
-      <div class="r"><span class="ms">mic</span><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
     </div>
     <div class="editbar">
       <div class="row" style="gap:12px"><span class="ms" style="color:var(--ink)">dashboard_customize</span><span class="t2">Edit layout</span><span class="t3" style="font-size:16px">· available when parked</span></div>
@@ -545,6 +746,8 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
       <div class="climate"><span class="t" style="width:auto">21.5°</span></div>
       <div class="apps">
         <div class="dk on"><span class="ms">home</span>Home</div><div class="dk"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div>
+        <div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div>
+        <div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div>
       </div>
       <div class="climate r"><span class="t" style="width:auto">21.5°</span></div>
     </div>
@@ -582,7 +785,25 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
         document.querySelectorAll('[data-live="temp"]').forEach(e => e.textContent = '8 °C');
         document.querySelectorAll('[data-live="wtext"]').forEach(e => e.textContent = 'weather unavailable');
       });
+    fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=49.61&longitude=6.13&current=european_aqi,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&timezone=Europe%2FLuxembourg')
+      .then(r => r.json()).then(j => {
+        const c = j.current, aqi = Math.round(c.european_aqi);
+        const band = aqi <= 20 ? 'Good' : aqi <= 40 ? 'Fair' : aqi <= 60 ? 'Moderate' : aqi <= 80 ? 'Poor' : aqi <= 100 ? 'Very poor' : 'Extremely poor';
+        const pol = ['alder_pollen','birch_pollen','grass_pollen','mugwort_pollen','olive_pollen','ragweed_pollen'].map(k => c[k]).filter(v => v != null);
+        const pmax = pol.length ? Math.max(...pol) : 0;
+        const plevel = pmax < 1 ? 'None' : pmax < 20 ? 'Low' : pmax < 100 ? 'Medium' : 'High';
+        document.querySelectorAll('[data-live="aqi"]').forEach(e => e.textContent = 'AQI ' + aqi);
+        document.querySelectorAll('[data-live="aqitext"]').forEach(e => e.textContent = band + ' · live');
+        document.querySelectorAll('[data-live="pollen"]').forEach(e => e.textContent = plevel);
+        document.querySelectorAll('[data-live="pollentext"]').forEach(e => e.textContent = 'live · Luxembourg');
+      }).catch(() => {
+        document.querySelectorAll('[data-live="aqi"]').forEach(e => e.textContent = 'AQI 18');
+        document.querySelectorAll('[data-live="aqitext"]').forEach(e => e.textContent = 'offline example');
+        document.querySelectorAll('[data-live="pollen"]').forEach(e => e.textContent = 'Low');
+        document.querySelectorAll('[data-live="pollentext"]').forEach(e => e.textContent = 'offline example');
+      });
   })();
+
 </script>
 </body>
 </html>
