@@ -44,8 +44,8 @@ h2{font:500 24px "Red Hat Display"}
 .p6.day{--bg:#f3f2f8;--s1:#ffffff;--s2:#eceaf3;--s3:#dcd9e7;--line:#dad7e4;--t1:#111014;--t2:#625f74;--t3:#99960f;--t3:#9794a8;--map-land:#eeedf4;--map-road:#ffffff;--map-road2:#f8f7fb;--map-park:#e3e9e3;--map-rail:#d2cfdd;--map-bldg:#e2e0ea;--acc:#111014;--acc-t:#ffffff;--guide:#7a6bf2}
 .p6.night{--bg:#0d0c12;--s1:#17151f;--s2:#201d2a;--s3:#2c2838;--line:#332f40;--t1:#f2f1f7;--t2:#aaa6bd;--t3:#747088;--map-land:#12111a;--map-road:#272435;--map-road2:#1c1a27;--map-park:#141a19;--map-rail:#36324a;--map-bldg:#1a1824;--acc:#f2f1f7;--acc-t:#111014;--guide:#9c8fff}
 /* 7 Lavender base + Signal Orange route */
-.p7.day{--bg:#f3f2f8;--s1:#ffffff;--s2:#eceaf3;--s3:#dcd9e7;--line:#dad7e4;--t1:#111014;--t2:#625f74;--t3:#9794a8;--map-land:#eeedf4;--map-road:#ffffff;--map-road2:#f8f7fb;--map-park:#e3e9e3;--map-rail:#d2cfdd;--map-bldg:#e2e0ea;--acc:#111014;--acc-t:#ffffff;--guide:#f2662b}
-.p7.night{--bg:#0d0c12;--s1:#17151f;--s2:#201d2a;--s3:#2c2838;--line:#332f40;--t1:#f2f1f7;--t2:#aaa6bd;--t3:#747088;--map-land:#12111a;--map-road:#272435;--map-road2:#1c1a27;--map-park:#141a19;--map-rail:#36324a;--map-bldg:#1a1824;--acc:#f2f1f7;--acc-t:#111014;--guide:#ff7a3d}
+.p7.day{--map-edge:#cfcbdc;--bg:#f3f2f8;--s1:#ffffff;--s2:#eceaf3;--s3:#dcd9e7;--line:#dad7e4;--t1:#111014;--t2:#625f74;--t3:#9794a8;--map-land:#eeedf4;--map-road:#ffffff;--map-road2:#f8f7fb;--map-park:#e3e9e3;--map-rail:#d2cfdd;--map-bldg:#e2e0ea;--acc:#111014;--acc-t:#ffffff;--guide:#f2662b}
+.p7.night{--map-edge:#3a3550;--bg:#0d0c12;--s1:#17151f;--s2:#201d2a;--s3:#2c2838;--line:#332f40;--t1:#f2f1f7;--t2:#aaa6bd;--t3:#747088;--map-land:#12111a;--map-road:#272435;--map-road2:#1c1a27;--map-park:#141a19;--map-rail:#36324a;--map-bldg:#1a1824;--acc:#f2f1f7;--acc-t:#111014;--guide:#ff7a3d}
 /* ---------- scaled frame ---------- */
 .scaler{position:relative;width:100%;aspect-ratio:1440/900;border-radius:calc(28px * var(--s,1));overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
 .frame{position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transform:scale(var(--s,1));background:var(--bg);color:var(--t1);font-size:20px}
@@ -59,6 +59,7 @@ h2{font:500 24px "Red Hat Display"}
 .time{font:500 20px "Red Hat Display";color:var(--t1)}
 .content{position:absolute;left:24px;right:24px;top:60px;bottom:120px;display:flex;gap:24px}
 .app{flex:2;position:relative;border-radius:24px;overflow:hidden;background:var(--map-land)}
+.app::after{content:"";position:absolute;inset:0;border-radius:24px;border:2px solid var(--map-edge,var(--line));pointer-events:none;z-index:5}
 .ctx{flex:1;display:flex;flex-direction:column;gap:16px}
 .card{background:var(--s1);border-radius:20px;padding:22px}
 .over{position:absolute;background:var(--s1);border-radius:20px;padding:18px 22px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
@@ -152,7 +153,7 @@ const frame = () => `
 </div>`;
 const opts = [
   ['p5','Dark mode · Signal Orange','Graphite night #111112, near-colourless surfaces, orange #ff7a3d on the route, the selected dock item, the view switch and play. Day shown small.',[['#111112','Night base'],['#1b1b1d','Surface'],['#ff7a3d','Orange, Night'],['#f2662b','Orange, Day']],true],
-  ['p7','Dark mode · Lavender base + orange route','Lavender-ink night #0d0c12 with a faint violet tint in the surfaces; selection and actions in white (black by day); orange only on the route and the turn arrow. Day shown small.',[['#0d0c12','Night base'],['#17151f','Surface'],['#f2f1f7','Selection, Night'],['#ff7a3d','Route, Night'],['#f2662b','Route, Day']],true],
+  ['p7','Chosen · Lavender base + orange route','Chosen direction. Lavender-ink night #0d0c12 with a faint violet tint in the surfaces; the map now sits in a 2 pt framed pane (#3a3550 at night, #cfcbdc by day) so it no longer melts into the background; selection and actions in white (black by day); orange only on the route and the turn arrow. Day shown small.',[['#0d0c12','Night base'],['#17151f','Surface'],['#f2f1f7','Selection, Night'],['#ff7a3d','Route, Night'],['#f2662b','Route, Day']],true],
   ['p5','A · Signal Orange (after Zaptix)','Grey, almost colourless UI and map; one vivid orange carries everything that matters: route, selection, play. Like the reference, orange is both "chosen" and "go here", which is bold but breaks our rule that the two should differ. Feels confident and engineered.',[['#f0f0ee','Day base'],['#111112','Night base'],['#f2662b','Orange, Day'],['#ff7a3d','Orange, Night']]],
   ['p6','B · Lavender Light (after the Uber map shot)','Lavender-tinted white with a soft building map; violet only for the route; selection and primary actions in solid black (white at night), like the reference&rsquo;s black button. Soft and premium; the violet must stay a solid line, never a glow or gradient, to avoid the "AI purple" look.',[['#f3f2f8','Day base'],['#0d0c12','Night base'],['#7a6bf2','Route, Day'],['#9c8fff','Route, Night'],['#111014','Action, Day']]],
   ['p4','Your mix · Graphite × Sunlight Gold × Southern Star','Night base #0f0e11 (mineral graphite from Salar de Uyuni) with Sunlight Gold for selection and Southern Star Blue for the route. Day uses the warm salt-white neutrals from direction 2, which sit better with gold than cool grey.',[['#0f0e11','Night base'],['#d6b05a','Selection, Night'],['#c79a3a','Selection, Day'],['#86c9f0','Route, Night'],['#1d6db5','Route, Day']]],
