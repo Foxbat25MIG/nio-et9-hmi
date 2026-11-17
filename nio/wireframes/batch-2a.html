@@ -13,7 +13,7 @@
 .limit{width:36px;height:36px;border-radius:50%;border:3px solid var(--ink);display:inline-flex;align-items:center;justify-content:center;font:700 15px "Red Hat Display";color:var(--ink);background:#fff}
 .handle{position:absolute;right:0;top:50%;transform:translateY(-50%);width:80px;padding:12px 0;border-radius:var(--r-card) 0 0 var(--r-card);background:#fff;box-shadow:0 0 0 1px var(--line);display:flex;flex-direction:column;align-items:center;gap:10px}
 .guide{position:absolute;bottom:0;width:8px;height:62%;background:var(--ink-3);border-radius:4px}
-.guide.l{left:32%;transform:skewX(14deg)}.guide.r{right:32%;transform:skewX(-14deg)}
+.guide.l{left:30%;transform:skewX(-14deg);transform-origin:bottom}.guide.r{right:30%;transform:skewX(14deg);transform-origin:bottom}
 .dist{position:absolute;background:#fff;border-radius:10px;padding:8px 14px;font-size:20px;box-shadow:0 0 0 1px var(--line)}
 .seg-i{height:52px;padding:0 20px;border-radius:10px;display:flex;align-items:center;font:500 17px "Red Hat Text";color:var(--ink-2)}.seg-i.on{background:var(--wf-2);color:var(--ink)}
 .arc{position:absolute;left:calc(50% - 90px);width:180px;height:60px;border:6px solid var(--ink-3)}
@@ -65,7 +65,7 @@
       </div>
       <div class="ph" style="width:300px;height:600px;border-radius:110px">car/car-01_top-down</div>
     </div>
-    <span class="m" style="left:52px;top:96px">1</span><span class="m" style="left:52px;top:300px">2</span><span class="m" style="left:52px;top:520px">3</span><span class="m" style="left:52px;bottom:118px">4</span>
+    <span class="m" style="left:40px;top:226px">1</span><span class="m" style="left:40px;top:478px">2</span><span class="m" style="left:40px;top:594px">3</span><span class="m" style="left:40px;top:690px">4</span>
   </div></div>
   <ol class="notes"><li><span class="badge">1</span><span><b>Who and when.</b> Face ID result, then a big greeting with live date and weather. Replaces 2024's dark lock screen with a warm, calm welcome.</span></li><li><span class="badge">2</span><span><b>Profile applied.</b> Seat, mirrors, climate and music snap to Emma's profile; each gets a check as it finishes, so the car visibly "knows" her.</span></li><li><span class="badge">3</span><span><b>First useful action.</b> Her next calendar event with one-tap Go: the welcome leads straight into the drive.</span></li><li><span class="badge">4</span><span><b>Escape hatch.</b> "Not Emma?" opens the profile picker (next frame). The screen hands over to Home after a few seconds or on any tap.</span></li></ol>
 </section>
@@ -83,7 +83,7 @@
       </div>
       <div class="row" style="gap:16px"><div class="btn ghost" style="background:#fff;width:300px"><span class="ms">face</span>Try Face ID again</div><div class="btn ghost" style="background:#fff;width:300px"><span class="ms">person_add</span>Add profile</div></div>
     </div>
-    <span class="m" style="left:calc(50% - 230px);top:110px">1</span><span class="m" style="left:calc(50% - 460px);top:330px">2</span><span class="m" style="left:calc(50% + 380px);top:330px">3</span><span class="m" style="left:calc(50% - 340px);bottom:120px">4</span>
+    <span class="m" style="left:calc(50% - 260px);top:252px">1</span><span class="m" style="left:calc(50% - 460px);top:330px">2</span><span class="m" style="left:calc(50% + 380px);top:330px">3</span><span class="m" style="left:calc(50% - 340px);top:650px">4</span>
   </div></div>
   <ol class="notes"><li><span class="badge">1</span><span><b>One clear question.</b> No error tone: the car simply asks who is driving.</span></li><li><span class="badge">2</span><span><b>Three profiles.</b> Emma, Pierre and Ashish as large 168 pt targets with their photos (placeholders). The last driver is pre-highlighted.</span></li><li><span class="badge">3</span><span><b>Guest.</b> Drives with default settings and saves nothing; no personal calendar or contacts shown.</span></li><li><span class="badge">4</span><span><b>Retry or add.</b> Face ID can be retried; new profiles are added here and linked to the NIO App.</span></li></ol>
 </section>
@@ -166,7 +166,7 @@
       </div>
     </div>
     <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk on"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
-    <span class="m" style="left:200px;top:7px">1</span><span class="m" style="left:40%;top:52%">2</span><span class="m" style="left:300px;top:76px">3</span><span class="m" style="right:4px;top:66px">4</span>
+    <span class="m" style="left:40px;top:62px">1</span><span class="m" style="left:40%;top:52%">2</span><span class="m" style="left:300px;top:76px">3</span><span class="m" style="right:4px;top:66px">4</span>
   </div></div>
   <ol class="notes"><li><span class="badge">1</span><span><b>Gear R shown everywhere.</b> The gear indicator switches to R; no extra tap needed to get the camera.</span></li><li><span class="badge">2</span><span><b>Rear camera with guides.</b> Trajectory lines follow the steering; distance chips mark obstacles, the closest one inverted (dark).</span></li><li><span class="badge">3</span><span><b>Camera switcher + destination.</b> Rear / Front / Sides; the reserved bay from the parking flow is shown so Emma knows she is in the right place.</span></li><li><span class="badge">4</span><span><b>360° view.</b> Stitched surround image (placeholder) with a flat top-down car drawing (no 3D model needed); front and rear sensor zones darken as objects get closer.</span></li></ol>
 </section>
@@ -202,7 +202,7 @@
       </div>
     </div>
     <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk on"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
-    <span class="m" style="left:40px;top:70px">1</span><span class="m" style="left:40px;top:376px">2</span><span class="m" style="right:4px;top:66px">3</span><span class="m" style="right:4px;top:420px">4</span>
+    <span class="m" style="left:40px;top:70px">1</span><span class="m" style="left:720px;top:368px">2</span><span class="m" style="right:4px;top:66px">3</span><span class="m" style="right:4px;top:420px">4</span>
   </div></div>
   <ol class="notes"><li><span class="badge">1</span><span><b>Featured row.</b> Three large posters with titles (placeholders named by slot). Titles kept from 2024.</span></li><li><span class="badge">2</span><span><b>Categories + continue watching.</b> Filter chips (spelling fixed: "Suspense") and a row of titles in progress.</span></li><li><span class="badge">3</span><span><b>Watch on (context pane).</b> Selecting a title turns the context pane into the playback choice: Play here is the primary action.</span></li><li><span class="badge">4</span><span><b>Send to rear.</b> Passengers watch on the ET9's seat-back screens while the front screen stays free; the pane shows what each rear screen is already playing. Front video stops if the gear leaves P.</span></li></ol>
 </section>
@@ -254,7 +254,7 @@
       </div>
     </div>
     <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk on"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
-    <span class="m" style="left:40px;top:80px">1</span><span class="m" style="left:40px;top:330px">2</span><span class="m" style="left:40px;top:440px">3</span><span class="m" style="right:4px;top:66px">4</span>
+    <span class="m" style="left:560px;top:80px">1</span><span class="m" style="left:560px;top:330px">2</span><span class="m" style="left:560px;top:470px">3</span><span class="m" style="right:4px;top:66px">4</span>
   </div></div>
   <ol class="notes"><li><span class="badge">1</span><span><b>Charge level is the hero.</b> Big percentage and range, bar with the limit marked. Replaces 2024's animated 80 % with something you can act on.</span></li><li><span class="badge">2</span><span><b>When it's done.</b> Time to reach the limit, range at the limit, energy added so far.</span></li><li><span class="badge">3</span><span><b>Charge limit as segmented bars.</b> 50–100 % in steps (the Polestar-style segmented fade); stop and unlock the cable below.</span></li><li><span class="badge">4</span><span><b>Schedule + tomorrow.</b> Off-peak charging, ready-by time and preconditioning for the next morning (date is live).</span></li></ol>
 </section>
