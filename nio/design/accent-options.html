@@ -159,8 +159,8 @@ document.getElementById('sections').innerHTML = opts.map(([c,t,d,sw]) => `
 <section>
   <h2>${t}</h2><p class="sub">${d}</p>
   <div class="pair">
-    <div><div class="scaler ${c} night">${frame()}</div><p class="cap">NIGHT</p></div>
-    <div><div class="scaler ${c} day">${frame()}</div><p class="cap">DAY</p>
+    <div><div class="scaler ${c} ${['p5','p6'].includes(c)?'day':'night'}">${frame()}</div><p class="cap">${['p5','p6'].includes(c)?'DAY':'NIGHT'}</p></div>
+    <div><div class="scaler ${c} ${['p5','p6'].includes(c)?'night':'day'}">${frame()}</div><p class="cap">${['p5','p6'].includes(c)?'NIGHT':'DAY'}</p>
       <div class="sw">${sw.map(([h,l])=>`<span><i style="background:${h}"></i>${l} ${h}</span>`).join('')}</div></div>
   </div>
 </section>`).join('');
