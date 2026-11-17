@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NIO ET9 HMI — Accent colour options</title>
+<title>NIO ET9 HMI — Chosen palette, Night</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;700&display=swap" rel="stylesheet">
@@ -90,8 +90,8 @@ h2{font:500 24px "Red Hat Display"}
 </head>
 <body>
 <header>
-  <h1>Colour directions, round 2</h1>
-  <p>Round 1 used stock UI colours (cyan, sand). These three directions are each built from colours NIO itself named for the ET9, so the palette tells the car&rsquo;s story. Same screen, Night (large) and Day (small). In every direction the selection colour and the route colour differ, so &ldquo;what I chose&rdquo; never looks like &ldquo;where to go&rdquo;. Warnings stay amber and red in all three.</p>
+  <h1>Chosen palette · Night</h1>
+  <p>The Drive: Navigation screen in the chosen direction, dark mode only.</p>
 </header>
 <div id="sections"></div>
 <script>
@@ -152,23 +152,13 @@ const frame = () => `
   </div>
 </div>`;
 const opts = [
-  ['p5','Dark mode · Signal Orange','Graphite night #111112, near-colourless surfaces, orange #ff7a3d on the route, the selected dock item, the view switch and play. Day shown small.',[['#111112','Night base'],['#1b1b1d','Surface'],['#ff7a3d','Orange, Night'],['#f2662b','Orange, Day']],true],
-  ['p7','Chosen · Lavender base + orange route','Chosen direction. Lavender-ink night #0d0c12 with a faint violet tint in the surfaces; the map now sits in a 2 pt framed pane (#3a3550 at night, #cfcbdc by day) so it no longer melts into the background; selection and actions in white (black by day); orange only on the route and the turn arrow. Day shown small.',[['#0d0c12','Night base'],['#17151f','Surface'],['#f2f1f7','Selection, Night'],['#ff7a3d','Route, Night'],['#f2662b','Route, Day']],true],
-  ['p5','A · Signal Orange (after Zaptix)','Grey, almost colourless UI and map; one vivid orange carries everything that matters: route, selection, play. Like the reference, orange is both "chosen" and "go here", which is bold but breaks our rule that the two should differ. Feels confident and engineered.',[['#f0f0ee','Day base'],['#111112','Night base'],['#f2662b','Orange, Day'],['#ff7a3d','Orange, Night']]],
-  ['p6','B · Lavender Light (after the Uber map shot)','Lavender-tinted white with a soft building map; violet only for the route; selection and primary actions in solid black (white at night), like the reference&rsquo;s black button. Soft and premium; the violet must stay a solid line, never a glow or gradient, to avoid the "AI purple" look.',[['#f3f2f8','Day base'],['#0d0c12','Night base'],['#7a6bf2','Route, Day'],['#9c8fff','Route, Night'],['#111014','Action, Day']]],
-  ['p4','Your mix · Graphite × Sunlight Gold × Southern Star','Night base #0f0e11 (mineral graphite from Salar de Uyuni) with Sunlight Gold for selection and Southern Star Blue for the route. Day uses the warm salt-white neutrals from direction 2, which sit better with gold than cool grey.',[['#0f0e11','Night base'],['#d6b05a','Selection, Night'],['#c79a3a','Selection, Day'],['#86c9f0','Route, Night'],['#1d6db5','Route, Day']]],
-  ['p1','1 · Midnight Ceramic × Sunlight Gold','From two real ET9 paints: Midnight Ceramic Blue becomes the deep blue Night base; Sunlight Gold marks selection; Southern Star Blue, a pale sky blue, is the route. Executive and calm: blue-black and gold reads as luxury, not a tech demo.',[['#060c18','Night base'],['#d6b05a','Selection, Night'],['#c79a3a','Selection, Day'],['#86c9f0','Route, Night'],['#1d6db5','Route, Day']]],
-  ['p2','2 · Salar de Uyuni: salt, flamingo, mirror sky','NIO says the ET9 merges sky and earth, inspired by the Salar de Uyuni salt flat, the &ldquo;mirror of the sky&rdquo;. Salt-white Day, mineral graphite Night, flamingo rose for selection (the salt flat&rsquo;s flamingos), reflected-sky blue for the route. The most unexpected of the three.',[['#0f0e11','Night base'],['#e59ca1','Selection, Night'],['#b65568','Selection, Day'],['#8cc6e4','Route, Night'],['#2b7eae','Route, Day']]],
-  ['p3','3 · Horizon: Sunset Peak + First Light','From the ET9 Horizon Edition themes &ldquo;Sunset Peak&rdquo; and &ldquo;First Light&rdquo;. A warm ember Night, Sunset Peak orange for selection, First Light aqua for the route. Warmest and most emotional; orange needs care so it never reads as a warning.',[['#100c0b','Night base'],['#f08a5d','Selection, Night'],['#c0532a','Selection, Day'],['#7fd8c4','Route, Night'],['#0f7f6b','Route, Day']]],
+  ['p7','Lavender base + orange route · Night','Lavender-ink night #0d0c12, faint violet surfaces, white for selection and actions, orange #ff7a3d only on the route and turn arrow. The map sits in a 2 pt frame (#3a3550).',[['#0d0c12','Background'],['#17151f','Surface 1'],['#201d2a','Surface 2'],['#f2f1f7','Selection'],['#ff7a3d','Route'],['#3a3550','Map frame']],true],
 ];
 document.getElementById('sections').innerHTML = opts.map(([c,t,d,sw,nf]) => { const df = !nf && ['p5','p6','p7'].includes(c); return `
 <section>
   <h2>${t}</h2><p class="sub">${d}</p>
-  <div class="pair">
-    <div><div class="scaler ${c} ${df?'day':'night'}">${frame()}</div><p class="cap">${df?'DAY':'NIGHT'}</p></div>
-    <div><div class="scaler ${c} ${df?'night':'day'}">${frame()}</div><p class="cap">${df?'NIGHT':'DAY'}</p>
-      <div class="sw">${sw.map(([h,l])=>`<span><i style="background:${h}"></i>${l} ${h}</span>`).join('')}</div></div>
-  </div>
+  <div class="scaler ${c} night">${frame()}</div>
+  <div class="sw">${sw.map(([h,l])=>`<span><i style="background:${h}"></i>${l} ${h}</span>`).join('')}</div>
 </section>`; }).join('');
 const fit = () => document.querySelectorAll('.scaler').forEach(s => s.style.setProperty('--s', s.clientWidth / 1440));
 addEventListener('resize', fit); fit(); if (document.fonts) document.fonts.ready.then(fit);
