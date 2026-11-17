@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NIO ET9 HMI — Wireframes, batch 2b</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" rel="stylesheet">
+<link rel="stylesheet" href="wf.css">
+<style>
+.limit{width:36px;height:36px;border-radius:50%;border:3px solid var(--ink);display:inline-flex;align-items:center;justify-content:center;font:700 15px "Red Hat Display";color:var(--ink);background:#fff}
+.handle{position:absolute;right:0;top:50%;transform:translateY(-50%);width:80px;padding:12px 0;border-radius:var(--r-card) 0 0 var(--r-card);background:#fff;box-shadow:0 0 0 1px var(--line);display:flex;flex-direction:column;align-items:center;gap:10px}
+.guide{position:absolute;bottom:0;width:8px;height:62%;background:var(--ink-3);border-radius:4px}
+.guide.l{left:30%;transform:skewX(-14deg);transform-origin:bottom}.guide.r{right:30%;transform:skewX(14deg);transform-origin:bottom}
+.dist{position:absolute;background:#fff;border-radius:10px;padding:8px 14px;font-size:20px;box-shadow:0 0 0 1px var(--line)}
+.seg-i{height:52px;padding:0 20px;border-radius:10px;display:flex;align-items:center;font:500 17px "Red Hat Text";color:var(--ink-2)}.seg-i.on{background:var(--wf-2);color:var(--ink)}
+.arc{position:absolute;left:calc(50% - 90px);width:180px;height:60px;border:6px solid var(--ink-3)}
+.arc.front{top:calc(50% - 175px);border-bottom:0;border-radius:90px 90px 0 0}
+.arc.rear{top:calc(50% + 115px);border-top:0;border-radius:0 0 90px 90px;border-color:var(--ink)}
+.pill{height:52px;padding:0 22px;border-radius:999px;display:flex;align-items:center;font:500 18px "Red Hat Text";color:var(--ink-2);background:#fff;box-shadow:0 0 0 1px var(--line)}
+.pill.on{background:var(--ink);color:#fff}
+.lim{flex:1;height:56px;border-radius:8px;background:var(--wf-2);display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font-size:15px;color:var(--ink-2)}
+.lim.on{background:var(--ink-3);color:#fff}
+.sbar{height:8px;border-radius:4px;background:var(--wf-2)}.sbar.done{background:var(--ink-3)}.sbar.now{background:var(--ink)}
+.pmk{position:absolute;width:56px;height:56px;border-radius:14px;font:700 26px "Red Hat Display";color:var(--ink);background:#fff;box-shadow:0 0 0 2px var(--ink)}
+</style>
+</head>
+<body>
+<header class="page">
+  <h1>NIO ET9 HMI — Wireframes, batch 2b</h1>
+  <p class="disc">Figures are design estimates kept true to published ET9 specs: 100 kWh battery, about 16–17 kWh/100 km, 11 kW AC home charging, up to 600 kW DC, a 144-second battery swap. Real-world values vary.</p>
+  <p>Reserve parking spot, steps 2–6, in the same greyscale system. Step 1 (the suggestion while driving) is in batch 1. Numbered markers match the notes under each screen.</p>
+</header>
+<nav class="toc">
+  <a href="./">← Batch 1</a>
+  <a href="batch-2a.html">← Batch 2a</a>
+  <a href="#garage">2 · Choose garage</a>
+  <a href="#time">3 · Choose time</a>
+  <a href="#confirm">4 · Confirm</a>
+  <a href="#booked">5 · Booked</a>
+  <a href="#arrival">6 · Arrive</a>
+</nav>
+<section class="screen" id="garage">
+  <h2>1 · Reserve parking, step 2: Choose a garage</h2>
+  <p class="sub">Parked at home, gear P, 13:30: Emma plans the Mudam trip before leaving (the same flow also runs by voice while driving). Two public garages near Mudam.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="time num">13:30</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app">
+        <div class="map"></div>
+        <div class="ph" style="position:absolute;left:520px;top:250px;width:120px;height:56px;border-radius:12px;background:#fff;box-shadow:0 0 0 2px var(--ink);font-size:14px;color:var(--ink)">Mudam</div>
+        <div class="ph pmk" style="left:470px;top:330px;background:var(--ink);color:#fff">P</div>
+        <div class="ph pmk" style="left:300px;top:200px">P</div>
+        <div class="over" style="left:24px;top:24px;right:24px;display:flex;flex-direction:column;gap:14px"><div class="row" style="gap:8px"><div class="col" style="flex:1;gap:6px"><div class="sbar done"></div><span class="t3" style="font-size:15px;color:var(--ink)">1. Suggest</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar now"></div><span class="t3" style="font-size:15px;color:var(--ink)">2. Garage</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar "></div><span class="t3" style="font-size:15px;color:var(--ink-3)">3. Time</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar "></div><span class="t3" style="font-size:15px;color:var(--ink-3)">4. Confirm</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar "></div><span class="t3" style="font-size:15px;color:var(--ink-3)">5. Booked</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar "></div><span class="t3" style="font-size:15px;color:var(--ink-3)">6. Arrive</span></div></div></div>
+        <div class="row" style="position:absolute;left:24px;bottom:24px;gap:10px">
+          <div class="pill on">Fits 1.62 m</div><div class="pill">Accessible</div><div class="pill">EV charging</div><div class="pill">Open 24/7</div>
+        </div>
+      </div>
+      <div class="pane ctx">
+        <div class="card" style="display:flex;flex-direction:column;gap:10px;background:#fff;box-shadow:0 0 0 3px var(--ink)">
+          <div class="row" style="justify-content:space-between"><span class="t2">Parking Trois Glands</span><span class='ms fill' style='color:var(--ink)'>check_circle</span></div>
+          <span class="t3" style="font-size:17px">Underground · Rue du Fort Thüngen</span>
+          <div class="row" style="gap:14px;flex-wrap:wrap"><div class="row" style="gap:6px"><span class="ms" style="font-size:20px">directions_walk</span><span class="t3 num" style="font-size:16px">5 min to Mudam</span></div><div class="row" style="gap:6px"><span class="ms" style="font-size:20px">schedule</span><span class="t3 num" style="font-size:16px">24/7</span></div><div class="row" style="gap:6px"><span class="ms" style="font-size:20px">height</span><span class="t3 num" style="font-size:16px">2.00 m · fits</span></div><div class="row" style="gap:6px"><span class="ms" style="font-size:20px">accessible</span><span class="t3 num" style="font-size:16px">PMR spaces</span></div></div>
+          <div class="btn primary"><span class="ms">arrow_forward</span>Choose</div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;gap:10px;background:#fff;box-shadow:0 0 0 1px var(--line)">
+          <div class="row" style="justify-content:space-between"><span class="t2">Parking Place de l'Europe</span></div>
+          <span class="t3" style="font-size:17px">1,324 spaces · Avenue J.F. Kennedy</span>
+          <div class="row" style="gap:14px;flex-wrap:wrap"><div class="row" style="gap:6px"><span class="ms" style="font-size:20px">directions_walk</span><span class="t3 num" style="font-size:16px">~10 min to Mudam</span></div><div class="row" style="gap:6px"><span class="ms" style="font-size:20px">schedule</span><span class="t3 num" style="font-size:16px">05:30 – 24:00</span></div></div>
+          <div class="btn ghost">Choose</div>
+        </div>
+        <div class="card row" style="gap:10px"><span class="ms">euro</span><span class="t3" style="font-size:17px">Prices: real tariffs to be added</span></div>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk on"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+    <span class="m" style="left:40px;top:150px">1</span><span class="m" style="left:500px;top:340px">2</span><span class="m" style="left:40px;bottom:176px">3</span><span class="m" style="right:4px;top:66px">4</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Progress through the flow.</b> Six steps as segmented bars, the current one darkest. The same stepper sits on every parking screen.</span></li><li><span class="badge">2</span><span><b>Garages on the map.</b> Mudam as the destination; the recommended garage is dark, the alternative light.</span></li><li><span class="badge">3</span><span><b>Filters that matter for this car.</b> "Fits 1.62 m" is on by default because it comes from the ET9's real height; accessible, EV charging and 24/7 are optional.</span></li><li><span class="badge">4</span><span><b>Garage cards (context pane).</b> Recommended first and pre-selected: walk time, opening hours, height check, accessible spaces. Facts from the operators; walk time for Place de l'Europe is an estimate.</span></li></ol>
+</section>
+
+<section class="screen" id="time">
+  <h2>2 · Reserve parking, step 3: Choose time</h2>
+  <p class="sub">Parked, 13:31. Arrival is pre-filled from the route ETA; the duration is suggested from the calendar event (Mudam 14:00–15:30).</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="time num">13:31</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app" style="padding:32px;display:flex;flex-direction:column;gap:28px">
+        <div class="row" style="gap:8px"><div class="col" style="flex:1;gap:6px"><div class="sbar done"></div><span class="t3" style="font-size:15px;color:var(--ink)">1. Suggest</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar done"></div><span class="t3" style="font-size:15px;color:var(--ink)">2. Garage</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar now"></div><span class="t3" style="font-size:15px;color:var(--ink)">3. Time</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar "></div><span class="t3" style="font-size:15px;color:var(--ink-3)">4. Confirm</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar "></div><span class="t3" style="font-size:15px;color:var(--ink-3)">5. Booked</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar "></div><span class="t3" style="font-size:15px;color:var(--ink-3)">6. Arrive</span></div></div>
+        <div class="col" style="gap:10px"><span class="lbl">ARRIVAL</span>
+          <div class="row" style="gap:16px;align-items:center"><div class="icobtn" style="background:#fff"><span class="ms">remove</span></div><span class="num" style="font-size:72px;font-weight:500;line-height:1">13:55</span><div class="icobtn" style="background:#fff"><span class="ms">add</span></div><span class="t3" style="font-size:18px">from your route (arrive 13:58) · 5 min earlier for the walk</span></div>
+        </div>
+        <div class="col" style="gap:10px"><span class="lbl">HOW LONG</span>
+          <div class="row" style="gap:12px"><div class="pill" style="height:64px;padding:0 28px;font-size:20px">1 h</div><div class="pill on" style="height:64px;padding:0 28px;font-size:20px">2 h</div><div class="pill" style="height:64px;padding:0 28px;font-size:20px">3 h</div><div class="pill" style="height:64px;padding:0 28px;font-size:20px">Custom</div></div>
+          <span class="t3" style="font-size:18px">Suggested: your visit ends 15:30 · 2 h covers it with time to spare</span>
+        </div>
+        <div class="col" style="gap:10px"><span class="lbl">SPACE</span>
+          <div class="row" style="gap:12px"><div class="btn ghost" style="background:#fff;width:340px;justify-content:space-between">Accessible space <span class="tog"></span></div><div class="btn ghost" style="background:#fff;width:340px;justify-content:space-between">Near the exit <span class="tog on"></span></div></div>
+        </div>
+        <div class="grow"></div>
+        <div class="row" style="gap:12px;justify-content:flex-end"><div class="btn ghost" style="background:#fff;width:160px">Back</div><div class="btn primary" style="width:240px">Continue</div></div>
+      </div>
+      <div class="pane ctx">
+        <div class="card" style="display:flex;flex-direction:column;gap:10px">
+          <span class="lbl">YOUR BOOKING</span>
+          <div class="row" style="gap:12px"><span class="ms">local_parking</span><span class="t2">Parking Trois Glands</span></div>
+          <div class="row" style="gap:12px"><span class="ms">schedule</span><span class="t2 num">13:55 – 15:55</span></div>
+          <div class="row" style="gap:12px"><span class="ms">event</span><span class="t3" style="font-size:17px">for Mudam visit 14:00 – 15:30</span></div>
+        </div>
+        <div class="card fill" style="display:flex;flex-direction:column;gap:8px"><span class="lbl">ENDS AT</span><span class="t1 num" style="font-size:44px">15:55</span><span class="t3" style="font-size:17px">NOMI reminds you 15 min before</span></div>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk on"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+    <span class="m" style="left:20px;top:110px">1</span><span class="m" style="left:20px;top:250px">2</span><span class="m" style="left:20px;top:385px">3</span><span class="m" style="right:4px;top:66px">4</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Arrival from the route.</b> The ETA (13:58) minus a few minutes for the walk; adjust with large − / + targets.</span></li><li><span class="badge">2</span><span><b>Duration from the calendar.</b> 2 h is pre-selected because the Mudam visit ends 15:30; the reason is written underneath.</span></li><li><span class="badge">3</span><span><b>Space preferences.</b> Accessible space (PMR) and near-exit as simple toggles.</span></li><li><span class="badge">4</span><span><b>Booking builds up on the right.</b> The context pane shows the booking so far and when it ends, with a reminder before it runs out.</span></li></ol>
+</section>
+
+<section class="screen" id="confirm">
+  <h2>3 · Reserve parking, step 4: Confirm</h2>
+  <p class="sub">Parked, 13:32. One summary, one button. Payment uses the saved payment method; the date is live.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="time num">13:32</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app" style="padding:32px;display:flex;flex-direction:column;gap:22px">
+        <div class="row" style="gap:8px"><div class="col" style="flex:1;gap:6px"><div class="sbar done"></div><span class="t3" style="font-size:15px;color:var(--ink)">1. Suggest</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar done"></div><span class="t3" style="font-size:15px;color:var(--ink)">2. Garage</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar done"></div><span class="t3" style="font-size:15px;color:var(--ink)">3. Time</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar now"></div><span class="t3" style="font-size:15px;color:var(--ink)">4. Confirm</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar "></div><span class="t3" style="font-size:15px;color:var(--ink-3)">5. Booked</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar "></div><span class="t3" style="font-size:15px;color:var(--ink-3)">6. Arrive</span></div></div>
+        <div class="row" style="gap:32px;align-items:stretch;flex:1">
+          <div class="card" style="flex:1.3;background:#fff;box-shadow:0 0 0 1px var(--line);display:flex;flex-direction:column;gap:0">
+            <span class="lbl" style="margin-bottom:6px">SUMMARY</span>
+            <div class="eff"><span>Garage</span><b>Parking Trois Glands</b></div><div class="eff"><span>Date</span><b><span data-live="date">Today</span></b></div><div class="eff"><span>Time</span><b>13:55 – 15:55 (2 h)</b></div><div class="eff"><span>Vehicle</span><b>NIO ET9 · plate placeholder</b></div><div class="eff"><span>Space</span><b>Near the exit</b></div>
+            <div class="eff" style="border:0"><span>Payment</span><b><span class="ms" style="font-size:20px;vertical-align:-4px">credit_card</span> Saved payment method</b></div>
+          </div>
+          <div class="col" style="flex:1;gap:16px;justify-content:flex-end">
+            <div class="card" style="display:flex;flex-direction:column;gap:4px"><span class="lbl">TOTAL</span><span class="t1 num" style="font-size:52px">€ ––</span><span class="t3" style="font-size:16px">Real tariff to be added</span></div>
+            <div class="btn primary" style="height:88px;font-size:24px"><span class="ms">check</span>Confirm and pay</div>
+            <div class="row" style="gap:8px;justify-content:center"><span class="ms" style="font-size:20px">mic</span><span class="t3" style="font-size:16px">or say "Confirm"</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="pane ctx">
+        <div class="card" style="display:flex;flex-direction:column;gap:10px">
+          <span class="lbl">YOUR BOOKING</span>
+          <div class="row" style="gap:12px"><span class="ms">local_parking</span><span class="t2">Parking Trois Glands</span></div>
+          <div class="row" style="gap:12px"><span class="ms">schedule</span><span class="t2 num">13:55 – 15:55</span></div>
+          <div class="row" style="gap:12px"><span class="ms">event</span><span class="t3" style="font-size:17px">for Mudam visit 14:00 – 15:30</span></div>
+        </div>
+        <div class="card row" style="gap:16px;padding:14px 20px">
+          <div class="ph" style="width:56px;height:56px;font-size:9px">album-01</div>
+          <div class="col grow" style="gap:0"><span class="t2">Starman</span><span class="t3">David Bowie</span></div>
+          <div class="icobtn" style="background:var(--wf-3)"><span class="ms fill" style="color:var(--ink)">pause</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk on"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+    <span class="m" style="left:20px;top:150px">1</span><span class="m" style="left:calc(66% - 60px);top:430px">2</span><span class="m" style="left:calc(66% - 60px);bottom:300px">3</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Everything on one card.</b> Garage, live date, time, vehicle, space and payment: no hidden steps.</span></li><li><span class="badge">2</span><span><b>Payment, privately.</b> Shown only as "Saved payment method": no card number on a screen passengers can see.</span></li><li><span class="badge">3</span><span><b>One confirmation.</b> The only primary button on screen, 88 pt tall; voice confirmation works too.</span></li></ol>
+</section>
+
+<section class="screen" id="booked">
+  <h2>4 · Reserve parking, step 5: Booked</h2>
+  <p class="sub">Parked, 13:32. Confirmation, and everything that changes because of it: the route, the calendar and the entry instructions.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="time num">13:32</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app" style="padding:32px;display:flex;flex-direction:column;gap:24px">
+        <div class="row" style="gap:8px"><div class="col" style="flex:1;gap:6px"><div class="sbar done"></div><span class="t3" style="font-size:15px;color:var(--ink)">1. Suggest</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar done"></div><span class="t3" style="font-size:15px;color:var(--ink)">2. Garage</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar done"></div><span class="t3" style="font-size:15px;color:var(--ink)">3. Time</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar done"></div><span class="t3" style="font-size:15px;color:var(--ink)">4. Confirm</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar now"></div><span class="t3" style="font-size:15px;color:var(--ink)">5. Booked</span></div><div class="col" style="flex:1;gap:6px"><div class="sbar "></div><span class="t3" style="font-size:15px;color:var(--ink-3)">6. Arrive</span></div></div>
+        <div class="row" style="gap:20px"><div class="icobtn" style="width:88px;height:88px;border-radius:50%;background:var(--ink)"><span class="ms fill" style="font-size:48px;color:#fff">check</span></div>
+          <div class="col" style="gap:4px"><span class="t1" style="font-size:44px">Space reserved</span><span class="t3" style="font-size:20px">Parking Trois Glands · 13:55 – 15:55</span></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+          <div class="card" style="display:flex;flex-direction:column;gap:8px"><span class="ms">alt_route</span><span class="t2">Route updated</span><span class="t3" style="font-size:16px">Now ends at the garage entrance, Rue du Fort Thüngen</span></div>
+          <div class="card" style="display:flex;flex-direction:column;gap:8px"><span class="ms">event_available</span><span class="t2">Added to calendar</span><span class="t3" style="font-size:16px">Parking 13:55 before Mudam 14:00</span></div>
+          <div class="card" style="display:flex;flex-direction:column;gap:8px"><span class="ms">directions_car</span><span class="t2">Entry by plate</span><span class="t3" style="font-size:16px">Concept: the gate reads the plate; level and bay shown on arrival</span></div>
+        </div>
+        <div class="grow"></div>
+        <div class="row" style="gap:12px;justify-content:flex-end"><div class="btn ghost" style="background:#fff;width:200px">Booking details</div><div class="btn primary" style="width:280px"><span class="ms">navigation</span>Start route</div></div>
+      </div>
+      <div class="pane ctx">
+        <div class="card" style="display:flex;flex-direction:column;gap:10px">
+          <span class="lbl">TODAY</span>
+          <div class="row" style="gap:16px;padding:10px;background:#fff;border-radius:10px"><span class="t2 num" style="width:64px">13:55</span><span class="t2">Parking Trois Glands</span></div>
+          <div class="row" style="gap:16px;padding:10px"><span class="t2 num" style="width:64px">14:00</span><span class="t2">Mudam visit</span></div>
+          <div class="row" style="gap:16px;padding:10px"><span class="t2 num" style="width:64px;color:var(--ink-2)">16:00</span><span class="t2" style="color:var(--ink-2)">Ville Haute walk</span></div>
+        </div>
+        <div class="card row" style="gap:16px;padding:14px 20px">
+          <div class="ph" style="width:56px;height:56px;font-size:9px">album-01</div>
+          <div class="col grow" style="gap:0"><span class="t2">Starman</span><span class="t3">David Bowie</span></div>
+          <div class="icobtn" style="background:var(--wf-3)"><span class="ms fill" style="color:var(--ink)">pause</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk on"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+    <span class="m" style="left:20px;top:150px">1</span><span class="m" style="left:20px;top:282px">2</span><span class="m" style="right:4px;top:66px">3</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Clear confirmation.</b> A check, the garage and the time; no celebration animation needed.</span></li><li><span class="badge">2</span><span><b>What changed because of it.</b> Route, calendar and entry instructions as three cards, so Emma trusts the booking without opening anything. Plate-based entry is a concept, labelled as such.</span></li><li><span class="badge">3</span><span><b>Calendar in the context pane.</b> The parking slot now sits right before the Mudam visit.</span></li></ol>
+</section>
+
+<section class="screen" id="arrival">
+  <h2>5 · Reserve parking, step 6: Arrive</h2>
+  <p class="sub">Driving, gear D, 13:57, turning into the garage. Only what Emma needs now: which entrance, which level and bay. Leads into the Reverse + 360° screen (batch 2a).</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i>P</i><i>R</i><i>N</i><i class="on">D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">12 km/h</span></div>
+      <div class="time num">13:57</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">406 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app">
+        <div class="map"></div>
+        <div class="route" style="left:380px;top:160px;width:260px;height:330px;border-color:transparent transparent var(--ink-3) var(--ink-3);border-radius:0"></div>
+        <div class="car-arrow" style="left:362px;top:430px"></div>
+        <div class="ph pmk" style="left:610px;top:450px;background:var(--ink);color:#fff">P</div>
+        <div class="over" style="left:24px;top:24px;width:470px">
+          <div class="row"><span class="ms" style="font-size:56px;color:var(--ink)">turn_right</span>
+            <div class="col" style="gap:2px"><span class="t1 num">80 m</span><span class="t3">Garage entrance · Rue du Fort Thüngen</span></div></div>
+        </div>
+      </div>
+      <div class="pane ctx">
+        <div class="card fill" style="display:flex;flex-direction:column;gap:14px;background:#fff;box-shadow:0 0 0 3px var(--ink)">
+          <div class="row" style="gap:10px"><span class="ms fill" style="color:var(--ink)">local_parking</span><span class="lbl" style="color:var(--ink)">PARKING TROIS GLANDS</span></div>
+          <span class="t3" style="font-size:18px">Your space</span>
+          <div class="row" style="gap:28px;align-items:baseline"><div class="col" style="gap:0"><span class="num" style="font-size:72px;font-weight:500;line-height:1">−2</span><span class="lbl">level</span></div><div class="col" style="gap:0"><span class="num" style="font-size:72px;font-weight:500;line-height:1">14</span><span class="lbl">bay</span></div></div>
+          <div class="row" style="gap:8px;background:var(--wf-1);border-radius:10px;padding:12px"><span class="ms">arrow_downward</span><span class="t3" style="font-size:17px">Down the ramp, then second row on the left</span></div>
+          <div class="grow"></div>
+          <span class="t3" style="font-size:16px">Reserved until 15:55 · walk 5 min to Mudam</span>
+        </div>
+        <div class="card row" style="gap:16px;padding:14px 20px">
+          <div class="ph" style="width:56px;height:56px;font-size:9px">album-01</div>
+          <div class="col grow" style="gap:0"><span class="t2">Starman</span><span class="t3">David Bowie</span></div>
+          <div class="icobtn" style="background:var(--wf-3)"><span class="ms fill" style="color:var(--ink)">pause</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk on"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+    <span class="m" style="left:500px;top:30px">1</span><span class="m" style="right:4px;top:66px">2</span><span class="m" style="right:4px;top:330px">3</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Entrance, not the museum.</b> The route now ends at the garage entrance; distance and street are the only words on the map.</span></li><li><span class="badge">2</span><span><b>Level and bay, huge.</b> Two numbers readable at a glance while driving slowly. Bay 14 on level −2 is the same space shown on the Reverse + 360° screen.</span></li><li><span class="badge">3</span><span><b>One wayfinding hint.</b> A single line of directions inside the garage; the HUD would repeat it as a cyan guide (as on the real ET9 HUD).</span></li></ol>
+</section>
+
+<footer class="page">NIO ET9 HMI redesign · Wireframes batch 2b · Concept work by Aditi, not affiliated with NIO. Garage facts from Indigo, Mudam and Philharmonie Luxembourg. Icons: Material Symbols Rounded (Apache 2.0). Fonts: Red Hat Display / Text (OFL).</footer>
+<script src="wf.js"></script>
+</body>
+</html>

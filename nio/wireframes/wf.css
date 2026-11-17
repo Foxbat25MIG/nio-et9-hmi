@@ -118,3 +118,5 @@ section.screen .sub{color:var(--ink-2);margin:4px 0 16px}
 .tog{width:56px;height:32px;border-radius:16px;background:var(--wf-3);position:relative}.tog.on{background:var(--ink)}
 .tog::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff}.tog.on::after{left:28px}
 footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--ink-3);font-size:14px}
+
+.disc{font-size:14px;color:var(--ink-3);margin-top:6px}
