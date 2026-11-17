@@ -23,18 +23,16 @@ h2{font:500 24px "Red Hat Display"}
 .sw span{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:#5a5f66}
 .sw i{width:22px;height:22px;border-radius:6px;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
 
-/* ---------- theme tokens ---------- */
-.night{--bg:#0a0e13;--s1:#121821;--s2:#1a212b;--s3:#252d39;--line:#2d3643;--t1:#eef2f6;--t2:#a8b1bd;--t3:#6f7987;--map-land:#0f141b;--map-road:#232b36;--map-road2:#1b222c;--map-park:#121d1a;--map-rail:#2a2f38;--on-acc:#0a0e13}
-.day{--bg:#f2f0eb;--s1:#ffffff;--s2:#ebe8e2;--s3:#dcd8d0;--line:#d6d2ca;--t1:#1b1d21;--t2:#575c63;--t3:#8b8f96;--map-land:#ecebe6;--map-road:#ffffff;--map-road2:#f7f6f2;--map-park:#dfe6d8;--map-rail:#cfccc4;--on-acc:#ffffff}
-/* option A: cyan everywhere */
-.optA.night{--acc:#46c8d8;--acc-t:#0a0e13;--guide:#46c8d8}
-.optA.day{--acc:#0b8796;--acc-t:#fff;--guide:#0b8796}
-/* option B: warm sand everywhere */
-.optB.night{--acc:#d8b98e;--acc-t:#0a0e13;--guide:#d8b98e}
-.optB.day{--acc:#8d6a3f;--acc-t:#fff;--guide:#8d6a3f}
-/* option C: sand for selection, cyan only for guidance */
-.optC.night{--acc:#d8b98e;--acc-t:#0a0e13;--guide:#46c8d8}
-.optC.day{--acc:#8d6a3f;--acc-t:#fff;--guide:#0b8796}
+/* ---------- palette directions (each from a named ET9 colour) ---------- */
+/* 1 Midnight Ceramic x Sunlight Gold */
+.p1.night{--bg:#060c18;--s1:#0d1628;--s2:#152039;--s3:#202e4b;--line:#273657;--t1:#eef1f7;--t2:#a2adc3;--t3:#6c7891;--map-land:#0a1222;--map-road:#1b2740;--map-road2:#141e33;--map-park:#0e1b25;--map-rail:#2a3550;--acc:#d6b05a;--acc-t:#0b1222;--guide:#86c9f0}
+.p1.day{--bg:#f1f3f7;--s1:#ffffff;--s2:#e5e9f1;--s3:#d3d9e5;--line:#cdd4e0;--t1:#121a2b;--t2:#4f5a6e;--t3:#858fa3;--map-land:#e9edf3;--map-road:#ffffff;--map-road2:#f6f8fb;--map-park:#dce7e4;--map-rail:#c6cdd9;--acc:#c79a3a;--acc-t:#121a2b;--guide:#1d6db5}
+/* 2 Salar de Uyuni: salt, flamingo, mirror sky */
+.p2.night{--bg:#0f0e11;--s1:#18161a;--s2:#211e24;--s3:#2d2931;--line:#35303a;--t1:#f3f0f1;--t2:#b3abb2;--t3:#7a727a;--map-land:#131215;--map-road:#29252c;--map-road2:#1e1b21;--map-park:#16191a;--map-rail:#36323a;--acc:#e59ca1;--acc-t:#1a1012;--guide:#8cc6e4}
+.p2.day{--bg:#f6f4f0;--s1:#ffffff;--s2:#eeeae4;--s3:#dfd9d1;--line:#ddd7cf;--t1:#1f1b1d;--t2:#5f585c;--t3:#958d91;--map-land:#f0ede8;--map-road:#ffffff;--map-road2:#faf8f5;--map-park:#e4e8dd;--map-rail:#d3cdc5;--acc:#b65568;--acc-t:#ffffff;--guide:#2b7eae}
+/* 3 Horizon Edition: Sunset Peak + First Light */
+.p3.night{--bg:#100c0b;--s1:#191413;--s2:#231c1a;--s3:#312725;--line:#3a2f2c;--t1:#f5efeb;--t2:#b7aaa3;--t3:#7f726c;--map-land:#141010;--map-road:#2c2321;--map-road2:#201918;--map-park:#141a17;--map-rail:#3a302d;--acc:#f08a5d;--acc-t:#1a0f0b;--guide:#7fd8c4}
+.p3.day{--bg:#f7f2eb;--s1:#ffffff;--s2:#efe7dc;--s3:#e1d6c8;--line:#ded3c5;--t1:#21180f;--t2:#655a50;--t3:#9a8e83;--map-land:#f1ebe2;--map-road:#ffffff;--map-road2:#fbf8f3;--map-park:#e3e8dc;--map-rail:#d5ccbf;--acc:#c0532a;--acc-t:#ffffff;--guide:#0f7f6b}
 
 /* ---------- scaled frame ---------- */
 .scaler{position:relative;width:100%;aspect-ratio:1440/900;border-radius:calc(28px * var(--s,1));overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
@@ -79,8 +77,8 @@ h2{font:500 24px "Red Hat Display"}
 </head>
 <body>
 <header>
-  <h1>Accent colour options</h1>
-  <p>The same Drive: Navigation screen in Night (large) and Day (small), with three accent strategies. Everything else is identical: navy-tinted Night neutrals, warm Day neutrals, softer corners, Red Hat type. Look at the selected dock item, the view switch, the play button and the route line.</p>
+  <h1>Colour directions, round 2</h1>
+  <p>Round 1 used stock UI colours (cyan, sand). These three directions are each built from colours NIO itself named for the ET9, so the palette tells the car&rsquo;s story. Same screen, Night (large) and Day (small). In every direction the selection colour and the route colour differ, so &ldquo;what I chose&rdquo; never looks like &ldquo;where to go&rdquo;. Warnings stay amber and red in all three.</p>
 </header>
 <div id="sections"></div>
 <script>
@@ -141,9 +139,9 @@ const frame = () => `
   </div>
 </div>`;
 const opts = [
-  ['optA','A · Cyan everywhere','Continues your 2024 version and matches the ET9 HUD. Clear and technical, but selection and route guidance look the same, so the eye can\'t tell "chosen" from "go here".',[['#46c8d8','Night accent'],['#0b8796','Day accent']]],
-  ['optB','B · Warm sand everywhere','Taken from the ET9\'s dune wallpaper and tan leather. Calm and premium, but the route line loses the "guidance" signal drivers expect from cyan/blue.',[['#d8b98e','Night accent'],['#8d6a3f','Day accent']]],
-  ['optC','C · Sand for selection, cyan only for guidance (recommended)','Sand marks what you chose (dock, switch, play, mode); cyan appears only on the route and the next-turn arrow. Colour always means something, as NIO\'s own rule asks.',[['#d8b98e','Selection, Night'],['#8d6a3f','Selection, Day'],['#46c8d8','Guidance, Night'],['#0b8796','Guidance, Day']]],
+  ['p1','1 · Midnight Ceramic × Sunlight Gold','From two real ET9 paints: Midnight Ceramic Blue becomes the deep blue Night base; Sunlight Gold marks selection; Southern Star Blue, a pale sky blue, is the route. Executive and calm: blue-black and gold reads as luxury, not a tech demo.',[['#060c18','Night base'],['#d6b05a','Selection, Night'],['#c79a3a','Selection, Day'],['#86c9f0','Route, Night'],['#1d6db5','Route, Day']]],
+  ['p2','2 · Salar de Uyuni: salt, flamingo, mirror sky','NIO says the ET9 merges sky and earth, inspired by the Salar de Uyuni salt flat, the &ldquo;mirror of the sky&rdquo;. Salt-white Day, mineral graphite Night, flamingo rose for selection (the salt flat&rsquo;s flamingos), reflected-sky blue for the route. The most unexpected of the three.',[['#0f0e11','Night base'],['#e59ca1','Selection, Night'],['#b65568','Selection, Day'],['#8cc6e4','Route, Night'],['#2b7eae','Route, Day']]],
+  ['p3','3 · Horizon: Sunset Peak + First Light','From the ET9 Horizon Edition themes &ldquo;Sunset Peak&rdquo; and &ldquo;First Light&rdquo;. A warm ember Night, Sunset Peak orange for selection, First Light aqua for the route. Warmest and most emotional; orange needs care so it never reads as a warning.',[['#100c0b','Night base'],['#f08a5d','Selection, Night'],['#c0532a','Selection, Day'],['#7fd8c4','Route, Night'],['#0f7f6b','Route, Day']]],
 ];
 document.getElementById('sections').innerHTML = opts.map(([c,t,d,sw]) => `
 <section>
