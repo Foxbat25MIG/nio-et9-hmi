@@ -34,6 +34,9 @@ h2{font:500 24px "Red Hat Display"}
 .p3.night{--bg:#100c0b;--s1:#191413;--s2:#231c1a;--s3:#312725;--line:#3a2f2c;--t1:#f5efeb;--t2:#b7aaa3;--t3:#7f726c;--map-land:#141010;--map-road:#2c2321;--map-road2:#201918;--map-park:#141a17;--map-rail:#3a302d;--acc:#f08a5d;--acc-t:#1a0f0b;--guide:#7fd8c4}
 .p3.day{--bg:#f7f2eb;--s1:#ffffff;--s2:#efe7dc;--s3:#e1d6c8;--line:#ded3c5;--t1:#21180f;--t2:#655a50;--t3:#9a8e83;--map-land:#f1ebe2;--map-road:#ffffff;--map-road2:#fbf8f3;--map-park:#e3e8dc;--map-rail:#d5ccbf;--acc:#c0532a;--acc-t:#ffffff;--guide:#0f7f6b}
 
+/* 4 Mix: Uyuni graphite + Sunlight Gold + Southern Star route */
+.p4.night{--bg:#0f0e11;--s1:#18161a;--s2:#211e24;--s3:#2d2931;--line:#35303a;--t1:#f3f0f1;--t2:#b3abb2;--t3:#7a727a;--map-land:#131215;--map-road:#29252c;--map-road2:#1e1b21;--map-park:#16191a;--map-rail:#36323a;--acc:#d6b05a;--acc-t:#16120a;--guide:#86c9f0}
+.p4.day{--bg:#f6f4f0;--s1:#ffffff;--s2:#eeeae4;--s3:#dfd9d1;--line:#ddd7cf;--t1:#1f1b1d;--t2:#5f585c;--t3:#958d91;--map-land:#f0ede8;--map-road:#ffffff;--map-road2:#faf8f5;--map-park:#e4e8dd;--map-rail:#d3cdc5;--acc:#c79a3a;--acc-t:#1f1b1d;--guide:#1d6db5}
 /* ---------- scaled frame ---------- */
 .scaler{position:relative;width:100%;aspect-ratio:1440/900;border-radius:calc(28px * var(--s,1));overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
 .frame{position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transform:scale(var(--s,1));background:var(--bg);color:var(--t1);font-size:20px}
@@ -139,6 +142,7 @@ const frame = () => `
   </div>
 </div>`;
 const opts = [
+  ['p4','Your mix · Graphite × Sunlight Gold × Southern Star','Night base #0f0e11 (mineral graphite from Salar de Uyuni) with Sunlight Gold for selection and Southern Star Blue for the route. Day uses the warm salt-white neutrals from direction 2, which sit better with gold than cool grey.',[['#0f0e11','Night base'],['#d6b05a','Selection, Night'],['#c79a3a','Selection, Day'],['#86c9f0','Route, Night'],['#1d6db5','Route, Day']]],
   ['p1','1 · Midnight Ceramic × Sunlight Gold','From two real ET9 paints: Midnight Ceramic Blue becomes the deep blue Night base; Sunlight Gold marks selection; Southern Star Blue, a pale sky blue, is the route. Executive and calm: blue-black and gold reads as luxury, not a tech demo.',[['#060c18','Night base'],['#d6b05a','Selection, Night'],['#c79a3a','Selection, Day'],['#86c9f0','Route, Night'],['#1d6db5','Route, Day']]],
   ['p2','2 · Salar de Uyuni: salt, flamingo, mirror sky','NIO says the ET9 merges sky and earth, inspired by the Salar de Uyuni salt flat, the &ldquo;mirror of the sky&rdquo;. Salt-white Day, mineral graphite Night, flamingo rose for selection (the salt flat&rsquo;s flamingos), reflected-sky blue for the route. The most unexpected of the three.',[['#0f0e11','Night base'],['#e59ca1','Selection, Night'],['#b65568','Selection, Day'],['#8cc6e4','Route, Night'],['#2b7eae','Route, Day']]],
   ['p3','3 · Horizon: Sunset Peak + First Light','From the ET9 Horizon Edition themes &ldquo;Sunset Peak&rdquo; and &ldquo;First Light&rdquo;. A warm ember Night, Sunset Peak orange for selection, First Light aqua for the route. Warmest and most emotional; orange needs care so it never reads as a warning.',[['#100c0b','Night base'],['#f08a5d','Selection, Night'],['#c0532a','Selection, Day'],['#7fd8c4','Route, Night'],['#0f7f6b','Route, Day']]],
