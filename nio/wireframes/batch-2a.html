@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NIO ET9 HMI — Wireframes, batch 2a</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" rel="stylesheet">
+<link rel="stylesheet" href="wf.css">
+<style>
+.limit{width:36px;height:36px;border-radius:50%;border:3px solid var(--ink);display:inline-flex;align-items:center;justify-content:center;font:700 15px "Red Hat Display";color:var(--ink);background:#fff}
+.handle{position:absolute;right:0;top:50%;transform:translateY(-50%);width:80px;padding:12px 0;border-radius:var(--r-card) 0 0 var(--r-card);background:#fff;box-shadow:0 0 0 1px var(--line);display:flex;flex-direction:column;align-items:center;gap:10px}
+.guide{position:absolute;bottom:0;width:8px;height:62%;background:var(--ink-3);border-radius:4px}
+.guide.l{left:32%;transform:skewX(14deg)}.guide.r{right:32%;transform:skewX(-14deg)}
+.dist{position:absolute;background:#fff;border-radius:10px;padding:8px 14px;font-size:20px;box-shadow:0 0 0 1px var(--line)}
+.seg-i{height:52px;padding:0 20px;border-radius:10px;display:flex;align-items:center;font:500 17px "Red Hat Text";color:var(--ink-2)}.seg-i.on{background:var(--wf-2);color:var(--ink)}
+.arc{position:absolute;left:calc(50% - 90px);width:180px;height:60px;border:6px solid var(--ink-3)}
+.arc.front{top:calc(50% - 175px);border-bottom:0;border-radius:90px 90px 0 0}
+.arc.rear{top:calc(50% + 115px);border-top:0;border-radius:0 0 90px 90px;border-color:var(--ink)}
+.pill{height:52px;padding:0 22px;border-radius:999px;display:flex;align-items:center;font:500 18px "Red Hat Text";color:var(--ink-2);background:#fff;box-shadow:0 0 0 1px var(--line)}
+.pill.on{background:var(--ink);color:#fff}
+.lim{flex:1;height:56px;border-radius:8px;background:var(--wf-2);display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font-size:15px;color:var(--ink-2)}
+.lim.on{background:var(--ink-3);color:#fff}
+.sbar{height:8px;border-radius:4px;background:var(--wf-2)}.sbar.done{background:var(--ink-3)}.sbar.now{background:var(--ink)}
+</style>
+</head>
+<body>
+<header class="page">
+  <h1>NIO ET9 HMI — Wireframes, batch 2a</h1>
+  <p>Seven more screens in the same greyscale system as batch 1: welcome and profiles, map focus, reversing with a 360° view, entertainment with rear screens, home charging and NIO Power Swap. Numbered markers match the notes under each screen.</p>
+</header>
+<nav class="toc">
+  <a href="./">← Batch 1</a>
+  <a href="#welcome">1 · Welcome: Ciao, Emma</a>
+  <a href="#whos-driving">2 · Who's driving?</a>
+  <a href="#map-focus">3 · Drive: Map focus</a>
+  <a href="#reverse">4 · Reverse + 360°</a>
+  <a href="#entertainment">5 · Entertainment</a>
+  <a href="#charging">6 · Charging</a>
+  <a href="#power-swap">7 · Power Swap</a>
+</nav>
+<section class="screen" id="welcome">
+  <h2>1 · Welcome: Ciao, Emma</h2>
+  <p class="sub">Parked, just unlocked. Face ID recognised Emma; her seat, mirrors and climate are set while she sits down. Date and weather are live.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status"><div class="l"></div><div class="time num">13:24</div><div class="r"><span class="num">418 km</span><span class="ms">battery_5_bar</span></div></div>
+    <div style="position:absolute;left:24px;right:24px;top:56px;bottom:24px;border-radius:var(--r-pane);background:var(--wf-1);display:flex;align-items:center;padding:0 72px;gap:56px">
+      <div class="col" style="flex:1;gap:22px">
+        <div class="row" style="gap:16px"><div class="icobtn" style="background:#fff;width:72px;height:72px"><span class="ms fill" style="font-size:40px;color:var(--ink)">face</span></div><span class="t3">Face ID · Emma recognised</span></div>
+        <span class="t1" style="font-size:76px;line-height:1">Ciao, Emma</span>
+        <span class="t3" style="font-size:24px"><span class="num" data-live="date">Today</span> · <span class="num" data-live="temp">–– °C</span>, <span data-live="wtext">loading</span></span>
+        <div class="row" style="gap:12px;margin-top:8px">
+          <div class="btn ghost" style="background:#fff"><span class="ms">check</span>Seat</div>
+          <div class="btn ghost" style="background:#fff"><span class="ms">check</span>Mirrors</div>
+          <div class="btn ghost" style="background:#fff"><span class="ms">check</span>Climate 21.5°</div>
+          <div class="btn ghost" style="background:#fff"><span class="ms">check</span>Music</div>
+        </div>
+        <div class="card row" style="gap:16px;background:#fff;margin-top:12px;max-width:620px">
+          <span class="t2 num">14:00</span><div class="col grow" style="gap:0"><span class="t2">Mudam visit</span><span class="t3">Kirchberg · 16 min drive</span></div>
+          <div class="btn primary"><span class="ms">navigation</span>Go</div>
+        </div>
+        <div class="row" style="gap:10px;margin-top:6px"><span class="ms">swap_horiz</span><span class="t3" style="text-decoration:underline">Not Emma? Switch profile</span></div>
+      </div>
+      <div class="ph" style="width:300px;height:600px;border-radius:110px">car/car-01_top-down</div>
+    </div>
+    <span class="m" style="left:52px;top:96px">1</span><span class="m" style="left:52px;top:300px">2</span><span class="m" style="left:52px;top:520px">3</span><span class="m" style="left:52px;bottom:118px">4</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Who and when.</b> Face ID result, then a big greeting with live date and weather. Replaces 2024's dark lock screen with a warm, calm welcome.</span></li><li><span class="badge">2</span><span><b>Profile applied.</b> Seat, mirrors, climate and music snap to Emma's profile; each gets a check as it finishes, so the car visibly "knows" her.</span></li><li><span class="badge">3</span><span><b>First useful action.</b> Her next calendar event with one-tap Go: the welcome leads straight into the drive.</span></li><li><span class="badge">4</span><span><b>Escape hatch.</b> "Not Emma?" opens the profile picker (next frame). The screen hands over to Home after a few seconds or on any tap.</span></li></ol>
+</section>
+
+<section class="screen" id="whos-driving">
+  <h2>2 · Welcome: Who's driving?</h2>
+  <p class="sub">Parked. Face ID couldn't confirm the driver (sunglasses, low light), so the car asks. Profiles: Emma, Pierre, Ashish, plus Guest.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status"><div class="l"></div><div class="time num">13:24</div><div class="r"><span class="num">418 km</span><span class="ms">battery_5_bar</span></div></div>
+    <div style="position:absolute;left:24px;right:24px;top:56px;bottom:24px;border-radius:var(--r-pane);background:var(--wf-1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px">
+      <div class="col" style="align-items:center;gap:8px"><span class="t1" style="font-size:52px">Who's driving?</span><span class="t3" style="font-size:22px">We couldn't recognise you. Choose your profile.</span></div>
+      <div class="row" style="gap:40px">
+        <div class="col" style="align-items:center;gap:14px;width:200px"><div class="ph" style="width:168px;height:168px;border-radius:50%;box-shadow:0 0 0 5px var(--ink);">people/driver-01_emma</div><span class="t1">Emma</span></div><div class="col" style="align-items:center;gap:14px;width:200px"><div class="ph" style="width:168px;height:168px;border-radius:50%;">people/driver-02_pierre</div><span class="t1">Pierre</span></div><div class="col" style="align-items:center;gap:14px;width:200px"><div class="ph" style="width:168px;height:168px;border-radius:50%;">people/driver-03_ashish</div><span class="t1">Ashish</span></div>
+        <div class="col" style="align-items:center;gap:14px;width:200px"><div class="icobtn" style="width:168px;height:168px;border-radius:50%;background:#fff;border:2px dashed var(--wf-3)"><span class="ms" style="font-size:56px">person</span></div><span class="t1">Guest</span></div>
+      </div>
+      <div class="row" style="gap:16px"><div class="btn ghost" style="background:#fff;width:300px"><span class="ms">face</span>Try Face ID again</div><div class="btn ghost" style="background:#fff;width:300px"><span class="ms">person_add</span>Add profile</div></div>
+    </div>
+    <span class="m" style="left:calc(50% - 230px);top:110px">1</span><span class="m" style="left:calc(50% - 460px);top:330px">2</span><span class="m" style="left:calc(50% + 380px);top:330px">3</span><span class="m" style="left:calc(50% - 340px);bottom:120px">4</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>One clear question.</b> No error tone: the car simply asks who is driving.</span></li><li><span class="badge">2</span><span><b>Three profiles.</b> Emma, Pierre and Ashish as large 168 pt targets with their photos (placeholders). The last driver is pre-highlighted.</span></li><li><span class="badge">3</span><span><b>Guest.</b> Drives with default settings and saves nothing; no personal calendar or contacts shown.</span></li><li><span class="badge">4</span><span><b>Retry or add.</b> Face ID can be retried; new profiles are added here and linked to the NIO App.</span></li></ol>
+</section>
+
+<section class="screen" id="map-focus">
+  <h2>3 · Drive: Map focus</h2>
+  <p class="sub">Driving, gear D. The context pane is folded so the map gets the full width (e.g. a complex junction). Media stays reachable on a slim edge handle.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i>P</i><i>R</i><i>N</i><i class="on">D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">47 km/h</span><span class="limit num">50</span></div>
+      <div class="time num">13:46</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">411 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app" style="flex:1">
+        <div class="map"></div>
+        <div class="route" style="left:620px;top:110px;width:300px;height:470px"></div>
+        <div class="car-arrow" style="left:902px;top:530px"></div>
+        <div class="over" style="left:24px;top:24px;width:470px;display:flex;flex-direction:column;gap:14px">
+          <div class="row"><span class="ms" style="font-size:56px;color:var(--ink)">turn_left</span>
+            <div class="col" style="gap:2px"><span class="t1 num">150 m</span><span class="t3">Boulevard Royal</span></div></div>
+          <div class="row" style="gap:8px;background:var(--wf-1);border-radius:10px;padding:8px 12px"><span class="ms" style="color:var(--ink)">turn_left</span><span class="ms" style="color:var(--ink)">turn_left</span><span class="ms" style="color:var(--ink-3)">straight</span><span class="ms" style="color:var(--ink-3)">straight</span><span class="t3" style="font-size:16px;margin-left:8px">use left 2 lanes</span></div>
+        </div>
+        <div class="viewsw" style="left:24px;top:210px;transform:none"><div>Calm</div><div class="on">Map</div><div>Car</div></div>
+        <div class="col" style="position:absolute;right:104px;top:24px;gap:12px">
+          <div class="icobtn" style="background:#fff;box-shadow:0 0 0 1px var(--line)"><span class="ms">search</span></div>
+          <div class="icobtn" style="background:#fff;box-shadow:0 0 0 1px var(--line)"><span class="ms">layers</span></div>
+          <div class="icobtn" style="background:#fff;box-shadow:0 0 0 1px var(--line)"><span class="ms">volume_up</span></div>
+        </div>
+        <div class="over" style="left:24px;bottom:24px;width:640px;display:flex;align-items:center;justify-content:space-between">
+          <div class="row" style="gap:28px"><div class="col" style="gap:0"><span class="t1 num">13:58</span><span class="lbl">arrival</span></div>
+            <div class="col" style="gap:0"><span class="t1 num">12 min</span><span class="lbl">remaining</span></div>
+            <div class="col" style="gap:0"><span class="t1 num">5.4 km</span><span class="lbl">to Mudam</span></div></div>
+          <div class="btn ghost"><span class="ms">close</span>End</div>
+        </div>
+        <div class="handle"><div class="ph" style="width:56px;height:56px;font-size:8px">album-01</div><div class="icobtn" style="width:56px;height:56px;background:var(--wf-3)"><span class="ms fill" style="color:var(--ink)">pause</span></div><span class="ms">chevron_left</span></div>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk on"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+    <span class="m" style="left:430px;top:7px">1</span><span class="m" style="left:500px;top:110px">2</span><span class="m" style="right:120px;top:300px">3</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Speed limit beside the speed.</b> The road's limit sits in the status bar next to the current speed, always in the same place.</span></li><li><span class="badge">2</span><span><b>Lane guidance.</b> Which lanes to use, under the next-turn instruction: the reason to give the map more room.</span></li><li><span class="badge">3</span><span><b>Folded context pane.</b> Becomes a slim handle on the right edge with album art and play/pause; tap or swipe to bring the pane back. Map controls shift left with it.</span></li></ol>
+</section>
+
+<section class="screen" id="reverse">
+  <h2>4 · Reverse: rear camera + 360° view</h2>
+  <p class="sub">Gear R while parking at Trois Glands. The rear camera fills the app pane; the 360° surround view takes the context pane. Leaving R returns to the previous screen.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i>P</i><i class="on">R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">3 km/h</span></div>
+      <div class="time num">14:00</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">404 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app" style="background:var(--wf-3)">
+        <div class="ph" style="position:absolute;inset:0;border-radius:0;background:var(--wf-2)">camera/rear_live</div>
+        <div class="guide l"></div><div class="guide r"></div>
+        <div class="dist num" style="left:30%;top:58%">1.2 m</div>
+        <div class="dist num" style="left:62%;top:46%;background:var(--ink);color:#fff">0.6 m</div>
+        <div class="row" style="position:absolute;left:24px;top:24px;gap:10px;background:#fff;border-radius:var(--r-ctl);padding:4px;box-shadow:0 0 0 1px var(--line)">
+          <div class="seg-i on">Rear</div><div class="seg-i">Front</div><div class="seg-i">Sides</div>
+        </div>
+        <div class="row" style="position:absolute;right:24px;top:24px;gap:10px;background:#fff;border-radius:var(--r-ctl);padding:10px 16px;box-shadow:0 0 0 1px var(--line)"><span class="ms">local_parking</span><span class="t3" style="font-size:17px;color:var(--ink)">Bay 14 · Level -2</span></div>
+      </div>
+      <div class="pane ctx">
+        <div class="card fill" style="display:flex;flex-direction:column;gap:12px;background:#fff;box-shadow:0 0 0 1px var(--line)">
+          <div class="row" style="justify-content:space-between"><span class="lbl">360° VIEW</span><span class="ms">open_in_full</span></div>
+          <div style="flex:1;position:relative;border-radius:10px;overflow:hidden">
+            <div class="ph" style="position:absolute;inset:0;border-radius:0;align-items:flex-start;padding-top:10px;background:var(--wf-2)">camera/surround-360_stitched</div>
+            <div class="arc front"></div><div class="arc rear"></div>
+            <div class="ph" style="position:absolute;left:calc(50% - 60px);top:calc(50% - 125px);width:120px;height:250px;border-radius:50px;background:#fff;box-shadow:0 0 0 2px var(--ink-3);font-size:10px">car/car-03_topdown-svg</div>
+          </div>
+          <span class="t3" style="font-size:16px">Closest: rear right, 0.6 m</span>
+        </div>
+        <div class="card row" style="gap:16px;padding:14px 20px">
+          <div class="ph" style="width:56px;height:56px;font-size:9px">album-01</div>
+          <div class="col grow" style="gap:0"><span class="t2">Starman</span><span class="t3">David Bowie</span></div>
+          <div class="icobtn" style="background:var(--wf-3)"><span class="ms fill" style="color:var(--ink)">pause</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk on"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+    <span class="m" style="left:200px;top:7px">1</span><span class="m" style="left:40%;top:52%">2</span><span class="m" style="left:300px;top:76px">3</span><span class="m" style="right:4px;top:66px">4</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Gear R shown everywhere.</b> The gear indicator switches to R; no extra tap needed to get the camera.</span></li><li><span class="badge">2</span><span><b>Rear camera with guides.</b> Trajectory lines follow the steering; distance chips mark obstacles, the closest one inverted (dark).</span></li><li><span class="badge">3</span><span><b>Camera switcher + destination.</b> Rear / Front / Sides; the reserved bay from the parking flow is shown so Emma knows she is in the right place.</span></li><li><span class="badge">4</span><span><b>360° view.</b> Stitched surround image (placeholder) with a flat top-down car drawing (no 3D model needed); front and rear sensor zones darken as objects get closer.</span></li></ol>
+</section>
+
+<section class="screen" id="entertainment">
+  <h2>5 · Entertainment</h2>
+  <p class="sub">Parked only, gear P. The library uses the app pane; the context pane becomes "Watch on": play here or send to the rear seat screens.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="time num">14:40</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">404 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app" style="padding:24px;display:flex;flex-direction:column;gap:18px">
+        <div class="row" style="gap:18px"><div class="col" style="flex:1;gap:8px"><div class="ph" style="height:220px">media/poster-01_band-of-brothers</div><span class="t2" style="font-size:19px">Band of Brothers</span></div><div class="col" style="flex:1;gap:8px"><div class="ph" style="height:220px">media/poster-02_2001-a-space-odyssey</div><span class="t2" style="font-size:19px">2001: A Space Odyssey</span></div><div class="col" style="flex:1;gap:8px"><div class="ph" style="height:220px">media/poster-03_captain-tsubasa</div><span class="t2" style="font-size:19px">Captain Tsubasa</span></div></div>
+        <div class="row" style="gap:10px">
+          <div class="pill on">All</div><div class="pill">Horror</div><div class="pill">Comedy</div><div class="pill">Suspense</div><div class="pill">Action</div><div class="pill">Romance</div>
+        </div>
+        <span class="lbl">CONTINUE WATCHING</span>
+        <div class="row" style="gap:14px"><div class="ph" style="flex:1;height:150px">media/poster-04_the-office</div><div class="ph" style="flex:1;height:150px">media/poster-05_curb-your-enthusiasm</div><div class="ph" style="flex:1;height:150px">media/poster-06_shin-chan</div><div class="ph" style="flex:1;height:150px">media/poster-07_arrested-development</div><div class="ph" style="flex:1;height:150px">media/poster-08_monty-python-holy-grail</div></div>
+      </div>
+      <div class="pane ctx">
+        <div class="card fill" style="display:flex;flex-direction:column;gap:14px;background:#fff;box-shadow:0 0 0 3px var(--ink)">
+          <span class="lbl" style="color:var(--ink)">WATCH ON</span>
+          <div class="row" style="gap:14px"><div class="ph" style="width:96px;height:130px;font-size:9px">poster-02</div><div class="col" style="gap:2px"><span class="t2">2001: A Space Odyssey</span><span class="t3">Film · 2 h 29 min</span></div></div>
+          <div class="btn primary"><span class="ms">play_arrow</span>Play here</div>
+          <span class="lbl" style="margin-top:6px">SEND TO REAR SCREENS</span>
+          <div class="row" style="gap:10px"><div class="vbtn"><span class="ms">tv</span>Rear left</div><div class="vbtn"><span class="ms">tv</span>Rear right</div><div class="vbtn"><span class="ms">connected_tv</span>Both</div></div>
+          <div class="grow"></div>
+          <div class="row" style="gap:10px;background:var(--wf-1);border-radius:10px;padding:12px"><span class="ms">tv</span><span class="t3" style="font-size:16px">Rear left is playing Wall-E</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk"><span class="ms">directions_car</span>Car</div><div class="dk on"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+    <span class="m" style="left:40px;top:70px">1</span><span class="m" style="left:40px;top:376px">2</span><span class="m" style="right:4px;top:66px">3</span><span class="m" style="right:4px;top:420px">4</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Featured row.</b> Three large posters with titles (placeholders named by slot). Titles kept from 2024.</span></li><li><span class="badge">2</span><span><b>Categories + continue watching.</b> Filter chips (spelling fixed: "Suspense") and a row of titles in progress.</span></li><li><span class="badge">3</span><span><b>Watch on (context pane).</b> Selecting a title turns the context pane into the playback choice: Play here is the primary action.</span></li><li><span class="badge">4</span><span><b>Send to rear.</b> Passengers watch on the ET9's seat-back screens while the front screen stays free; the pane shows what each rear screen is already playing. Front video stops if the gear leaves P.</span></li></ol>
+</section>
+
+<section class="screen" id="charging">
+  <h2>6 · Charging (home)</h2>
+  <p class="sub">Parked at home that night, gear P, charging from a wallbox. Date is live; numbers are design placeholders.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="time num">23:10</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">221 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app" style="display:flex;align-items:stretch">
+        <div style="flex:1;padding:40px;display:flex;flex-direction:column;gap:22px">
+          <div class="row" style="gap:10px"><span class="ms fill" style="color:var(--ink)">bolt</span><span class="lbl" style="color:var(--ink)">CHARGING · 11 kW AC</span></div>
+          <div class="row" style="align-items:baseline;gap:16px"><span class="num" style="font-size:120px;line-height:1;font-weight:500">41 %</span><span class="t3 num" style="font-size:24px">221 km</span></div>
+          <div style="position:relative;height:18px;border-radius:9px;background:var(--wf-2)"><div style="width:41%;height:100%;border-radius:9px;background:var(--ink-3)"></div><i style="position:absolute;left:90%;top:-6px;width:3px;height:30px;background:var(--ink)"></i></div>
+          <div class="row" style="gap:40px">
+            <div class="col" style="gap:0"><span class="t2 num">03:40</span><span class="lbl">90 % by</span></div>
+            <div class="col" style="gap:0"><span class="t2 num">482 km</span><span class="lbl">range at 90 %</span></div>
+            <div class="col" style="gap:0"><span class="t2 num">6.2 kWh</span><span class="lbl">added so far</span></div>
+          </div>
+          <span class="lbl" style="margin-top:8px">CHARGE LIMIT</span>
+          <div class="row" style="gap:6px"><div class="lim on"><span class="num">50</span></div><div class="lim on"><span class="num">60</span></div><div class="lim on"><span class="num">70</span></div><div class="lim on"><span class="num">80</span></div><div class="lim on"><span class="num">90</span></div><div class="lim"><span class="num">100</span></div></div>
+          <div class="grow"></div>
+          <div class="row" style="gap:12px"><div class="btn ghost" style="background:#fff"><span class="ms">stop_circle</span>Stop charging</div><div class="btn ghost" style="background:#fff"><span class="ms">power</span>Unlock cable</div></div>
+        </div>
+        <div style="width:300px;position:relative;border-left:2px solid var(--wf-2)">
+          <div class="ph" style="position:absolute;left:50%;top:50%;width:150px;height:330px;transform:translate(-50%,-50%);border-radius:60px">car/car-03_topdown-svg</div>
+          <div class="row" style="position:absolute;left:24px;bottom:28px;gap:8px"><span class="ms">ev_charger</span><span class="t3" style="font-size:16px">Cable connected</span></div>
+        </div>
+      </div>
+      <div class="pane ctx">
+        <div class="card" style="display:flex;flex-direction:column;gap:12px">
+          <span class="lbl">SCHEDULE</span>
+          <div class="row" style="justify-content:space-between"><span class="t2">Off-peak only</span><span class="tog on"></span></div>
+          <span class="t3" style="font-size:17px">Charges 23:00–06:00</span>
+          <div class="row" style="justify-content:space-between"><span class="t2">Ready by 08:00</span><span class="tog on"></span></div>
+        </div>
+        <div class="card fill" style="display:flex;flex-direction:column;gap:10px">
+          <span class="lbl">TOMORROW</span>
+          <span class="t2"><span class="num" data-live="tomorrow">Tomorrow</span></span>
+          <span class="t3" style="font-size:17px">No events · 90 % covers about 482 km</span>
+          <div class="grow"></div>
+          <div class="btn ghost"><span class="ms">heat</span>Precondition at 07:45</div>
+        </div>
+      </div>
+    </div>
+    <div class="dock"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk on"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+    <span class="m" style="left:40px;top:80px">1</span><span class="m" style="left:40px;top:330px">2</span><span class="m" style="left:40px;top:440px">3</span><span class="m" style="right:4px;top:66px">4</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Charge level is the hero.</b> Big percentage and range, bar with the limit marked. Replaces 2024's animated 80 % with something you can act on.</span></li><li><span class="badge">2</span><span><b>When it's done.</b> Time to reach the limit, range at the limit, energy added so far.</span></li><li><span class="badge">3</span><span><b>Charge limit as segmented bars.</b> 50–100 % in steps (the Polestar-style segmented fade); stop and unlock the cable below.</span></li><li><span class="badge">4</span><span><b>Schedule + tomorrow.</b> Off-peak charging, ready-by time and preconditioning for the next morning (date is live).</span></li></ol>
+</section>
+
+<section class="screen" id="power-swap">
+  <h2>7 · NIO Power Swap</h2>
+  <p class="sub">At a NIO Power Swap Station. The car parks itself into the bay; the battery is exchanged while Emma stays seated. Station name and figures are placeholders.</p>
+  <div class="scaler"><div class="frame">
+    <div class="status">
+      <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="chip">Comfort</span><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
+      <div class="time num">11:12</div>
+      <div class="r"><span class="ms">signal_cellular_alt</span><span class="num">92 km</span><span class="ms">battery_5_bar</span></div>
+    </div>
+    <div class="content">
+      <div class="pane app" style="padding:40px;display:flex;flex-direction:column;gap:28px">
+        <div class="row" style="gap:10px"><span class="ms fill" style="color:var(--ink)">battery_change</span><span class="lbl" style="color:var(--ink)">POWER SWAP STATION · NAME PLACEHOLDER</span></div>
+        <div class="row" style="gap:12px"><div class="col" style="flex:1;gap:8px"><div class="sbar done"></div><div class="row" style="gap:8px"><span class="ms fill" style="font-size:22px;color:var(--ink)">check_circle</span><span class="t3" style="font-size:18px;color:var(--ink)">1. Arrive</span></div></div><div class="col" style="flex:1;gap:8px"><div class="sbar done"></div><div class="row" style="gap:8px"><span class="ms fill" style="font-size:22px;color:var(--ink)">check_circle</span><span class="t3" style="font-size:18px;color:var(--ink)">2. Auto-park</span></div></div><div class="col" style="flex:1;gap:8px"><div class="sbar now"></div><div class="row" style="gap:8px"><span class="ms fill" style="font-size:22px;color:var(--ink)">autorenew</span><span class="t3" style="font-size:18px;color:var(--ink)">3. Swapping</span></div></div><div class="col" style="flex:1;gap:8px"><div class="sbar todo"></div><div class="row" style="gap:8px"><span class="ms" style="font-size:22px;color:var(--ink-3)">radio_button_unchecked</span><span class="t3" style="font-size:18px;color:var(--ink-3)">4. Done</span></div></div></div>
+        <div class="row" style="gap:48px;align-items:center;flex:1">
+          <div class="col" style="gap:10px;flex:1">
+            <span class="t1" style="font-size:56px;line-height:1.05">Swapping your battery</span>
+            <span class="t3" style="font-size:26px"><span class="num">About 2 min</span> left</span>
+            <div class="card row" style="gap:14px;background:#fff;margin-top:20px"><span class="ms">info</span><span class="t2" style="font-size:20px">Stay seated. Keep your feet off the pedals.</span></div>
+          </div>
+          <div class="ph" style="width:260px;height:420px;border-radius:24px;background:var(--wf-2);position:relative">car in swap bay<div class="ph" style="position:absolute;left:55px;right:55px;top:60px;bottom:60px;border-radius:50px;background:#fff;font-size:9px">car-03</div></div>
+        </div>
+      </div>
+      <div class="pane ctx">
+        <div class="card" style="display:flex;flex-direction:column;gap:12px">
+          <span class="lbl">BATTERY</span>
+          <div class="row" style="align-items:center;gap:16px"><div class="col" style="gap:0"><span class="t1 num">17 %</span><span class="lbl">before</span></div><span class="ms">arrow_forward</span><div class="col" style="gap:0"><span class="t1">Full pack</span><span class="lbl">after (to confirm)</span></div></div>
+        </div>
+        <div class="card row" style="gap:16px;padding:14px 20px">
+          <div class="ph" style="width:56px;height:56px;font-size:9px">album-01</div>
+          <div class="col grow" style="gap:0"><span class="t2">Starman</span><span class="t3">David Bowie</span></div>
+          <div class="icobtn" style="background:var(--wf-3)"><span class="ms fill" style="color:var(--ink)">pause</span></div>
+        </div>
+        <div class="card fill" style="display:flex;flex-direction:column;gap:10px">
+          <span class="lbl">AFTER THE SWAP</span>
+          <span class="t3" style="font-size:18px">Route to Mudam resumes automatically</span>
+          <div class="grow"></div>
+          <div class="btn ghost"><span class="ms">receipt_long</span>Swap details in NIO App</div>
+        </div>
+      </div>
+    </div>
+    <div class="dock" style="opacity:.45"><div class="climate"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div><div class="apps"><div class="dk"><span class="ms">home</span>Home</div><div class="dk"><span class="ms">navigation</span>Nav</div><div class="dk"><span class="ms">music_note</span>Media</div><div class="dk"><span class="ms">call</span>Phone</div><div class="dk on"><span class="ms">directions_car</span>Car</div><div class="dk"><span class="ms">apps</span>Apps</div><div class="dk nomi"><span class="ms">graphic_eq</span>NOMI</div><div class="dk short"><span class="ms">airline_seat_recline_extra</span>Seat heat<i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="climate r"><div class="icobtn"><span class="ms">remove</span></div><span class="t">21.5°</span><div class="icobtn"><span class="ms">add</span></div></div></div>
+    <span class="m" style="left:40px;top:120px">1</span><span class="m" style="left:40px;top:300px">2</span><span class="m" style="right:4px;top:66px">3</span>
+  </div></div>
+  <ol class="notes"><li><span class="badge">1</span><span><b>Four clear steps.</b> Arrive, Auto-park, Swapping, Done, taken from NIO's own swap display on the ET9 HUD. The current step spins; finished steps get a check.</span></li><li><span class="badge">2</span><span><b>One instruction.</b> Time left and the one thing Emma must do: stay seated, feet off the pedals. The dock dims; nothing else needs attention.</span></li><li><span class="badge">3</span><span><b>Before → after.</b> Charge before the swap and the new pack after (exact figure to confirm), media keeps playing, the route resumes after.</span></li></ol>
+</section>
+
+<footer class="page">NIO ET9 HMI redesign · Wireframes batch 2a · Concept work by Aditi, not affiliated with NIO. Icons: Material Symbols Rounded (Apache 2.0). Fonts: Red Hat Display / Text (OFL).</footer>
+<script src="wf.js"></script>
+</body>
+</html>

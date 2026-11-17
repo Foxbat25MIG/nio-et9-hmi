@@ -8,128 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" rel="stylesheet">
-<style>
-/* ---------- Wireframe tokens (greyscale only) ---------- */
-:root{
-  --page:#f4f4f2; --frame:#ffffff; --wf-0:#fafafa; --wf-1:#efefef; --wf-2:#e2e2e2; --wf-3:#cfcfcf;
-  --ink:#1f1f1f; --ink-2:#5e5e5e; --ink-3:#8f8f8f; --line:#cfcfcf; --mark:#1f1f1f;
-  --r-frame:24px; --r-pane:20px; --r-card:14px; --r-ctl:12px;
-}
-*{box-sizing:border-box;margin:0}
-body{background:var(--page);color:var(--ink);font-family:"Red Hat Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-.ms{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;font-size:28px;color:var(--ink-2);font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 24}
-.ms.fill{font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 0,"opsz" 24}
-.num{font-family:"Red Hat Display",sans-serif;font-variant-numeric:tabular-nums}
-
-/* ---------- Page chrome ---------- */
-header.page{max-width:1200px;margin:0 auto;padding:48px 24px 8px}
-header.page h1{font-family:"Red Hat Display";font-weight:500;font-size:34px;letter-spacing:-.01em}
-header.page p{color:var(--ink-2);margin-top:8px;line-height:1.55;max-width:760px}
-.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:20px;font-size:14px;color:var(--ink-2)}
-.legend span{display:inline-flex;align-items:center;gap:8px}
-.sw{width:18px;height:18px;border-radius:5px;border:1px solid var(--line)}
-nav.toc{max-width:1200px;margin:16px auto 0;padding:0 24px;display:flex;flex-wrap:wrap;gap:8px}
-nav.toc a{font-size:14px;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;background:#fff}
-section.screen{max-width:1200px;margin:40px auto;padding:0 24px}
-section.screen h2{font-family:"Red Hat Display";font-weight:500;font-size:24px}
-section.screen .sub{color:var(--ink-2);margin:4px 0 16px}
-.notes{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:8px 32px;margin-top:20px;padding:0;list-style:none}
-.notes li{display:flex;gap:12px;font-size:15px;line-height:1.5;color:var(--ink-2)}
-.notes li b{color:var(--ink);font-weight:500}
-.badge{flex:none;width:26px;height:26px;border-radius:50%;background:var(--mark);color:#fff;font:600 13px/26px "Red Hat Text";text-align:center}
-
-/* ---------- Scaled 1440 x 900 frame ---------- */
-.scaler{position:relative;width:100%;aspect-ratio:1440/900;border-radius:calc(var(--r-frame) * var(--s,1));overflow:hidden;box-shadow:0 0 0 1px var(--line)}
-.frame{position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transform:scale(var(--s,1));background:var(--frame);font-size:20px}
-
-/* Status bar: 48 pt */
-.status{position:absolute;left:24px;right:24px;top:0;height:48px;display:flex;align-items:center;justify-content:space-between;color:var(--ink-2);font-size:18px}
-.status .l,.status .r{display:flex;align-items:center;gap:20px;min-width:360px}
-.status .r{justify-content:flex-end}
-.gear{display:flex;gap:10px;font:500 18px "Red Hat Display"}
-.gear i{font-style:normal;color:var(--ink-3)}
-.gear i.on{color:var(--ink);background:var(--wf-2);border-radius:6px;padding:0 6px}
-.status .time{font:500 20px "Red Hat Display";color:var(--ink)}
-.status .ms{font-size:22px}
-
-/* Content area between status bar and dock */
-.content{position:absolute;left:24px;right:24px;top:56px;bottom:112px;display:flex;gap:24px}
-.pane{position:relative;border-radius:var(--r-pane);background:var(--wf-1);overflow:hidden}
-.pane.app{flex:2}
-.pane.ctx{flex:1;background:transparent;display:flex;flex-direction:column;gap:16px}
-.card{background:var(--wf-1);border-radius:var(--r-card);padding:20px;position:relative}
-.card.fill{flex:1}
-.lbl{font-size:15px;color:var(--ink-3);letter-spacing:.02em}
-.t1{font:500 26px "Red Hat Display";color:var(--ink)}
-.t2{font:500 21px "Red Hat Text";color:var(--ink)}
-.t3{font-size:18px;color:var(--ink-2)}
-.ph{background:var(--wf-3);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;color:#555;font:500 12px/1.3 "Red Hat Text";padding:6px;word-break:break-word}
-.btn{height:64px;border-radius:var(--r-ctl);background:var(--wf-3);display:flex;align-items:center;justify-content:center;gap:10px;font:500 20px "Red Hat Text";color:var(--ink);padding:0 20px}
-.btn.ghost{background:transparent;border:2px solid var(--wf-3)}
-.btn.primary{background:var(--ink);color:#fff}
-.btn.primary .ms{color:#fff}
-.icobtn{width:64px;height:64px;border-radius:var(--r-ctl);background:var(--wf-0);display:flex;align-items:center;justify-content:center}
-.row{display:flex;align-items:center;gap:16px}
-.col{display:flex;flex-direction:column;gap:8px}
-.grow{flex:1}
-
-/* Dock: 104 pt */
-.dock{position:absolute;left:24px;right:24px;bottom:8px;height:96px;border-radius:var(--r-pane);background:var(--wf-1);display:flex;align-items:center;justify-content:space-between;padding:0 16px}
-.climate{display:flex;align-items:center;gap:6px;width:250px}
-.climate.r{justify-content:flex-end}
-.climate .t{font:500 30px "Red Hat Display";font-variant-numeric:tabular-nums;width:96px;text-align:center}
-.climate .icobtn{width:64px;height:64px;background:transparent}
-.apps{display:flex;gap:8px}
-.dk{width:96px;height:72px;border-radius:var(--r-ctl);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:13px;color:var(--ink-3)}
-.dk.on{background:var(--wf-3);color:var(--ink)}
-.dk.on .ms{color:var(--ink);font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 0,"opsz" 24}
-
-/* Numbered markers on the frame */
-.m{position:absolute;width:34px;height:34px;border-radius:50%;background:var(--mark);color:#fff;font:600 17px/34px "Red Hat Text";text-align:center;z-index:5;box-shadow:0 0 0 4px #fff}
-
-/* Map placeholder */
-.map{position:absolute;inset:0;background:
-  repeating-linear-gradient(0deg,transparent 0 58px,#dcdcdc 58px 60px),
-  repeating-linear-gradient(90deg,transparent 0 58px,#dcdcdc 58px 60px),var(--wf-1)}
-.route{position:absolute;border:10px solid var(--wf-3);border-color:transparent var(--ink-3) var(--ink-3) transparent;border-radius:0 0 40px 0}
-.car-arrow{position:absolute;width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:40px solid var(--ink)}
-.over{position:absolute;background:#fff;border-radius:var(--r-card);box-shadow:0 0 0 1px var(--line);padding:18px 22px}
-
-/* Edit-layout state */
-.editbar{position:absolute;left:24px;right:24px;top:56px;height:72px;border-radius:var(--r-card);border:2px dashed var(--ink-3);display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 24px;background:#fff;z-index:4}
-.seg{display:flex;background:var(--wf-1);border-radius:var(--r-ctl);padding:4px}
-.seg div{height:56px;padding:0 22px;border-radius:10px;display:flex;align-items:center;font:500 18px "Red Hat Text";color:var(--ink-2)}
-.seg div.on{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line)}
-.dashed{outline:3px dashed var(--ink-3);outline-offset:-3px}
-.grip{position:absolute;top:12px;right:12px;width:48px;height:48px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px var(--line)}
-
-/* Car screen: wheels, leader lines, tyre labels */
-.wheel{position:absolute;width:12px;height:60px;border-radius:6px;background:var(--ink-3)}
-.lead{position:absolute;background:var(--ink-3)}
-.lead.v{width:2px;transform:translateX(-1px)}
-.lead.h{height:2px}
-.hot{background:#fff}
-.vbtn{flex:1;height:72px;border-radius:var(--r-ctl);border:2px solid var(--wf-3);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:500 15px "Red Hat Text";color:var(--ink);white-space:nowrap}
-.vbtn .ms{font-size:24px}
-.aq{background:#fff;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
-.tyre{position:absolute;font-size:18px;color:var(--ink);background:#fff;border:2px solid var(--wf-2);border-radius:10px;padding:6px 12px}
-/* Drive-mode chip, dock NOMI + shortcut, level bars */
-.chip{font:500 15px "Red Hat Text";color:var(--ink);background:var(--wf-1);border-radius:999px;padding:4px 12px}
-.dk.nomi{border:2px solid var(--wf-3)}
-.dk.short{border:2px dashed var(--wf-3);position:relative}
-.lv{display:flex;gap:3px}.lv b{width:12px;height:4px;border-radius:2px;background:var(--ink-2)}.lv b.off{background:var(--wf-3)}
-.dk{width:88px}
-.viewsw{position:absolute;left:50%;top:24px;transform:translateX(-50%);display:flex;background:#fff;border-radius:var(--r-ctl);padding:4px;box-shadow:0 0 0 1px var(--line)}
-.viewsw div{height:52px;padding:0 20px;border-radius:10px;display:flex;align-items:center;font:500 17px "Red Hat Text";color:var(--ink-2)}
-.viewsw div.on{background:var(--wf-2);color:var(--ink)}
-.band{flex:1;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 22px "Red Hat Text"}
-.band.sel{box-shadow:inset 6px 0 0 #fff}
-.eff{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--wf-2);font-size:19px;color:var(--ink-2)}
-.eff b{color:var(--ink);font-weight:500}
-.tog{width:56px;height:32px;border-radius:16px;background:var(--wf-3);position:relative}.tog.on{background:var(--ink)}
-.tog::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff}.tog.on::after{left:28px}
-footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--ink-3);font-size:14px}
-</style>
+<link rel="stylesheet" href="wf.css">
 </head>
 <body>
 
@@ -144,6 +23,7 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
   </div>
 </header>
 <nav class="toc">
+  <a href="batch-2a.html" style="background:var(--ink);color:#fff;border-color:var(--ink)">Batch 2a →</a>
   <a href="#drive-navigation">1 · Drive: Navigation</a>
   <a href="#blind-spot">2 · Drive: Blind spot view</a>
   <a href="#home">3 · Home</a>
@@ -763,47 +643,6 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
 
 <footer class="page">NIO ET9 HMI redesign · Wireframes batch 1 · Concept work by Aditi, not affiliated with NIO. Icons: Material Symbols Rounded (Apache 2.0). Fonts: Red Hat Display / Text (OFL).</footer>
 
-<script>
-  // Scale each 1440 x 900 frame to the width of its container.
-  const fit = () => document.querySelectorAll('.scaler').forEach(s => s.style.setProperty('--s', s.clientWidth / 1440));
-  addEventListener('resize', fit); fit();
-  if (document.fonts) document.fonts.ready.then(fit);
-  // Live date (viewer's today) and live Luxembourg weather (Open-Meteo, no key).
-  (() => {
-    const d = new Date();
-    const dateText = d.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'});
-    document.querySelectorAll('[data-live="date"]').forEach(e => e.textContent = dateText);
-    const codes = [[0,'clear','clear_day'],[1,'mostly clear','partly_cloudy_day'],[2,'partly cloudy','partly_cloudy_day'],[3,'overcast','cloud'],[45,'foggy','foggy'],[48,'foggy','foggy'],[51,'drizzle','rainy'],[61,'rain','rainy'],[63,'rain','rainy'],[65,'heavy rain','rainy'],[71,'snow','weather_snowy'],[73,'snow','weather_snowy'],[75,'heavy snow','weather_snowy'],[80,'showers','rainy'],[81,'showers','rainy'],[82,'heavy showers','rainy'],[85,'snow showers','weather_snowy'],[95,'thunderstorms','thunderstorm']];
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=49.61&longitude=6.13&current=temperature_2m,weather_code&timezone=Europe%2FLuxembourg')
-      .then(r => r.json()).then(j => {
-        const t = Math.round(j.current.temperature_2m), c = j.current.weather_code;
-        const m = codes.filter(x => x[0] <= c).pop() || codes[0];
-        document.querySelectorAll('[data-live="temp"]').forEach(e => e.textContent = t + ' °C');
-        document.querySelectorAll('[data-live="wtext"]').forEach(e => e.textContent = m[1]);
-        document.querySelectorAll('[data-live="wicon"]').forEach(e => e.textContent = m[2]);
-      }).catch(() => {
-        document.querySelectorAll('[data-live="temp"]').forEach(e => e.textContent = '8 °C');
-        document.querySelectorAll('[data-live="wtext"]').forEach(e => e.textContent = 'weather unavailable');
-      });
-    fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=49.61&longitude=6.13&current=european_aqi,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&timezone=Europe%2FLuxembourg')
-      .then(r => r.json()).then(j => {
-        const c = j.current, aqi = Math.round(c.european_aqi);
-        const band = aqi <= 20 ? 'Good' : aqi <= 40 ? 'Fair' : aqi <= 60 ? 'Moderate' : aqi <= 80 ? 'Poor' : aqi <= 100 ? 'Very poor' : 'Extremely poor';
-        const pol = ['alder_pollen','birch_pollen','grass_pollen','mugwort_pollen','olive_pollen','ragweed_pollen'].map(k => c[k]).filter(v => v != null);
-        const pmax = pol.length ? Math.max(...pol) : 0;
-        const plevel = pmax < 1 ? 'None' : pmax < 20 ? 'Low' : pmax < 100 ? 'Medium' : 'High';
-        document.querySelectorAll('[data-live="aqi"]').forEach(e => e.textContent = 'AQI ' + aqi);
-        document.querySelectorAll('[data-live="aqitext"]').forEach(e => e.textContent = band + ' · live');
-        document.querySelectorAll('[data-live="pollen"]').forEach(e => e.textContent = plevel);
-        document.querySelectorAll('[data-live="pollentext"]').forEach(e => e.textContent = 'live · Luxembourg');
-      }).catch(() => {
-        document.querySelectorAll('[data-live="aqi"]').forEach(e => e.textContent = 'AQI 18');
-        document.querySelectorAll('[data-live="aqitext"]').forEach(e => e.textContent = 'offline example');
-        document.querySelectorAll('[data-live="pollen"]').forEach(e => e.textContent = 'Low');
-        document.querySelectorAll('[data-live="pollentext"]').forEach(e => e.textContent = 'offline example');
-      });
-  })();
-
-</script>
+<script src="wf.js"></script>
 </body>
 </html>
