@@ -103,6 +103,13 @@ section.screen .sub{color:var(--ink-2);margin:4px 0 16px}
 .dashed{outline:3px dashed var(--ink-3);outline-offset:-3px}
 .grip{position:absolute;top:12px;right:12px;width:48px;height:48px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px var(--line)}
 
+/* Car screen: wheels, leader lines, tyre labels */
+.wheel{position:absolute;width:12px;height:60px;border-radius:6px;background:var(--ink-3)}
+.lead{position:absolute;background:var(--ink-3)}
+.lead.v{width:2px;transform:translateX(-1px)}
+.lead.h{height:2px}
+.hot{background:#fff}
+.tyre{position:absolute;font-size:18px;color:var(--ink);background:#fff;border:2px solid var(--wf-2);border-radius:10px;padding:6px 12px}
 footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--ink-3);font-size:14px}
 </style>
 </head>
@@ -214,7 +221,7 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
 <!-- ======================= 2. HOME ======================= -->
 <section class="screen" id="home">
   <h2>2 · Home</h2>
-  <p class="sub">Parked, gear P. The "today" view Emma sees before setting off.</p>
+  <p class="sub">Parked, gear P. The "today" view Emma sees before setting off. Date and weather are live (Luxembourg).</p>
   <div class="scaler"><div class="frame">
     <div class="status">
       <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
@@ -222,12 +229,19 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
       <div class="r"><span class="ms">mic</span><span class="ms">signal_cellular_alt</span><span class="num">418 km</span><span class="ms">battery_5_bar</span></div>
     </div>
     <div class="content">
-      <div class="pane app" style="padding:32px;display:flex;flex-direction:column;gap:24px;background:transparent;border:0">
+      <div class="pane app" style="padding:28px 32px;display:flex;flex-direction:column;gap:22px;background:transparent;border:0">
         <div class="row" style="gap:20px">
-          <div class="ph" style="width:88px;height:88px;border-radius:50%">people/driver-01_emma</div>
-          <div class="col" style="gap:2px"><span class="t1" style="font-size:34px">Good afternoon, Emma</span><span class="t3"><span class="num">Sunday 25 January · 8 °C</span>, sunny in Luxembourg</span></div>
+          <div class="ph" style="width:84px;height:84px;border-radius:50%">people/driver-01_emma</div>
+          <div class="col grow" style="gap:2px"><span class="t1" style="font-size:34px">Good afternoon, Emma</span><span class="t3"><span class="num" data-live="date">Today</span> · <span class="ms" data-live="wicon" style="font-size:20px;vertical-align:-4px">partly_cloudy_day</span> <span class="num" data-live="temp">–– °C</span>, <span data-live="wtext">weather loading</span> in Luxembourg</span></div>
+          <div class="row" style="gap:8px;padding:8px;border-radius:999px;background:var(--wf-1)">
+            <div class="ph" style="width:52px;height:52px;border-radius:50%;font-size:8px;box-shadow:0 0 0 3px var(--ink)">driver-01</div>
+            <div class="ph" style="width:52px;height:52px;border-radius:50%;font-size:8px">driver-02</div>
+            <div class="ph" style="width:52px;height:52px;border-radius:50%;font-size:8px">driver-03</div>
+            <div class="icobtn" style="width:52px;height:52px;border-radius:50%;background:#fff"><span class="ms">swap_horiz</span></div>
+          </div>
         </div>
-        <span class="m" style="left:-6px;top:6px">1</span>
+        <span class="m" style="left:-4px;top:2px">1</span>
+        <span class="m" style="right:4px;top:-2px">2</span>
         <div class="row" style="gap:24px;align-items:stretch;flex:1">
           <div class="card" style="flex:1.2;display:flex;flex-direction:column;gap:12px">
             <div class="row" style="justify-content:space-between"><span class="lbl">TODAY · 4 EVENTS</span><span class="ms">add</span></div>
@@ -236,23 +250,23 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
             <div class="row" style="gap:16px;padding:12px"><span class="t2 num" style="width:70px;color:var(--ink-2)">18:00</span><span class="t2" style="color:var(--ink-2)">Grand Ducal Palace</span></div>
             <div class="row" style="gap:16px;padding:12px"><span class="t2 num" style="width:70px;color:var(--ink-2)">20:30</span><span class="t2" style="color:var(--ink-2)">Dinner at Aké</span></div>
           </div>
-          <span class="m" style="left:-6px;top:150px">2</span>
+          <span class="m" style="left:-4px;top:130px">3</span>
           <div style="flex:1;display:flex;flex-direction:column;gap:24px">
-            <div class="card" style="display:flex;flex-direction:column;gap:12px">
+            <div class="card" style="display:flex;flex-direction:column;gap:10px">
               <span class="lbl">PLACES</span>
-              <div class="row" style="gap:12px"><div class="btn ghost grow" style="justify-content:flex-start"><span class="ms">home</span>Home <span class="t3 num" style="margin-left:auto">12 min</span></div></div>
-              <div class="row" style="gap:12px"><div class="btn ghost grow" style="justify-content:flex-start"><span class="ms">work</span>Work <span class="t3 num" style="margin-left:auto">9 min</span></div></div>
+              <div class="btn ghost" style="justify-content:flex-start;height:58px"><span class="ms">home</span>Home <span class="t3 num" style="margin-left:auto">12 min</span></div>
+              <div class="btn ghost" style="justify-content:flex-start;height:58px"><span class="ms">work</span>Work <span class="t3 num" style="margin-left:auto">9 min</span></div>
+              <div class="btn ghost" style="justify-content:flex-start;height:58px"><span class="ms">park</span>Parc Merl <span class="t3 num" style="margin-left:auto">8 min</span></div>
             </div>
-            <span class="m" style="right:6px;top:140px">3</span>
+            <span class="m" style="right:6px;top:120px">4</span>
             <div class="card fill" style="display:flex;flex-direction:column;gap:12px">
               <span class="lbl">CONTINUE LISTENING</span>
-              <div class="row" style="gap:12px;flex:1">
-                <div class="ph" style="flex:1;height:100%">media/podcast-01_show</div>
-                <div class="ph" style="flex:1;height:100%">media/podcast-02_show</div>
-                <div class="ph" style="flex:1;height:100%">media/podcast-03_show</div>
+              <div class="row" style="gap:14px;flex:1;align-items:stretch">
+                <div class="col" style="flex:1;gap:8px"><div class="ph" style="flex:1;min-height:80px">media/podcast-01_show</div><span class="t3" style="font-size:16px;color:var(--ink)">Show one</span><div style="height:5px;border-radius:3px;background:var(--wf-2)"><div style="width:60%;height:100%;border-radius:3px;background:var(--ink-3)"></div></div></div>
+                <div class="col" style="flex:1;gap:8px"><div class="ph" style="flex:1;min-height:80px">media/podcast-02_show</div><span class="t3" style="font-size:16px;color:var(--ink)">Show two</span><div style="height:5px;border-radius:3px;background:var(--wf-2)"><div style="width:25%;height:100%;border-radius:3px;background:var(--ink-3)"></div></div></div>
               </div>
             </div>
-            <span class="m" style="right:6px;bottom:150px">4</span>
+            <span class="m" style="right:6px;bottom:150px">5</span>
           </div>
         </div>
       </div>
@@ -271,7 +285,7 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
           <span class="ms">battery_charging_80</span>
           <div class="col grow" style="gap:0"><span class="t2 num">78 % · 418 km</span><span class="t3">Locked · all doors closed</span></div>
         </div>
-        <span class="m" style="right:4px;bottom:70px">5</span>
+        <span class="m" style="right:4px;bottom:70px">6</span>
       </div>
     </div>
     <div class="dock">
@@ -288,18 +302,19 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
     </div>
   </div></div>
   <ol class="notes">
-    <li><span class="badge">1</span><span><b>Greeting.</b> Emma's photo placeholder, date, weather. One line, no hero banner.</span></li>
-    <li><span class="badge">2</span><span><b>Today (the hero).</b> The next event is promoted with a one-tap Go; later events step back.</span></li>
-    <li><span class="badge">3</span><span><b>Places.</b> Saved destinations with live drive time.</span></li>
-    <li><span class="badge">4</span><span><b>Continue listening.</b> Podcast placeholders named by slot; replaces 2024's row of 4 equal tiles.</span></li>
-    <li><span class="badge">5</span><span><b>Car status.</b> Charge, range and lock state at a glance; tap opens Car.</span></li>
+    <li><span class="badge">1</span><span><b>Greeting.</b> Emma's photo placeholder. Date and Luxembourg weather update live on the day you view the page.</span></li>
+    <li><span class="badge">2</span><span><b>Driver profiles.</b> Emma is profile 1, with two more profiles. The active profile has a ring; the swap button opens the profile switcher (seat, mirrors, climate, music follow the profile).</span></li>
+    <li><span class="badge">3</span><span><b>Today (the hero).</b> The next event is promoted with a one-tap Go; later events step back.</span></li>
+    <li><span class="badge">4</span><span><b>Places.</b> Home, Work and a personal place (Parc Merl), so the list reads like Emma's life, not a commute.</span></li>
+    <li><span class="badge">5</span><span><b>Continue listening.</b> Two podcasts with room for the show name and progress, instead of three cramped tiles.</span></li>
+    <li><span class="badge">6</span><span><b>Car status.</b> Charge, range and lock state at a glance; tap opens Car.</span></li>
   </ol>
 </section>
 
 <!-- ======================= 3. CAR ======================= -->
 <section class="screen" id="car">
   <h2>3 · Car</h2>
-  <p class="sub">Parked. The app pane has its own side menu, as on the real ET9.</p>
+  <p class="sub">Parked. The app pane has its own side menu, as on the real ET9. Every control sits where it acts on the car.</p>
   <div class="scaler"><div class="frame">
     <div class="status">
       <div class="l"><div class="gear"><i class="on">P</i><i>R</i><i>N</i><i>D</i></div><span class="num" style="font-size:20px;color:var(--ink)">0 km/h</span></div>
@@ -312,44 +327,82 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
           <div class="btn" style="justify-content:flex-start;height:60px;background:#fff"><span class="ms fill" style="color:var(--ink)">tune</span>Quick controls</div>
           <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">light_mode</span>Lights</div>
           <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">airline_seat_recline_normal</span>Seats</div>
-          <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">sensor_door</span>Doors</div>
           <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">speed</span>Driving</div>
           <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">ev_station</span>Charging</div>
+          <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">tire_repair</span>Tyres</div>
           <div class="btn" style="justify-content:flex-start;height:60px;background:transparent;color:var(--ink-2)"><span class="ms">settings</span>System</div>
         </div>
         <span class="m" style="left:220px;top:16px">1</span>
-        <div style="flex:1;position:relative">
-          <div class="ph" style="position:absolute;left:50%;top:50%;width:230px;height:470px;transform:translate(-50%,-52%);border-radius:90px">car/car-01_top-down</div>
-          <span class="m" style="left:calc(50% + 130px);top:40px">2</span>
-          <div class="btn ghost" style="position:absolute;left:50%;top:22px;transform:translateX(-50%);background:#fff;height:56px"><span class="ms">garage</span>Frunk</div>
-          <div class="btn ghost" style="position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:#fff;height:56px"><span class="ms">trip</span>Boot</div>
-          <div class="btn ghost" style="position:absolute;left:40px;top:42%;background:#fff;height:56px"><span class="ms">sensor_door</span>Doors</div>
-          <div class="btn ghost" style="position:absolute;right:40px;top:42%;background:#fff;height:56px"><span class="ms">ev_charger</span>Charge port</div>
-          <div class="btn ghost" style="position:absolute;left:40px;top:58%;background:#fff;height:56px"><span class="ms">window</span>Windows</div>
-          <div class="btn ghost" style="position:absolute;right:40px;top:58%;background:#fff;height:56px"><span class="ms">flip</span>Mirrors</div>
-          <span class="m" style="left:16px;top:38%">3</span>
-          <div class="row" style="position:absolute;left:24px;right:24px;top:22px;justify-content:flex-start;gap:12px;width:max-content">
-            <div class="icobtn" style="background:var(--ink)"><span class="ms fill" style="color:#fff">lock</span></div>
+
+        <div class="carzone" style="flex:1;position:relative">
+          <!-- car body (top-down, nose up) -->
+          <div class="ph" style="position:absolute;left:calc(50% - 105px);top:94px;width:210px;height:440px;border-radius:84px 84px 64px 64px">car/car-01_top-down<br>(nose up)</div>
+          <!-- wheels -->
+          <i class="wheel" style="left:calc(50% - 117px);top:159px"></i><i class="wheel" style="left:calc(50% + 105px);top:159px"></i>
+          <i class="wheel" style="left:calc(50% - 117px);top:409px"></i><i class="wheel" style="left:calc(50% + 105px);top:409px"></i>
+          <span class="m" style="left:calc(50% + 70px);top:100px">2</span>
+
+          <!-- lock -->
+          <div class="icobtn" style="position:absolute;left:24px;top:20px;background:var(--ink)"><span class="ms fill" style="color:#fff">lock</span></div>
+          <span class="m" style="left:76px;top:12px">3</span>
+
+          <!-- frunk / boot on the car's axis -->
+          <div class="btn ghost hot" style="position:absolute;left:50%;top:20px;transform:translateX(-50%);height:56px"><span class="ms">garage</span>Frunk</div>
+          <i class="lead v" style="left:50%;top:76px;height:18px"></i>
+          <div class="btn ghost hot" style="position:absolute;left:50%;top:552px;transform:translateX(-50%);height:56px"><span class="ms">trip</span>Boot</div>
+          <i class="lead v" style="left:50%;top:534px;height:18px"></i>
+
+          <!-- doors at their real positions: front pair, rear pair -->
+          <div class="btn ghost hot" style="position:absolute;right:calc(50% + 129px);top:236px;height:56px"><span class="ms">sensor_door</span>Driver</div>
+          <i class="lead h" style="right:calc(50% + 105px);top:264px;width:24px"></i>
+          <div class="btn ghost hot" style="position:absolute;right:calc(50% + 129px);top:336px;height:56px"><span class="ms">sensor_door</span>Rear left</div>
+          <i class="lead h" style="right:calc(50% + 105px);top:364px;width:24px"></i>
+          <div class="btn ghost hot" style="position:absolute;left:calc(50% + 129px);top:236px;height:56px"><span class="ms">sensor_door</span>Passenger</div>
+          <i class="lead h" style="left:calc(50% + 105px);top:264px;width:24px"></i>
+          <div class="btn ghost hot" style="position:absolute;left:calc(50% + 129px);top:336px;height:56px"><span class="ms">sensor_door</span>Rear right</div>
+          <i class="lead h" style="left:calc(50% + 105px);top:364px;width:24px"></i>
+          <span class="m" style="left:calc(50% + 260px);top:224px">4</span>
+
+          <!-- tyre pressures beside each wheel -->
+          <span class="tyre num" style="right:calc(50% + 129px);top:172px">2.9 bar</span>
+          <span class="tyre num" style="left:calc(50% + 129px);top:172px">2.9 bar</span>
+          <span class="tyre num" style="right:calc(50% + 129px);top:422px">3.0 bar</span>
+          <span class="tyre num" style="left:calc(50% + 129px);top:422px">3.0 bar</span>
+          <span class="m" style="left:calc(50% + 214px);top:410px">5</span>
+
+          <!-- whole-car controls -->
+          <div class="row" style="position:absolute;left:24px;right:24px;bottom:20px;gap:12px">
+            <div class="btn ghost grow" style="height:60px"><span class="ms">window</span>Windows</div>
+            <div class="btn ghost grow" style="height:60px"><span class="ms">flip</span>Fold mirrors</div>
+            <div class="btn ghost grow" style="height:60px"><span class="ms">ev_charger</span>Charge port</div>
+            <div class="btn ghost grow" style="height:60px"><span class="ms">child_care</span>Child lock</div>
           </div>
-          <span class="m" style="left:94px;top:16px">4</span>
+          <span class="m" style="left:8px;bottom:58px">6</span>
         </div>
       </div>
       <div class="pane ctx">
         <div class="card" style="display:flex;flex-direction:column;gap:12px">
-          <span class="lbl">BATTERY</span>
-          <div class="row" style="align-items:baseline;gap:12px"><span class="t1 num" style="font-size:56px">78 %</span><span class="t3 num">418 km range</span></div>
-          <div style="height:14px;border-radius:7px;background:var(--wf-2)"><div style="width:78%;height:100%;border-radius:7px;background:var(--ink-3)"></div></div>
-          <span class="t3">Charge limit 90 %</span>
-        </div>
-        <span class="m" style="right:4px;top:4px">5</span>
-        <div class="card fill" style="display:flex;flex-direction:column;gap:12px">
-          <span class="lbl">TYRES (BAR)</span>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div class="card num" style="background:#fff;padding:14px">FL <b class="t2">2.9</b></div><div class="card num" style="background:#fff;padding:14px">FR <b class="t2">2.9</b></div>
-            <div class="card num" style="background:#fff;padding:14px">RL <b class="t2">3.0</b></div><div class="card num" style="background:#fff;padding:14px">RR <b class="t2">3.0</b></div>
+          <div class="row" style="justify-content:space-between"><span class="lbl">BATTERY</span><span class="t3" style="font-size:16px">Limit 90 %</span></div>
+          <div class="row" style="align-items:baseline;gap:12px"><span class="t1 num" style="font-size:52px">78 %</span><span class="t3 num">418 km</span></div>
+          <div style="position:relative;height:14px;border-radius:7px;background:var(--wf-2)"><div style="width:78%;height:100%;border-radius:7px;background:var(--ink-3)"></div><i style="position:absolute;left:90%;top:-4px;width:2px;height:22px;background:var(--ink)"></i></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:4px">
+            <div class="col" style="gap:0"><span class="lbl">AT MUDAM</span><span class="t2 num">76 % · 410 km</span></div>
+            <div class="col" style="gap:0"><span class="lbl">EFFICIENCY</span><span class="t2 num">18.4 kWh/100 km</span></div>
+            <div class="col" style="gap:0"><span class="lbl">NEXT CHARGE</span><span class="t2">Tonight, home</span></div>
+            <div class="col" style="gap:0"><span class="lbl">SWAP STATION</span><span class="t2 num">placeholder</span></div>
           </div>
         </div>
-        <span class="m" style="right:4px;bottom:120px">6</span>
+        <span class="m" style="right:4px;top:4px">7</span>
+        <div class="card fill" style="display:flex;flex-direction:column;gap:12px">
+          <span class="lbl">CABIN</span>
+          <div class="row" style="gap:24px">
+            <div class="col" style="gap:0"><span class="t1 num">19 °C</span><span class="t3">inside</span></div>
+            <div class="col" style="gap:0"><span class="t1 num" data-live="temp">–– °C</span><span class="t3">outside</span></div>
+          </div>
+          <div class="grow"></div>
+          <div class="btn ghost"><span class="ms">heat</span>Precondition for 13:45</div>
+        </div>
+        <span class="m" style="right:4px;bottom:110px">8</span>
       </div>
     </div>
     <div class="dock">
@@ -366,12 +419,14 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
     </div>
   </div></div>
   <ol class="notes">
-    <li><span class="badge">1</span><span><b>Side menu.</b> The app's own sections, matching the real ET9 settings layout. Selected = white pill + filled icon.</span></li>
-    <li><span class="badge">2</span><span><b>Car render (the hero).</b> Top-down view, placeholder named by slot; a 3D render can replace it later.</span></li>
-    <li><span class="badge">3</span><span><b>Controls placed where they act.</b> Frunk at the front, boot at the back, doors and charge port on their sides.</span></li>
-    <li><span class="badge">4</span><span><b>Lock.</b> The most-used control, always top-left of the car view.</span></li>
-    <li><span class="badge">5</span><span><b>Battery.</b> Charge %, range and limit. Replaces 2024's "x1000 rpm", which doesn't exist on an EV.</span></li>
-    <li><span class="badge">6</span><span><b>Tyres.</b> Pressure per wheel in bar.</span></li>
+    <li><span class="badge">1</span><span><b>Side menu.</b> The app's own sections, matching the real ET9 settings layout. Tyres now has its own section for detail.</span></li>
+    <li><span class="badge">2</span><span><b>Car render, nose up.</b> Top-down placeholder; front of the car points to the top of the screen, driver's side on the left.</span></li>
+    <li><span class="badge">3</span><span><b>Lock.</b> The most-used control, always top-left.</span></li>
+    <li><span class="badge">4</span><span><b>Controls at their real positions.</b> Frunk above the nose, boot below the tail, each of the four doors beside its own door, joined by a short leader line.</span></li>
+    <li><span class="badge">5</span><span><b>Tyre pressure at each wheel.</b> Replaces the oversized tyre widget; the reading sits next to the tyre it belongs to.</span></li>
+    <li><span class="badge">6</span><span><b>Whole-car controls.</b> Windows, mirrors, charge port and child lock act on more than one place, so they sit in one row under the car.</span></li>
+    <li><span class="badge">7</span><span><b>Battery, more useful.</b> Charge vs. limit, range, charge left on arrival at Mudam, efficiency, next charge and nearest NIO Power Swap (placeholder).</span></li>
+    <li><span class="badge">8</span><span><b>Cabin.</b> Inside and live outside temperature, plus one-tap preconditioning before the next trip.</span></li>
   </ol>
 </section>
 
@@ -508,6 +563,24 @@ footer.page{max-width:1200px;margin:56px auto 64px;padding:0 24px;color:var(--in
   const fit = () => document.querySelectorAll('.scaler').forEach(s => s.style.setProperty('--s', s.clientWidth / 1440));
   addEventListener('resize', fit); fit();
   if (document.fonts) document.fonts.ready.then(fit);
+  // Live date (viewer's today) and live Luxembourg weather (Open-Meteo, no key).
+  (() => {
+    const d = new Date();
+    const dateText = d.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'});
+    document.querySelectorAll('[data-live="date"]').forEach(e => e.textContent = dateText);
+    const codes = [[0,'clear','clear_day'],[1,'mostly clear','partly_cloudy_day'],[2,'partly cloudy','partly_cloudy_day'],[3,'overcast','cloud'],[45,'foggy','foggy'],[48,'foggy','foggy'],[51,'drizzle','rainy'],[61,'rain','rainy'],[63,'rain','rainy'],[65,'heavy rain','rainy'],[71,'snow','weather_snowy'],[73,'snow','weather_snowy'],[75,'heavy snow','weather_snowy'],[80,'showers','rainy'],[81,'showers','rainy'],[82,'heavy showers','rainy'],[85,'snow showers','weather_snowy'],[95,'thunderstorms','thunderstorm']];
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=49.61&longitude=6.13&current=temperature_2m,weather_code&timezone=Europe%2FLuxembourg')
+      .then(r => r.json()).then(j => {
+        const t = Math.round(j.current.temperature_2m), c = j.current.weather_code;
+        const m = codes.filter(x => x[0] <= c).pop() || codes[0];
+        document.querySelectorAll('[data-live="temp"]').forEach(e => e.textContent = t + ' °C');
+        document.querySelectorAll('[data-live="wtext"]').forEach(e => e.textContent = m[1]);
+        document.querySelectorAll('[data-live="wicon"]').forEach(e => e.textContent = m[2]);
+      }).catch(() => {
+        document.querySelectorAll('[data-live="temp"]').forEach(e => e.textContent = '8 °C');
+        document.querySelectorAll('[data-live="wtext"]').forEach(e => e.textContent = 'weather unavailable');
+      });
+  })();
 </script>
 </body>
 </html>
