@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" rel="stylesheet">
-<link rel="stylesheet" href="hifi.css?v=1">
+<link rel="stylesheet" href="hifi.css?v=2">
 </head><body><div class="wrap">
 <p class="cap">NIO ET9 CENTRE SCREEN · BATCH 1 · HIGH FIDELITY · LAVENDER LIGHT · 1440 × 900 (2880 × 1800 @2×) · built from nio/style-guide.md</p>
 <nav class="toc"><a href="#drive-navigation">1 · Drive: Navigation</a><a href="#blind-spot">2 · Drive: Blind spot view</a><a href="#home">3 · Home</a><a href="#car">4 · Car</a><a href="#car-driving">5 · Car: Driving modes</a><a href="#pet-mode">6 · Pet Mode</a><a href="#parking-suggest">7 · Reserve parking, step 1: Suggest</a><a href="#edit-layout">8 · Edit layout</a><a href="#settings-display">9 · Settings › Display</a></nav>
@@ -163,7 +163,7 @@
       <div class="row" style="justify-content:space-between">
         <div class="row" style="gap:20px"><div class="ph round" style="width:76px;height:76px;font-size:10px">people/driver-01_emma</div>
           <div class="col" style="gap:4px"><span class="h1">Good afternoon, Emma</span>
-          <span class="b2 row" style="gap:8px"><span data-live="date">Wednesday 18 November</span> · <span class="ms" data-live="wicon" style="font-size:22px">partly_cloudy_day</span><span data-live="temp">8 °C</span>, <span data-live="wtext">cloudy</span> in Luxembourg</span></div></div>
+          <span class="b2 row" style="gap:0;white-space:pre"><span data-live="date">Wednesday 18 November</span> ·  <span class="ms" data-live="wicon" style="font-size:22px">partly_cloudy_day</span> <span data-live="temp">8 °C</span>, <span data-live="wtext">cloudy</span> in Luxembourg</span></div></div>
         <div class="row" style="gap:8px;background:var(--s1);border-radius:999px;padding:6px">
           <div class="ph round" style="width:48px;height:48px;font-size:8px;outline:3px solid var(--ink);outline-offset:1px">emma</div>
           <div class="ph round" style="width:48px;height:48px;font-size:8px">pierre</div>
@@ -231,7 +231,7 @@
     <div class="ctx">
       <div class="card" style="display:flex;flex-direction:column;gap:14px">
         <div class="row" style="justify-content:space-between"><span class="lbl">Battery</span><span class="bs">Limit 90 %</span></div>
-        <div class="row" style="gap:10px;align-items:baseline"><span class="h1 num" style="font-size:48px">78 %</span><span class="b2 num">418 km</span></div>
+        <div class="row" style="gap:10px;align-items:baseline"><span class="h1 num">78 %</span><span class="b2 num">418 km</span></div>
         <div style="height:10px;border-radius:5px;background:var(--s2);position:relative"><i style="position:absolute;left:0;top:0;bottom:0;width:78%;border-radius:5px;background:var(--ink)"></i><i style="position:absolute;left:90%;top:-4px;bottom:-4px;width:3px;border-radius:2px;background:var(--t1)"></i></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px">
           <div class="col" style="gap:0"><span class="lbl">At Mudam</span><span class="b1 num" style="font-size:18px">76 % · 410 km</span></div>
@@ -239,7 +239,7 @@
           <div class="col" style="gap:0"><span class="lbl">Next charge</span><span class="b1" style="font-size:18px">Tonight, home</span></div>
           <div class="col" style="gap:0"><span class="lbl">Fast charger nearby</span><span class="b1" style="font-size:18px">SuperChargy Kirchberg</span></div>
         </div></div>
-      <div class="card grow" style="display:flex;flex-direction:column;gap:14px">
+      <div class="card grow" style="display:flex;flex-direction:column;gap:12px;padding:20px 24px">
         <div class="row" style="justify-content:space-between"><span class="lbl">Cabin</span><div class="btn ghost sm" style="height:40px;font-size:15px"><span class="ms " style="font-size:20px;color:var(--t1)">heat</span>Precondition 13:45</div></div>
         <div class="row" style="gap:28px"><div class="col" style="gap:0"><span class="metric">19 °C</span><span class="cap14">inside</span></div><div class="col" style="gap:0"><span class="metric" data-live="temp">8 °C</span><span class="cap14">outside</span></div></div>
         <div class="row" style="gap:10px;align-items:stretch">
@@ -247,8 +247,8 @@
           <div class="tile" style="flex:1"><span class="lbl">Air outside</span><span class="b1 num" style="font-size:18px" data-live="aqi">AQI 18</span><span class="cap14" data-live="aqitext">offline example</span></div>
           <div class="tile" style="flex:1"><span class="lbl">Pollen</span><span class="b1" style="font-size:18px" data-live="pollen">Low</span><span class="cap14" data-live="pollentext">offline example</span></div>
         </div>
-        <span class="lbl" style="margin-top:4px">Parking modes</span>
-        <div class="row" style="gap:10px"><div class="qbtn" style="height:72px"><span class="ms " style="">pets</span>Pet Mode</div><div class="qbtn" style="height:72px"><span class="ms " style="">shield</span>Guard Mode</div><div class="qbtn" style="height:72px"><span class="ms " style="">power_settings_new</span>Stay on</div></div>
+        <span class="lbl">Parking modes</span>
+        <div class="row" style="gap:10px"><div class="qbtn" style="height:60px;flex-direction:row;gap:8px"><span class="ms " style="">pets</span>Pet Mode</div><div class="qbtn" style="height:60px;flex-direction:row;gap:8px"><span class="ms " style="">shield</span>Guard Mode</div><div class="qbtn" style="height:60px;flex-direction:row;gap:8px"><span class="ms " style="">power_settings_new</span>Stay on</div></div>
       </div>
     </div>
   </div>
@@ -273,6 +273,7 @@
           <div class="card" style="flex:1;display:flex;flex-direction:column;gap:6px">
             <span class="lbl" style="margin-bottom:6px">Comfort changes</span>
             <div class="kv"><div>Steering<b>Light</b></div><div>Suspension<b>Soft</b></div><div>Power response<b>Smooth</b></div><div>Regeneration<b>Standard</b></div><div>Traction<b>Normal</b></div></div>
+            <div class="sp"></div><span class="bs">Quiet and balanced. The default for city driving.</span>
           </div>
         </div>
         <span class="lbl">Driving assists</span>
@@ -304,7 +305,7 @@
     <span class="b2" style="font-size:20px">The air conditioning is keeping me comfortable</span>
     <div class="row" style="gap:12px;margin-top:10px">
       <div class="row" style="gap:10px;height:56px;padding:0 20px;border-radius:999px;background:var(--s2);font:500 17px 'Red Hat Text'"><span class="ms " style="font-size:22px;color:var(--t1)">ac_unit</span>Climate on</div><div class="row" style="gap:10px;height:56px;padding:0 20px;border-radius:999px;background:var(--s2);font:500 17px 'Red Hat Text'"><span class="ms " style="font-size:22px;color:var(--t1)">lock</span>Windows locked</div>
-      <div class="row" style="gap:10px;height:56px;padding:0 20px;border-radius:999px;background:var(--s2);font:500 17px 'Red Hat Text'"><span class="ms " style="font-size:22px;color:var(--t1)">thermostat</span>Outside&nbsp;<span data-live="temp">8 °C</span></div>
+      <div class="row" style="gap:10px;height:56px;padding:0 20px;border-radius:999px;background:var(--s2);font:500 17px 'Red Hat Text'"><span class="ms " style="font-size:22px;color:var(--t1)">thermostat</span>Outside <span data-live="temp">8 °C</span></div>
     </div>
     <span class="cap14" style="position:absolute;bottom:22px">Pet Mode · on since 13:52 · Battery stays above 20 %</span>
   </div>
