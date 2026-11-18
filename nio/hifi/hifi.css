@@ -341,3 +341,7 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .cyclist{transition:transform 4s linear}
 .bs-on .cyclist{transform:translateY(-70px)}
 @media (prefers-reduced-motion:reduce){.app.v-car .roadmove,.app.v-car .ego,.app.v-car .car-ahead,.app.v-car .car-behind{animation:none}}
+/* car view v2: only the road moves (no sway/drift); hero turns right in a 5 s loop */
+.app.v-car .ego,.app.v-car .car-ahead,.app.v-car .car-behind{animation:none}
+.cv-world{transition:opacity .4s var(--ease)}
+.cv-world.fade{opacity:0}

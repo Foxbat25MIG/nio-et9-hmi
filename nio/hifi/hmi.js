@@ -195,4 +195,29 @@
     }
     cycle(); if (!reduce) setInterval(cycle, 10500); else { fr.classList.add('bs-sig', 'bs-on'); p && p.classList.add('compact'); }
   });
+  /* ---------- car view: 5 s loop, drive to the junction and turn right (heading-up) ---------- */
+  document.querySelectorAll('.cv-world').forEach(w => {
+    const app = w.closest('.app'), chipT = app && app.querySelector('.cv-chip-t');
+    const ex = +w.dataset.ex, y0 = +w.dataset.y0, R = +w.dataset.r, Y = 440, D = Y - y0, A = Math.PI / 2 * R, V = 200, PX_M = 40;
+    const pose = s => {
+      if (s < D) return [ex, Y - s, 0];
+      if (s < D + A) { const f = (s - D) / R; return [ex + R - R * Math.cos(f), y0 - R * Math.sin(f), f * 180 / Math.PI]; }
+      return [ex + R + (s - D - A), y0 - R, 90];
+    };
+    const draw = s => { const [x, y, h] = pose(s); w.setAttribute('transform', `translate(${ex} ${Y}) rotate(${-h}) translate(${-x} ${-y})`);
+      if (chipT) chipT.textContent = s < D ? `Lane 3 of 3 · turn right in ${Math.max(1, Math.round((D - s) / PX_M))} m` : 'Turning right';
+    };
+    let t0 = null;
+    draw(0);
+    if (reduce) return;
+    function frame(ts) {
+      if (!app.classList.contains('v-car')) { t0 = null; requestAnimationFrame(frame); return; }
+      if (t0 === null) t0 = ts;
+      const t = ((ts - t0) / 1000) % 5;
+      draw(V * t);
+      w.classList.toggle('fade', t > 4.55 || t < 0.05);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  });
 })();
