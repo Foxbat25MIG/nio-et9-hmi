@@ -96,8 +96,9 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .nm-s{font:600 11.5px/1 "Red Hat Text",sans-serif;color:#7a7690;letter-spacing:.01em;text-shadow:0 0 3px var(--map-land),0 0 3px var(--map-land),0 0 2px var(--map-land)}
 .nm-d{font:600 11px/1 "Red Hat Text",sans-serif;color:#a29eb5;letter-spacing:.16em;text-transform:uppercase;text-shadow:0 0 3px var(--map-land),0 0 3px var(--map-land)}
 .nm-car{position:absolute;left:268px;top:508px;width:64px;height:64px}
-.nm-pin{display:flex;align-items:center;gap:8px;background:var(--s1);border-radius:14px;padding:6px 12px 6px 6px;box-shadow:var(--shadow)}
+.nm-pin{display:flex;align-items:center;gap:8px;flex-direction:row;background:var(--s1);border-radius:14px;padding:6px 12px 6px 6px;box-shadow:var(--shadow)}
 .nm-pin-dot{width:28px;height:28px;border-radius:9px;background:var(--route);color:#fff;font:700 15px "Red Hat Display";display:flex;align-items:center;justify-content:center}
+.nm-pin.left{flex-direction:row-reverse;padding:6px 6px 6px 12px}.nm-pin.left .nm-pin-t{align-items:flex-end}
 .nm-pin-t{font:500 14px "Red Hat Text";color:var(--t1);display:flex;flex-direction:column;line-height:1.15}.nm-pin-t small{font-size:12px;color:var(--t2)}
 .osm{position:absolute;right:92px;bottom:6px;font:500 10.5px "Red Hat Text",sans-serif;color:var(--t3);opacity:.85}
 </style>

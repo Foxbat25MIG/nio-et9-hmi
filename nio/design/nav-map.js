@@ -68,6 +68,7 @@
   ahead.forEach(p => { p.style.strokeDasharray = `${TOTAL} ${TOTAL}`; });
 
   const lab = [];
+  const pinFirst = [];
   M.districts.forEach(([t, x, y]) => { const e = document.createElement('div'); e.className = 'nm-d'; e.textContent = t; labels.appendChild(e); lab.push({ e, x, y, a: null }); });
   M.labels.forEach(([t, x, y, a]) => { const e = document.createElement('div'); e.className = 'nm-s'; e.textContent = t; labels.appendChild(e); lab.push({ e, x, y, a }); });
   const pin = document.createElement('div'); pin.className = 'nm-pin';
@@ -115,8 +116,8 @@
   function setTrip(s, simSec) {
     const remM = (TOTAL - s) * K;
     if (ui.km) ui.km.textContent = (remM / 1000).toFixed(1) + ' km';
-    // remaining time from OSRM pace on the rest of the route (~6.6 m/s average incl. lights)
-    if (ui.rem) ui.rem.textContent = Math.max(1, Math.round(remM / 6.6 / 60)) + ' min';
+    // remaining time from OSRM pace on the rest of the route (~7.3 m/s average incl. lights)
+    if (ui.rem) ui.rem.textContent = Math.max(1, Math.round(remM / 7.3 / 60)) + ' min';
     const now = startClock + simSec;
     if (ui.clock) ui.clock.textContent = Math.floor(now / 3600) + ':' + String(Math.floor(now / 60) % 60).padStart(2, '0');
     if (ui.driven) ui.driven.textContent = (startDriven + (s - S0) * K / 1000).toFixed(1) + ' km';
@@ -130,12 +131,21 @@
     world.style.transform = `translate(${CX}px,${CY}px) rotate(${-r}deg) translate(${-px}px,${-py}px)`;
     ahead.forEach(p => { p.style.strokeDashoffset = -s; });
     const rad = -r * Math.PI / 180, c = Math.cos(rad), sn = Math.sin(rad);
+    const placed = [];
     for (const l of lab) {
       const dx = l.x - px, dy = l.y - py;
       const sx = CX + dx * c - dy * sn, sy = CY + dx * sn + dy * c;
-      const off = sx < -160 || sx > 1080 || sy < -60 || sy > 760;
+      let off = sx < -160 || sx > 1080 || sy < -60 || sy > 760;
+      if (!off && !l.pin) off = placed.some(([qx, qy]) => Math.abs(qx - sx) < 120 && Math.abs(qy - sy) < 34) || Math.hypot(sx - CX, sy - CY) < 46;
       l.e.style.display = off ? 'none' : '';
       if (off) continue;
+      if (l.pin) {                         // dot sits on the place; label flips left near the edge
+        const left = sx > 640;
+        l.e.classList.toggle('left', left);
+        l.e.style.transform = `translate(${sx}px,${sy}px) translate(${left ? 'calc(-100% + 20px)' : '-20px'},-50%)`;
+        continue;
+      }
+      placed.push([sx, sy]);
       let a = 0;
       if (l.a !== null) { a = l.a - r; a = ((a + 540) % 360) - 180; if (a > 90) a -= 180; if (a < -90) a += 180; }
       l.e.style.transform = `translate(${sx}px,${sy}px) translate(-50%,-50%) rotate(${a}deg)`;
