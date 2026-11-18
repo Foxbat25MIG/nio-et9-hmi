@@ -4,8 +4,7 @@
    Drives the next-turn card, trip bar and status bar from the same route. */
 (function () {
   const M = window.LUXMAP;
-  const pane = document.querySelector('[data-navmap]');
-  if (!M || !pane) return;
+  if (!M) return;
 
   const CX = 250, CY = 540;               // car position on screen (px in the 1440×900 frame's map pane)
   const K = M.k;                          // metres per px
@@ -53,6 +52,13 @@
     <path class="ahead" d="${routeD}" fill="none" stroke="var(--route)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>`;
 
+  document.querySelectorAll('[data-navmap]').forEach(initPane);
+  function initPane(pane) {
+  const root = pane.closest('.frame') || document;
+  const OFF = +(pane.dataset.offset || 0);
+  const DEST = pane.dataset.dest || 'Trois Glands';
+  const DESTXY = DEST === 'Mudam' ? [436, -455] : M.dest;
+  const ETA = pane.dataset.eta || '13:55';
   const vp = document.createElement('div'); vp.className = 'nm-vp';
   const world = document.createElement('div'); world.className = 'nm-world';
   world.innerHTML = base + routeSvg;
@@ -72,11 +78,11 @@
   M.districts.forEach(([t, x, y]) => { const e = document.createElement('div'); e.className = 'nm-d'; e.textContent = t; labels.appendChild(e); lab.push({ e, x, y, a: null }); });
   M.labels.forEach(([t, x, y, a]) => { const e = document.createElement('div'); e.className = 'nm-s'; e.textContent = t; labels.appendChild(e); lab.push({ e, x, y, a }); });
   const pin = document.createElement('div'); pin.className = 'nm-pin';
-  pin.innerHTML = '<span class="nm-pin-dot">P</span><span class="nm-pin-t">Trois Glands<small>13:55</small></span>';
-  labels.appendChild(pin); lab.push({ e: pin, x: M.dest[0], y: M.dest[1], a: null, pin: true });
+  pin.innerHTML = `<span class="nm-pin-dot">${DEST === 'Mudam' ? '<span class="ms f" style="font-size:18px;color:#fff">museum</span>' : 'P'}</span><span class="nm-pin-t">${DEST}<small>${ETA}</small></span>`;
+  labels.appendChild(pin); lab.push({ e: pin, x: DESTXY[0], y: DESTXY[1], a: null, pin: true });
 
   /* ---------- UI hooks ---------- */
-  const $ = s => document.querySelector(s);
+  const $ = s => root.querySelector(s);
   const ui = {
     dist: $('[data-nav="dist"]'), street: $('[data-nav="street"]'), icon: $('[data-nav="icon"]'),
     lanes: $('[data-nav="lanes"]'), then: $('[data-nav="then"]'),
@@ -152,8 +158,9 @@
     }
   }
 
-  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  draw(S0, rot); setTurn(S0); setTrip(S0, 0);
+  const reduce = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || pane.hasAttribute('data-static');
+  if (OFF) { rot = bearing(S0 + OFF); draw(S0 + OFF, rot); }
+  else { draw(S0, rot); setTurn(S0); setTrip(S0, 0); }
   if (reduce) return;
 
   const SPEED = 13.3 / K;               // 48 km/h in px per simulated second
@@ -182,4 +189,5 @@
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+  }
 })();
