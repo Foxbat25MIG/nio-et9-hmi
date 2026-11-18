@@ -54,6 +54,20 @@ Line length in cards ≤ 32 characters; truncate with an ellipsis instead of wra
 
 ---
 
+## 2a. Hierarchy study (Apple HIG)
+
+Reference: Apple Human Interface Guidelines, *Typography* and *Buttons*.
+- Apple: “Adjust font weight, size, and color as needed to emphasize important information and help people visualize hierarchy.”
+- Apple’s own text styles are almost all **Regular**; only *Headline* is Semibold. Hierarchy comes mainly from **size and colour**, not weight.
+- Apple: avoid Ultralight, Thin and Light weights; minimise the number of typefaces.
+
+Applied here:
+1. **Regular (400)** for all body text, rows, numbers and large titles.
+2. **Medium (500)** only for one headline per card (`h3`: song title, plan title), button labels and the selected item.
+3. Secondary information steps down in **colour** (`t1 → t2 → t3`), not weight.
+4. One focal point per pane (Home: the next plan). Everything else sits back: hairline dividers instead of filled rows, grey icons.
+5. Buttons follow Apple’s prominence levels: **filled** (`ink`, once per view) → **tinted** (`sel`, e.g. Go) → **plain/secondary**.
+
 ## 3. Colour · Lavender Light (Day)
 
 | Token | Hex | Role |
@@ -63,10 +77,12 @@ Line length in cards ≤ 32 characters; truncate with an ellipsis instead of wra
 | `s2` | `#eceaf3` | inset controls, hover |
 | `s3` | `#dcd9e7` | placeholders, dashed outlines |
 | `line` | `#dad7e4` | 1 pt card borders |
-| `t1` | `#111014` | primary text |
+| `t1` | `#1f1c29` | primary text (soft plum-black, never pure black) |
 | `t2` | `#625f74` | secondary text, idle icons |
 | `t3` | `#9794a8` | labels, tertiary |
-| `ink` / `on-ink` | `#111014` / `#ffffff` | **selection + primary action** (selected tab, gear, play) |
+| `ink` / `on-ink` | `#2d2840` / `#ffffff` | **A · Deep plum: the one primary action per view** (play, Save as Custom) |
+| `sel` / `on-sel` | `#cddcf7` / `#22304f` | **E · Morning sky: selected state** (dock tab, gear, Serene/Map/Car, drive mode, chips) |
+| `sel-hover` | `#bfd1f3` | hover on a selected item |
 | `route` | `#7a6bf2` | **guidance only**: route line, turn tile, active lane, destination pin, focus ring |
 | `route-soft` | `#e7e3fd` | route halo / tinted backgrounds |
 | `route-done` | `#c9c4dc` | driven part of the route |
@@ -75,7 +91,7 @@ Line length in cards ≤ 32 characters; truncate with an ellipsis instead of wra
 
 **Usage rules**
 1. Violet means “where to go”. Never use it for selection, toggles or decoration.
-2. Black (`ink`) means “selected / do this”. One `ink` element per group.
+2. Morning sky (`sel`) means “selected”. Deep plum (`ink`) means “do this” and appears **once per view** (Apple: one prominent button, the rest tinted or plain). Pure black is not used anywhere.
 3. Red is reserved for limits and warnings, never for branding.
 4. No gradients on UI chrome. The only gradient is the media placeholder tile.
 
@@ -135,14 +151,25 @@ No brand logos, mascots or emoji.
 
 ---
 
+## 6a. Interaction patterns (v2)
+
+| Pattern | Spec |
+|---|---|
+| Nav views | Segmented **Serene · Map · Car** (renamed from Calm). Serene fades the map to 18 % and hides labels and map buttons, keeping route, car and the next turn. Car shows the live surround view. |
+| Media player | Walkman-inspired: modern layout + cassette reels that turn only while playing + a 16-bar level meter (scales with volume). Draggable progress slider; volume slider under it. |
+| Volume | Two sliders, one in the player and one in the dock; always in sync. Speaker icon mutes and restores. |
+| Tap sound | Short soft click on every control, softer tick while dragging sliders. **On by default**; page-level “Tap sounds on/off” switch, remembered per browser. |
+| Drive modes | Tap a mode: values change and briefly highlight. Only **Custom** is editable (segmented options per setting) with **Save as Custom** → toast “Saved to Emma’s profile”. Custom is stored **per driver**. |
+| Blind spot | Indicator → cyclist detected: red map edge + one red icon, camera opens in the side pane and the player compacts; after 4 s it reverses. |
+
 ## 7. States
 
 | State | Treatment |
 |---|---|
 | Default | as specified |
-| Hover (pointer only) | background `s2` |
-| Pressed | scale **0.96**, 120 ms |
-| Selected | `ink` background, `on-ink` text, filled icon |
+| Hover (pointer only) | background `s2` (selected items: `sel-hover`) |
+| Pressed | scale **0.96**, 140 ms + tap sound |
+| Selected | `sel` background, `on-sel` text, filled icon |
 | Focus (keyboard) | 3 pt `route` outline, 2 pt offset |
 | Disabled | `t3` text/icon, no background change, not tappable |
 | Guidance active | `route` (only in navigation contexts) |
@@ -154,9 +181,11 @@ No brand logos, mascots or emoji.
 
 | Item | Value |
 |---|---|
-| Press | 120 ms ease |
-| Hover / colour | 150 ms ease |
-| Panel fade | 600 ms ease |
+| Easing (all controls) | `cubic-bezier(.2,.8,.2,1)` (fast start, soft landing) |
+| Hover / colour | **240 ms** |
+| Press | **140 ms**, scale 0.96 |
+| Panels, view changes | **600 ms** |
+| Rule | one easing and these three durations everywhere in the HMI; no instant state changes |
 | Map | heading-up; rotation eases toward the route bearing (look-ahead 25 m back / 70 m ahead); car fixed at (250, 540) in the map pane |
 | Live demo | drive replays at 2.5× real time; respects `prefers-reduced-motion` (static frame) |
 
