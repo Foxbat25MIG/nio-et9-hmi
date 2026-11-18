@@ -291,3 +291,4 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .clim{width:226px}.clim .t{width:88px;font-weight:400}
 .dk{width:78px}
 .dvol{padding:0 8px}.dvol .sl{width:96px}
+.player.compact{flex:0 0 auto !important}
