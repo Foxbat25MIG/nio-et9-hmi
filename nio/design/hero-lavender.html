@@ -1,118 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NIO ET9 HMI — Drive: Navigation · Lavender Light</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" rel="stylesheet">
-<style>
-:root{
-  /* Lavender Light tokens */
-  --bg:#f3f2f8; --s1:#ffffff; --s2:#eceaf3; --s3:#dcd9e7; --line:#dad7e4;
-  --t1:#111014; --t2:#625f74; --t3:#9794a8;
-  --ink:#111014; --on-ink:#ffffff;            /* selection + primary action */
-  --route:#7a6bf2; --route-soft:#e7e3fd;       /* guidance only */
-  --map-land:#eeedf4; --map-road:#ffffff; --map-road2:#f9f8fc; --map-bldg:#e3e1eb; --map-rail:#c9c5d8;
-  --map-park:#dde8de; --map-green:#e4ebe4; --map-water:#d8dff3; --map-edge:#d8d5e3; --route-done:#c9c4dc;
-  --shadow:0 10px 30px rgba(36,30,72,.10), 0 2px 6px rgba(36,30,72,.06);
-  --r-pane:28px; --r-card:22px; --r-ctl:16px;
-}
-*{box-sizing:border-box;margin:0}
-html,body{background:#e4e2ec}
-body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 24px}
-.wrap{width:min(1440px,100%)}
-.cap{font-size:13px;color:#6b6880;letter-spacing:.04em;margin:0 0 12px}
-.scaler{position:relative;width:100%;aspect-ratio:1440/900;border-radius:calc(32px * var(--s,1));overflow:hidden;box-shadow:0 30px 80px rgba(36,30,72,.18)}
-.frame{position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transform:scale(var(--s,1));background:var(--bg);font-size:20px}
-
-.ms{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;line-height:1;white-space:nowrap;font-size:28px;color:var(--t2);font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 24}
-.f{font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 0,"opsz" 24}
-.num{font-family:"Red Hat Display";font-variant-numeric:tabular-nums}
-
-/* status bar */
-.status{position:absolute;left:36px;right:36px;top:0;height:56px;display:flex;align-items:center;justify-content:space-between;font-size:18px;color:var(--t2)}
-.status .l,.status .r{display:flex;align-items:center;gap:16px;min-width:420px}.status .r{justify-content:flex-end}
-.gear{display:flex;gap:2px;font:500 17px "Red Hat Display";background:var(--s2);border-radius:10px;padding:3px}
-.gear span{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--t3)}
-.gear span.on{background:var(--ink);color:var(--on-ink)}
-.chip{font:500 15px "Red Hat Text";color:var(--t1);background:var(--s1);border:1px solid var(--line);border-radius:999px;padding:5px 12px;display:flex;align-items:center;gap:6px}
-.speed{display:flex;align-items:baseline;gap:4px;color:var(--t1)}.speed b{font:500 24px "Red Hat Display";font-variant-numeric:tabular-nums}.speed small{font-size:14px;color:var(--t2)}
-.limit{width:36px;height:36px;border-radius:50%;border:4px solid #d94a4a;box-shadow:0 0 0 1px rgba(0,0,0,.06);background:#fff;display:flex;align-items:center;justify-content:center;font:700 14px "Red Hat Display";color:var(--t1)}
-.time{font:500 21px "Red Hat Display";color:var(--t1)}
-.status .ms{font-size:22px}
-
-/* content */
-.content{position:absolute;left:24px;right:24px;top:64px;bottom:128px;display:flex;gap:20px}
-.app{flex:2;position:relative;border-radius:var(--r-pane);overflow:hidden;background:var(--map-land)}
-.app::after{content:"";position:absolute;inset:0;border-radius:var(--r-pane);border:2px solid #cfcbdc;pointer-events:none;z-index:6}
-.ctx{flex:1;display:flex;flex-direction:column;gap:16px}
-.card{background:var(--s1);border-radius:var(--r-card);padding:24px;border:1px solid var(--line)}
-.float{position:absolute;background:var(--s1);border-radius:var(--r-card);box-shadow:var(--shadow);z-index:3}
-.lbl{font:500 13px "Red Hat Text";letter-spacing:.08em;color:var(--t3);text-transform:uppercase}
-.h1{font:500 40px "Red Hat Display";letter-spacing:-.01em;color:var(--t1)}
-.h2{font:500 28px "Red Hat Display";color:var(--t1)}
-.b1{font:500 20px "Red Hat Text";color:var(--t1)}
-.b2{font:400 17px "Red Hat Text";color:var(--t2)}
-.row{display:flex;align-items:center;gap:16px}.col{display:flex;flex-direction:column;gap:6px}
-.icb{width:64px;height:64px;border-radius:var(--r-ctl);display:flex;align-items:center;justify-content:center;background:var(--s1)}
-
-/* map controls */
-.mapctl{position:absolute;right:20px;top:20px;display:flex;flex-direction:column;gap:12px;z-index:3}
-.mapctl .icb{box-shadow:var(--shadow)}
-.seg{display:flex;background:var(--s1);border-radius:18px;padding:5px;gap:2px}
-.seg div{height:52px;padding:0 22px;border-radius:13px;display:flex;align-items:center;font:500 17px "Red Hat Text";color:var(--t2)}
-.seg div.on{background:var(--ink);color:var(--on-ink)}
-.lanes{display:flex;gap:6px;background:var(--s2);border-radius:12px;padding:8px 12px;align-items:center}
-.lanes .ms{font-size:26px;color:var(--t3)}.lanes .ms.go{color:var(--route)}
-
-/* media */
-.art{flex:1;border-radius:16px;background:linear-gradient(135deg,#e4e0f7,#d3cdea 60%,#c8c1e4);display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:13px;min-height:150px}
-.prog{height:6px;border-radius:3px;background:var(--s2)}.prog i{display:block;height:100%;width:42%;border-radius:3px;background:var(--ink)}
-.play{width:76px;height:76px;border-radius:50%;background:var(--ink);box-shadow:0 8px 20px rgba(17,16,20,.22);display:flex;align-items:center;justify-content:center}
-.play .ms{color:var(--on-ink);font-size:38px}
-
-/* dock */
-.dock{position:absolute;left:24px;right:24px;bottom:16px;height:100px;border-radius:var(--r-pane);background:var(--s1);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 14px}
-.clim{display:flex;align-items:center;gap:2px;width:260px}.clim.r{justify-content:flex-end}
-.clim .t{font:500 32px "Red Hat Display";width:100px;text-align:center;font-variant-numeric:tabular-nums}
-.clim .icb{background:transparent}
-.clim .side{font-size:12px;color:var(--t3);letter-spacing:.06em}
-.apps{display:flex;gap:4px;align-items:center}
-.dk{width:86px;height:76px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:500 13px "Red Hat Text";color:var(--t3)}
-.dk.on{background:var(--ink);color:var(--on-ink)}
-.dk.on .ms{color:var(--on-ink);font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 0,"opsz" 24}
-.sep{width:1px;height:44px;background:var(--line);margin:0 6px}
-.dk.short{border:1.5px dashed var(--s3)}
-.lv{display:flex;gap:3px}.lv b{width:12px;height:4px;border-radius:2px;background:var(--t2)}.lv b.off{background:var(--s3)}
-/* heading-up map */
-.nm-vp{position:absolute;inset:0;overflow:hidden;transition:opacity .6s ease}
-.nm-vp.fade{opacity:0}
-.nm-world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
-.nm-labels{position:absolute;inset:0;pointer-events:none}
-.nm-labels>div{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform}
-.nm-s{font:600 11.5px/1 "Red Hat Text",sans-serif;color:#7a7690;letter-spacing:.01em;text-shadow:0 0 3px var(--map-land),0 0 3px var(--map-land),0 0 2px var(--map-land)}
-.nm-d{font:600 11px/1 "Red Hat Text",sans-serif;color:#a29eb5;letter-spacing:.16em;text-transform:uppercase;text-shadow:0 0 3px var(--map-land),0 0 3px var(--map-land)}
-.nm-car{position:absolute;left:218px;top:508px;width:64px;height:64px}
-.nm-pin{display:flex;align-items:center;gap:8px;flex-direction:row;background:var(--s1);border-radius:14px;padding:6px 12px 6px 6px;box-shadow:var(--shadow)}
-.nm-pin-dot{width:28px;height:28px;border-radius:9px;background:var(--route);color:#fff;font:700 15px "Red Hat Display";display:flex;align-items:center;justify-content:center}
-.nm-pin.left{flex-direction:row-reverse;padding:6px 6px 6px 12px}.nm-pin.left .nm-pin-t{align-items:flex-end}
-.nm-pin-t{font:500 14px "Red Hat Text";color:var(--t1);display:flex;flex-direction:column;line-height:1.15}.nm-pin-t small{font-size:12px;color:var(--t2)}
-.osm{position:absolute;right:92px;bottom:6px;font:500 10.5px "Red Hat Text",sans-serif;color:var(--t3);opacity:.85}
-/* interaction states (shared) */
-.icb,.dk,.seg div,.play,.chip,[data-press]{transition:transform .12s ease,background-color .15s ease,box-shadow .15s ease;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.icb:hover,.dk:not(.on):hover,.seg div:not(.on):hover{background-color:var(--s2)}
-.icb:active,.dk:active,.seg div:active,.play:active,[data-press]:active{transform:scale(.96)}
-.icb:focus-visible,.dk:focus-visible,.seg div:focus-visible,.play:focus-visible{outline:3px solid var(--route);outline-offset:2px}
-.dk.on:hover{background:#26242c}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <p class="cap">NIO ET9 CENTRE SCREEN · DRIVE: NAVIGATION · LAVENDER LIGHT · 1440 × 900 (2880 × 1800 @2×)</p>
-  <div class="scaler"><div class="frame">
+<link rel="stylesheet" href="../hifi/hifi.css?v=4">
+</head><body><div class="wrap">
+<div class="sitebar"><p class="cap">NIO ET9 CENTRE SCREEN · DRIVE: NAVIGATION · LAVENDER LIGHT · 1440 × 900 (2880 × 1800 @2×)</p><button class="sound" type="button"></button></div>
+<div class="scaler"><div class="frame">
 
     <!-- STATUS BAR -->
     <div class="status">
@@ -128,7 +23,8 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 
     <div class="content">
       <!-- APP PANE: MAP -->
-      <div class="app" data-navmap>
+      <div class="app v-map" data-navmap>
+      <div class="carview"><i class="lane" style="left:300px"></i><i class="lane" style="left:612px"></i><div class="ph" style="width:220px;height:330px;border-radius:90px 90px 70px 70px">car/car-02_surround-view<br>(live, top-down)</div></div>
         <div class="osm">Map data © OpenStreetMap contributors</div>
 
         <!-- next turn -->
@@ -143,7 +39,7 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
           </div>
         </div>
         <!-- view switch -->
-        <div class="float seg" style="left:20px;top:214px"><div>Calm</div><div class="on">Map</div><div>Car</div></div>
+        <div class="float seg" data-views style="left:20px;top:214px"><div>Serene</div><div class="on">Map</div><div>Car</div></div>
         <!-- map controls -->
         <div class="mapctl"><div class="icb"><span class="ms">search</span></div><div class="icb"><span class="ms">layers</span></div><div class="icb"><span class="ms">volume_up</span></div></div>
         <div class="icb float" style="right:20px;bottom:20px"><span class="ms">my_location</span></div>
@@ -160,20 +56,16 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 
       <!-- CONTEXT PANE -->
       <div class="ctx">
-        <div class="card" style="flex:1;display:flex;flex-direction:column;gap:16px">
-          <div class="row" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms" style="font-size:22px">devices</span></div>
-          <div class="art">media/album-01_starman_david-bowie</div>
-          <div class="row" style="justify-content:space-between">
-            <div class="col" style="gap:2px"><span class="b1" style="font-size:22px">Starman</span><span class="b2">David Bowie</span></div>
-            <span class="ms" style="font-size:24px">favorite</span>
-          </div>
-          <div class="col" style="gap:6px"><div class="prog"><i></i></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span>1:50</span><span>4:14</span></div></div>
-          <div class="row" style="justify-content:space-between">
-            <div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div>
-            <div class="play"><span class="ms f">pause</span></div>
-            <div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div>
-          </div>
-        </div>
+        <div class="card player playing grow" style="flex:1;">
+      <div class="row full-only" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms " style="font-size:22px">devices</span></div>
+      <div class="art full-only">media/album-01_starman_david-bowie</div>
+      <div class="deck full-only"><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg><div class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="col" style="gap:2px"><span class="h3">Starman</span><span class="b2">David Bowie</span></div><span class="ms " style="font-size:24px">favorite</span></div>
+      <div class="col full-only" style="gap:6px"><div class="sl p-prog"><i></i><b></b></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span class="p-cur">1:50</span><span>4:14</span></div></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div><div class="play"><span class="ms f" style="">pause</span></div><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div></div>
+      <div class="vol full-only"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div>
+      <div class="compact-row" style="align-items:center;gap:16px"><div class="ph" style="width:64px;height:64px;border-radius:12px;font-size:9px">album-01</div><div class="col" style="gap:2px;flex:1"><span class="h3" style="font-size:19px">Starman</span><span class="b2">David Bowie</span></div><div class="play" style="width:56px;height:56px"><span class="ms f" style="font-size:30px">pause</span></div></div>
+    </div>
         <div class="card" style="display:flex;flex-direction:column;gap:14px">
           <div class="row" style="justify-content:space-between"><span class="lbl">Trip</span><span class="b2" style="font-size:15px">Parking booked · 13:55</span></div>
           <div class="row" style="gap:0;justify-content:space-between">
@@ -185,38 +77,15 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
       </div>
     </div>
 
-    <!-- DOCK -->
-    <div class="dock">
-      <div class="clim">
-        <div class="icb"><span class="ms" style="color:var(--t1)">remove</span></div>
-        <div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div>
-        <div class="icb"><span class="ms" style="color:var(--t1)">add</span></div>
-      </div>
-      <div class="apps">
-        <div class="dk"><span class="ms">home</span>Home</div>
-        <div class="dk on"><span class="ms">navigation</span>Nav</div>
-        <div class="dk"><span class="ms">music_note</span>Media</div>
-        <div class="dk"><span class="ms">call</span>Phone</div>
-        <div class="dk"><span class="ms">directions_car</span>Car</div>
-        <div class="dk"><span class="ms">apps</span>Apps</div>
-        <div class="sep"></div>
-        <div class="dk"><span class="ms" style="color:var(--t1)">graphic_eq</span>NOMI</div>
-        <div class="dk short"><span class="ms">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div>
-      </div>
-      <div class="clim r">
-        <div class="icb"><span class="ms" style="color:var(--t1)">remove</span></div>
-        <div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div>
-        <div class="icb"><span class="ms" style="color:var(--t1)">add</span></div>
-      </div>
-    </div>
-
-  </div></div>
+    <div class="dock"><div class="clim"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div><div class="apps"><div class="dk"><span class="ms " style="">home</span>Home</div><div class="dk on"><span class="ms " style="">navigation</span>Nav</div><div class="dk"><span class="ms " style="">music_note</span>Media</div><div class="dk"><span class="ms " style="">call</span>Phone</div><div class="dk"><span class="ms " style="">directions_car</span>Car</div><div class="dk"><span class="ms " style="">apps</span>Apps</div><div class="sep"></div>
+      <div class="dk"><span class="ms " style="color:var(--t1)">graphic_eq</span>NOMI</div>
+      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div><div class="sep"></div>
+      <div class="dvol"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
+</div></div>
+<p class="disc">Map data © OpenStreetMap contributors. Route: OSRM. Try Serene / Map / Car, the player, the volume and the climate controls.</p>
 </div>
-<script>
-  const fit = () => document.querySelectorAll('.scaler').forEach(s => s.style.setProperty('--s', s.clientWidth / 1440));
-  addEventListener('resize', fit); fit(); if (document.fonts) document.fonts.ready.then(fit);
-</script>
+<script src="../hifi/hifi.js?v=1"></script>
+<script src="../hifi/hmi.js?v=1"></script>
 <script src="../map/lux-map.js?v=2"></script>
 <script src="nav-map.js?v=3"></script>
-</body>
-</html>
+</body></html>

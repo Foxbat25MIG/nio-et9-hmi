@@ -2,8 +2,10 @@
 :root{
   /* Lavender Light tokens */
   --bg:#f3f2f8; --s1:#ffffff; --s2:#eceaf3; --s3:#dcd9e7; --line:#dad7e4;
-  --t1:#111014; --t2:#625f74; --t3:#9794a8;
-  --ink:#111014; --on-ink:#ffffff;            /* selection + primary action */
+  --t1:#1f1c29; --t2:#625f74; --t3:#8f8ba3;
+  --ink:#2d2840; --on-ink:#ffffff;            /* A · deep plum: the one primary action per view */
+  --sel:#cddcf7; --on-sel:#22304f; --sel-hover:#bfd1f3; /* E · morning sky: selected state */
+  --ease:cubic-bezier(.2,.8,.2,1); --dur-hover:240ms; --dur-press:140ms; --dur-panel:600ms;
   --route:#7a6bf2; --route-soft:#e7e3fd;       /* guidance only */
   --map-land:#eeedf4; --map-road:#ffffff; --map-road2:#f9f8fc; --map-bldg:#e3e1eb; --map-rail:#c9c5d8;
   --map-park:#dde8de; --map-green:#e4ebe4; --map-water:#d8dff3; --map-edge:#d8d5e3; --route-done:#c9c4dc;
@@ -189,3 +191,100 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .slider{height:8px;border-radius:4px;background:var(--s3);position:relative}
 .slider i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--ink)}
 .slider b{position:absolute;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+
+/* =========================================================
+   v2 · feedback round (Nov 18): selection = morning sky,
+   primary = deep plum, Apple-style type hierarchy, one easing.
+   ========================================================= */
+/* selection (E) */
+.gear span.on,.seg div.on,.segx div.on,.dk.on,.qbtn.on{background:var(--sel);color:var(--on-sel);border-color:var(--sel)}
+.dk.on .ms,.segx div.on .ms,.qbtn.on .ms{color:var(--on-sel)}
+.dk.on:hover{background:var(--sel-hover)}
+.tog.on{background:#6f8fd0}
+.btn.tint{background:var(--sel);color:var(--on-sel)}.btn.tint .ms{color:var(--on-sel)}
+/* type hierarchy (Apple HIG: hierarchy from size and colour; Regular by default, one emphasis weight) */
+.h1{font-weight:400}.h2{font-weight:400}.b1{font-weight:400}.h3{font-weight:500}
+.em{font-weight:500}
+.metric{font-weight:400}
+.lbl{font-size:12px;color:var(--t3)}
+.chip{font-weight:400}
+.snav div{font-weight:400}.snav div.on{font-weight:500}
+.btn{font-weight:500}
+/* one standard motion for every control */
+.icb,.dk,.seg div,.segx div,.play,.chip,.btn,.qbtn,.snav div,.tog,.tog::after,.mode,.opt span,[data-tap]{transition:background-color var(--dur-hover) var(--ease),color var(--dur-hover) var(--ease),box-shadow var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease),left var(--dur-hover) var(--ease);cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.icb:active,.dk:active,.seg div:active,.segx div:active,.play:active,.btn:active,.qbtn:active,.mode:active,[data-tap]:active{transform:scale(.96)}
+
+/* site bar (outside the frame) */
+.sitebar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 14px}
+.sitebar .cap{margin:0}
+.sound{display:flex;align-items:center;gap:8px;font:500 14px "Red Hat Text";color:#2a2833;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 10px;cursor:pointer}
+.sound .ms{font-size:20px;color:#2a2833}
+
+/* sliders */
+.sl{position:relative;height:6px;border-radius:3px;background:var(--s2);cursor:pointer;touch-action:none}
+.sl::before{content:"";position:absolute;inset:-14px 0}
+.sl i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--ink);width:var(--v,40%)}
+.sl b{position:absolute;top:50%;left:var(--v,40%);width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(36,30,72,.25);opacity:0;transition:opacity var(--dur-hover) var(--ease)}
+.sl:hover b,.sl.drag b{opacity:1}
+
+/* player · Walkman-inspired: modern layout, cassette reels + level meter */
+.player{display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.player .art{min-height:110px}
+.deck{display:flex;align-items:center;gap:14px;height:52px;padding:0 14px;border-radius:14px;background:var(--s2)}
+.reel{width:34px;height:34px;flex:none;animation:spin 2.4s linear infinite;animation-play-state:paused}
+.player.playing .reel{animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+.meter{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:3px;height:26px}
+.meter i{width:5px;border-radius:2px;background:#8b9fd6;height:20%;transition:height .12s linear}
+.vol{display:flex;align-items:center;gap:12px}
+.vol .ms{font-size:22px;color:var(--t2);cursor:pointer}
+.vol .sl{flex:1;height:4px}
+.dvol{display:flex;align-items:center;gap:10px;height:76px;padding:0 14px;border-radius:18px}
+.dvol .ms{font-size:24px;color:var(--t2);cursor:pointer}
+.dvol .sl{width:120px;height:4px}
+.player .compact-row{display:none}
+.player.compact .full-only{display:none}
+.player.compact .compact-row{display:flex}
+@media (prefers-reduced-motion:reduce){.reel{animation:none}}
+
+/* nav views: Serene / Map / Car */
+.app .nm-world svg:first-child{transition:opacity var(--dur-panel) var(--ease)}
+.app .nm-labels,.app .mapctl{transition:opacity var(--dur-panel) var(--ease)}
+.app.v-serene .nm-world svg:first-child{opacity:.18}
+.app.v-serene .nm-labels .nm-s,.app.v-serene .nm-labels .nm-d,.app.v-serene .mapctl{opacity:0}
+.app.v-serene .nm-labels{opacity:1}
+.carview{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,#e9e7f1,#dedbe8);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity var(--dur-panel) var(--ease)}
+.app.v-car .carview{opacity:1}
+.carview .lane{position:absolute;top:0;bottom:0;width:6px;background:repeating-linear-gradient(180deg,#fff 0 34px,transparent 34px 64px);opacity:.9}
+
+/* blind spot loop */
+.bs-red{opacity:0;transition:opacity .5s var(--ease)}
+.bs-on .bs-red{opacity:1}
+.bscam{flex:0 1 0;min-height:0;opacity:0;padding:0 24px;border-width:0;overflow:hidden;transition:flex-grow var(--dur-panel) var(--ease),opacity .4s var(--ease),padding var(--dur-panel) var(--ease)}
+.bs-on .bscam{flex-grow:1;opacity:1;padding:24px;border-width:2px}
+.bs-ind{opacity:0;transition:opacity .3s}
+.bs-sig .bs-ind{opacity:1}
+.mapicon{position:absolute;width:52px;height:52px;border-radius:16px;background:#d94a4a;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(217,74,74,.35);z-index:3}
+.mapicon .ms{color:#fff;font-size:28px}
+
+/* drive modes */
+.mode{flex:1;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:400 19px "Red Hat Text";color:var(--t1)}
+.mode.on{background:var(--sel) !important;color:var(--on-sel);font-weight:500}
+.mode .ms{color:var(--on-sel);opacity:0}.mode.on .ms{opacity:1}
+.kv b{font-weight:500;transition:color .3s}
+.kv b.flash{color:#4f6fb8}
+.opt{display:flex;gap:4px;background:var(--s2);border-radius:12px;padding:3px}
+.opt span{height:36px;padding:0 12px;border-radius:9px;display:flex;align-items:center;font:400 15px "Red Hat Text";color:var(--t2)}
+.opt span.on{background:var(--sel);color:var(--on-sel);font-weight:500}
+.toast{position:absolute;left:50%;bottom:150px;transform:translate(-50%,12px);background:var(--ink);color:#fff;font:500 16px "Red Hat Text";border-radius:999px;padding:12px 20px;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transition:opacity .3s var(--ease),transform .3s var(--ease);z-index:20}
+.toast .ms{color:#fff;font-size:20px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* home (quiet hierarchy) */
+.hrow{display:flex;align-items:center;gap:18px;padding:14px 4px;border-bottom:1px solid var(--line)}
+.hrow:last-child{border-bottom:0}
+.custom>div{display:flex;justify-content:space-between;align-items:center;height:56px;border-bottom:1px solid var(--line);font:400 17px "Red Hat Text";color:var(--t2)}
+.custom>div:last-child{border-bottom:0}
+.player{transition:flex-grow var(--dur-panel) var(--ease)}
+.player.compact{flex-grow:0 !important}
+.app.v-car .nm-labels{opacity:0}

@@ -4,9 +4,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" rel="stylesheet">
-<link rel="stylesheet" href="hifi.css?v=2">
+<link rel="stylesheet" href="hifi.css?v=4">
 </head><body><div class="wrap">
-<p class="cap">NIO ET9 CENTRE SCREEN · BATCH 1 · HIGH FIDELITY · LAVENDER LIGHT · 1440 × 900 (2880 × 1800 @2×) · built from nio/style-guide.md</p>
+<div class="sitebar"><p class="cap">NIO ET9 CENTRE SCREEN · BATCH 1 · HIGH FIDELITY · LAVENDER LIGHT · 1440 × 900 (2880 × 1800 @2×) · built from nio/style-guide.md</p><button class="sound" type="button"></button></div>
 <nav class="toc"><a href="#drive-navigation">1 · Drive: Navigation</a><a href="#blind-spot">2 · Drive: Blind spot view</a><a href="#home">3 · Home</a><a href="#car">4 · Car</a><a href="#car-driving">5 · Car: Driving modes</a><a href="#pet-mode">6 · Pet Mode</a><a href="#parking-suggest">7 · Reserve parking, step 1: Suggest</a><a href="#edit-layout">8 · Edit layout</a><a href="#settings-display">9 · Settings › Display</a></nav>
 <section class="screen" id="drive-navigation"><h2>1 · Drive: Navigation</h2><p class="note">The approved hero. The map is live: Emma drives the real route from Route d’Esch towards Parking Trois Glands at 2.5× speed.</p><div class="scaler"><div class="frame">
 
@@ -24,7 +24,8 @@
 
     <div class="content">
       <!-- APP PANE: MAP -->
-      <div class="app" data-navmap>
+      <div class="app v-map" data-navmap>
+      <div class="carview"><i class="lane" style="left:300px"></i><i class="lane" style="left:612px"></i><div class="ph" style="width:220px;height:330px;border-radius:90px 90px 70px 70px">car/car-02_surround-view<br>(live, top-down)</div></div>
         <div class="osm">Map data © OpenStreetMap contributors</div>
 
         <!-- next turn -->
@@ -39,7 +40,7 @@
           </div>
         </div>
         <!-- view switch -->
-        <div class="float seg" style="left:20px;top:214px"><div>Calm</div><div class="on">Map</div><div>Car</div></div>
+        <div class="float seg" data-views style="left:20px;top:214px"><div>Serene</div><div class="on">Map</div><div>Car</div></div>
         <!-- map controls -->
         <div class="mapctl"><div class="icb"><span class="ms">search</span></div><div class="icb"><span class="ms">layers</span></div><div class="icb"><span class="ms">volume_up</span></div></div>
         <div class="icb float" style="right:20px;bottom:20px"><span class="ms">my_location</span></div>
@@ -56,20 +57,16 @@
 
       <!-- CONTEXT PANE -->
       <div class="ctx">
-        <div class="card" style="flex:1;display:flex;flex-direction:column;gap:16px">
-          <div class="row" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms" style="font-size:22px">devices</span></div>
-          <div class="art">media/album-01_starman_david-bowie</div>
-          <div class="row" style="justify-content:space-between">
-            <div class="col" style="gap:2px"><span class="b1" style="font-size:22px">Starman</span><span class="b2">David Bowie</span></div>
-            <span class="ms" style="font-size:24px">favorite</span>
-          </div>
-          <div class="col" style="gap:6px"><div class="prog"><i></i></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span>1:50</span><span>4:14</span></div></div>
-          <div class="row" style="justify-content:space-between">
-            <div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div>
-            <div class="play"><span class="ms f">pause</span></div>
-            <div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div>
-          </div>
-        </div>
+        <div class="card player playing grow" style="flex:1;">
+      <div class="row full-only" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms " style="font-size:22px">devices</span></div>
+      <div class="art full-only">media/album-01_starman_david-bowie</div>
+      <div class="deck full-only"><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg><div class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="col" style="gap:2px"><span class="h3">Starman</span><span class="b2">David Bowie</span></div><span class="ms " style="font-size:24px">favorite</span></div>
+      <div class="col full-only" style="gap:6px"><div class="sl p-prog"><i></i><b></b></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span class="p-cur">1:50</span><span>4:14</span></div></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div><div class="play"><span class="ms f" style="">pause</span></div><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div></div>
+      <div class="vol full-only"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div>
+      <div class="compact-row" style="align-items:center;gap:16px"><div class="ph" style="width:64px;height:64px;border-radius:12px;font-size:9px">album-01</div><div class="col" style="gap:2px;flex:1"><span class="h3" style="font-size:19px">Starman</span><span class="b2">David Bowie</span></div><div class="play" style="width:56px;height:56px"><span class="ms f" style="font-size:30px">pause</span></div></div>
+    </div>
         <div class="card" style="display:flex;flex-direction:column;gap:14px">
           <div class="row" style="justify-content:space-between"><span class="lbl">Trip</span><span class="b2" style="font-size:15px">Parking booked · 13:55</span></div>
           <div class="row" style="gap:0;justify-content:space-between">
@@ -81,37 +78,16 @@
       </div>
     </div>
 
-    <!-- DOCK -->
-    <div class="dock">
-      <div class="clim">
-        <div class="icb"><span class="ms" style="color:var(--t1)">remove</span></div>
-        <div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div>
-        <div class="icb"><span class="ms" style="color:var(--t1)">add</span></div>
-      </div>
-      <div class="apps">
-        <div class="dk"><span class="ms">home</span>Home</div>
-        <div class="dk on"><span class="ms">navigation</span>Nav</div>
-        <div class="dk"><span class="ms">music_note</span>Media</div>
-        <div class="dk"><span class="ms">call</span>Phone</div>
-        <div class="dk"><span class="ms">directions_car</span>Car</div>
-        <div class="dk"><span class="ms">apps</span>Apps</div>
-        <div class="sep"></div>
-        <div class="dk"><span class="ms" style="color:var(--t1)">graphic_eq</span>NOMI</div>
-        <div class="dk short"><span class="ms">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div>
-      </div>
-      <div class="clim r">
-        <div class="icb"><span class="ms" style="color:var(--t1)">remove</span></div>
-        <div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div>
-        <div class="icb"><span class="ms" style="color:var(--t1)">add</span></div>
-      </div>
-    </div>
-
-  </div></div></section>
-<section class="screen" id="blind-spot"><h2>2 · Drive: Blind spot view</h2><p class="note">Emma indicates right for Avenue Marie-Thérèse. A cyclist is in the right blind spot, so the right camera opens in the context pane and the map edge turns red on that side. It closes 2 s after the indicator stops.</p><div class="scaler"><div class="frame">
+    <div class="dock"><div class="clim"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div><div class="apps"><div class="dk"><span class="ms " style="">home</span>Home</div><div class="dk on"><span class="ms " style="">navigation</span>Nav</div><div class="dk"><span class="ms " style="">music_note</span>Media</div><div class="dk"><span class="ms " style="">call</span>Phone</div><div class="dk"><span class="ms " style="">directions_car</span>Car</div><div class="dk"><span class="ms " style="">apps</span>Apps</div><div class="sep"></div>
+      <div class="dk"><span class="ms " style="color:var(--t1)">graphic_eq</span>NOMI</div>
+      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div><div class="sep"></div>
+      <div class="dvol"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
+</div></div></section>
+<section class="screen" id="blind-spot"><h2>2 · Drive: Blind spot view</h2><p class="note">Loops on the page. Emma indicates right for Avenue Marie-Thérèse; a cyclist comes up on the right. The map edge glows red with a single icon, the right camera opens in the side pane and the music card shrinks. After 4 s the camera closes and the music card returns.</p><div class="scaler"><div class="frame" data-blindspot>
 <div class="status">
       <div class="l"><div class="gear"><span>P</span><span>R</span><span>N</span><span class="on">D</span></div>
         <span class="chip"><span class="ms " style="font-size:18px;color:var(--t1)">speed</span>Comfort</span>
-        <span class="speed"><b>32</b><small>km/h</small></span><span class="limit num">50</span><span class="row" style="gap:4px;color:#2fae6a"><span class="ms f blink" style="color:#2fae6a;font-size:24px">turn_right</span></span></div>
+        <span class="speed"><b>32</b><small>km/h</small></span><span class="limit num">50</span><span class="bs-ind" style="display:flex"><span class="ms f blink" style="color:#2fae6a;font-size:26px">turn_right</span></span></div>
       <div class="time num">13:48</div>
       <div class="r"><span class="ms " style="">bluetooth</span><span class="ms " style="">signal_cellular_alt</span><span class="num" style="color:var(--t1)">412 km</span><span class="ms " style="color:var(--t1)">battery_5_bar</span></div>
     </div>
@@ -121,8 +97,8 @@
       <div class="row" style="gap:18px"><div class="icb" style="background:var(--route);width:72px;height:72px;border-radius:18px"><span class="ms f" style="font-size:48px;color:#fff">turn_right</span></div>
         <div class="col" style="gap:2px"><span class="h1 num">100 m</span><span class="b2">Avenue Marie-Thérèse</span></div></div>
       <div class="row" style="justify-content:space-between"><div class="lanes"><span class="ms">straight</span><span class="ms">straight</span><span class="ms go f">turn_right</span></div><span class="b2" style="font-size:15px">then left onto Bd Joseph II</span></div></div>
-      <div class="edge-warn"></div>
-      <div class="float warnpill" style="left:296px;top:486px"><span class="ic"><span class="ms f" style="">warning</span></span>Cyclist on the right</div>
+      <div class="edge-warn bs-red"></div>
+      <div class="mapicon bs-red" style="left:300px;top:500px"><span class="ms f" style="">pedal_bike</span></div>
       <div class="mapctl"><div class="icb"><span class="ms " style="">search</span></div><div class="icb"><span class="ms " style="">layers</span></div><div class="icb"><span class="ms " style="">volume_up</span></div></div>
       <div class="icb float" style="right:20px;bottom:20px"><span class="ms " style="">my_location</span></div>
       <div class="osm">Map data © OpenStreetMap contributors</div>
@@ -133,24 +109,29 @@
       <div class="row" style="gap:10px;height:60px;padding:0 22px;border-radius:var(--r-ctl);background:var(--s2)"><span class="ms " style="color:var(--t1)">close</span><span class="b1" style="font-size:18px">End</span></div></div>
     </div>
     <div class="ctx">
-      <div class="card grow" style="display:flex;flex-direction:column;gap:14px;border:2px solid #d94a4a">
+      <div class="card bscam" style="display:flex;flex-direction:column;gap:14px;border-style:solid;border-color:#d94a4a">
         <div class="row" style="justify-content:space-between"><div class="row" style="gap:10px"><span class="ms f" style="color:var(--t1);font-size:24px">videocam</span><span class="lbl" style="color:var(--t1)">Right blind spot</span></div><span class="row" style="gap:6px;font:500 13px 'Red Hat Text';color:#d94a4a"><i style="width:8px;height:8px;border-radius:50%;background:#d94a4a;display:block"></i>LIVE</span></div>
         <div class="ph dark" style="flex:1;position:relative;overflow:hidden">camera/blindspot-right_live
-          <div style="position:absolute;left:14px;top:14px;display:flex;gap:6px"><i style="width:44px;height:6px;border-radius:3px;background:#d94a4a;display:block"></i><i style="width:44px;height:6px;border-radius:3px;background:#e8b03a;display:block;opacity:.5"></i><i style="width:44px;height:6px;border-radius:3px;background:#2fae6a;display:block;opacity:.5"></i></div><span style="position:absolute;left:14px;top:28px;font:500 13px 'Red Hat Text';color:#cfcbe0">about 3 m behind</span>
           <div class="warnbar" style="position:absolute;left:14px;right:14px;bottom:14px"><span class="ms f" style="">pedal_bike</span>Cyclist approaching · wait</div></div>
-        <span class="bs">Closes 2 s after the indicator stops</span>
       </div>
-      <div class="card mini">
-      <div class="ph">album-01</div>
-      <div class="col" style="gap:2px;flex:1"><span class="b1">Starman</span><span class="b2">David Bowie</span></div>
-      <div class="play"><span class="ms f" style="">pause</span></div></div>
+      <div class="card player playing grow" style="flex:1;">
+      <div class="row full-only" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms " style="font-size:22px">devices</span></div>
+      <div class="art full-only">media/album-01_starman_david-bowie</div>
+      <div class="deck full-only"><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg><div class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="col" style="gap:2px"><span class="h3">Starman</span><span class="b2">David Bowie</span></div><span class="ms " style="font-size:24px">favorite</span></div>
+      <div class="col full-only" style="gap:6px"><div class="sl p-prog"><i></i><b></b></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span class="p-cur">1:50</span><span>4:14</span></div></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div><div class="play"><span class="ms f" style="">pause</span></div><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div></div>
+      <div class="vol full-only"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div>
+      <div class="compact-row" style="align-items:center;gap:16px"><div class="ph" style="width:64px;height:64px;border-radius:12px;font-size:9px">album-01</div><div class="col" style="gap:2px;flex:1"><span class="h3" style="font-size:19px">Starman</span><span class="b2">David Bowie</span></div><div class="play" style="width:56px;height:56px"><span class="ms f" style="font-size:30px">pause</span></div></div>
+    </div>
     </div>
   </div>
   <div class="dock"><div class="clim"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div><div class="apps"><div class="dk"><span class="ms " style="">home</span>Home</div><div class="dk on"><span class="ms " style="">navigation</span>Nav</div><div class="dk"><span class="ms " style="">music_note</span>Media</div><div class="dk"><span class="ms " style="">call</span>Phone</div><div class="dk"><span class="ms " style="">directions_car</span>Car</div><div class="dk"><span class="ms " style="">apps</span>Apps</div><div class="sep"></div>
       <div class="dk"><span class="ms " style="color:var(--t1)">graphic_eq</span>NOMI</div>
-      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
+      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div><div class="sep"></div>
+      <div class="dvol"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
 </div></div></section>
-<section class="screen" id="home"><h2>3 · Home</h2><p class="note">Parked at home before the trip. Live date and Luxembourg weather; profiles for Emma, Pierre and Ashish; today’s plan leads straight into navigation.</p><div class="scaler"><div class="frame">
+<section class="screen" id="home"><h2>3 · Home</h2><p class="note">Rebuilt on Apple’s hierarchy guidance: one focal point (the next plan), Regular weight for almost everything, secondary information carried by size and grey, and only one filled button on screen (play).</p><div class="scaler"><div class="frame" >
 <div class="status">
       <div class="l"><div class="gear"><span class="on">P</span><span>R</span><span>N</span><span>D</span></div>
         <span class="chip"><span class="ms " style="font-size:18px;color:var(--t1)">speed</span>Comfort</span>
@@ -159,53 +140,57 @@
       <div class="r"><span class="ms " style="">bluetooth</span><span class="ms " style="">signal_cellular_alt</span><span class="num" style="color:var(--t1)">418 km</span><span class="ms " style="color:var(--t1)">battery_5_bar</span></div>
     </div>
   <div class="content">
-    <div class="pane" style="flex-direction:column;gap:20px">
+    <div class="pane" style="flex-direction:column;gap:22px">
       <div class="row" style="justify-content:space-between">
-        <div class="row" style="gap:20px"><div class="ph round" style="width:76px;height:76px;font-size:10px">people/driver-01_emma</div>
-          <div class="col" style="gap:4px"><span class="h1">Good afternoon, Emma</span>
-          <span class="b2 row" style="gap:0;white-space:pre"><span data-live="date">Wednesday 18 November</span> ·  <span class="ms" data-live="wicon" style="font-size:22px">partly_cloudy_day</span> <span data-live="temp">8 °C</span>, <span data-live="wtext">cloudy</span> in Luxembourg</span></div></div>
-        <div class="row" style="gap:8px;background:var(--s1);border-radius:999px;padding:6px">
-          <div class="ph round" style="width:48px;height:48px;font-size:8px;outline:3px solid var(--ink);outline-offset:1px">emma</div>
-          <div class="ph round" style="width:48px;height:48px;font-size:8px">pierre</div>
-          <div class="ph round" style="width:48px;height:48px;font-size:8px">ashish</div>
-          <div class="icb" style="width:48px;height:48px;background:var(--s2);border-radius:50%"><span class="ms " style="font-size:24px;color:var(--t1)">swap_horiz</span></div></div>
+        <div class="row" style="gap:18px"><div class="ph round" style="width:64px;height:64px;font-size:9px">people/driver-01_emma</div>
+          <div class="col" style="gap:2px"><span class="h1" style="font-size:36px">Good afternoon, Emma</span>
+          <span class="b2" style="white-space:nowrap"><span data-live="date">Wednesday 18 November</span> · <span data-live="temp">8 °C</span>, <span data-live="wtext">cloudy</span> in Luxembourg</span></div></div>
+        <div class="row" style="gap:6px">
+          <div class="ph round" style="width:44px;height:44px;font-size:8px;box-shadow:0 0 0 3px var(--sel)">emma</div>
+          <div class="ph round" style="width:44px;height:44px;font-size:8px;opacity:.7">pierre</div>
+          <div class="ph round" style="width:44px;height:44px;font-size:8px;opacity:.7">ashish</div></div>
       </div>
       <div class="row" style="gap:20px;align-items:stretch;flex:1">
-        <div class="card" style="flex:1;display:flex;flex-direction:column;gap:6px">
-          <div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="lbl">Today · 4 plans</span><span class="ms " style="font-size:24px;color:var(--t1)">add</span></div>
-          <div class="row" style="background:var(--s2);border-radius:16px;padding:16px 16px 16px 18px;gap:18px">
-            <span class="metric" style="font-size:22px">14:00</span><div class="col" style="gap:2px;flex:1"><span class="b1">Mudam visit</span><span class="bs">Kirchberg · 16 min drive</span></div>
-            <div class="btn pri sm"><span class="ms f" style="font-size:22px">navigation</span>Go</div></div>
-          <div class="row" style="padding:14px 18px;gap:18px"><span class="metric" style="font-size:22px;color:var(--t2)">16:00</span><span class="b1" style="font-weight:400">Ville Haute walk</span></div><div class="row" style="padding:14px 18px;gap:18px"><span class="metric" style="font-size:22px;color:var(--t2)">18:00</span><span class="b1" style="font-weight:400">Grand Ducal Palace</span></div><div class="row" style="padding:14px 18px;gap:18px"><span class="metric" style="font-size:22px;color:var(--t2)">20:30</span><span class="b1" style="font-weight:400">Dinner at Aké</span></div>
+        <div class="card" style="flex:1.1;display:flex;flex-direction:column">
+          <span class="lbl">Next</span>
+          <div class="row" style="gap:16px;margin:10px 0 18px;align-items:flex-start">
+            <div class="col" style="gap:4px;flex:1"><span class="h2 num" style="font-size:32px">14:00</span><span class="h3" style="font-size:22px">Mudam visit</span><span class="bs">Kirchberg · 16 min drive · leave by 13:40</span></div>
+            <div class="btn tint" style="height:56px"><span class="ms f" style="font-size:22px">navigation</span>Go</div></div>
+          <span class="lbl" style="margin-bottom:2px">Later today</span>
+          <div class="hrow"><span class="num" style="font:400 17px Red Hat Display;color:var(--t2);width:54px">16:00</span><span class="b2" style="color:var(--t1)">Ville Haute walk</span></div><div class="hrow"><span class="num" style="font:400 17px Red Hat Display;color:var(--t2);width:54px">18:00</span><span class="b2" style="color:var(--t1)">Grand Ducal Palace</span></div><div class="hrow"><span class="num" style="font:400 17px Red Hat Display;color:var(--t2);width:54px">20:30</span><span class="b2" style="color:var(--t1)">Dinner at Aké</span></div>
         </div>
         <div class="col" style="flex:1;gap:20px">
-          <div class="card" style="display:flex;flex-direction:column;gap:10px">
+          <div class="card" style="display:flex;flex-direction:column">
             <span class="lbl" style="margin-bottom:4px">Places</span>
-            <div class="row" style="height:56px;border-radius:14px;background:var(--s2);padding:0 16px;gap:14px"><span class="ms " style="color:var(--t1);font-size:24px">home</span><span class="b1" style="flex:1">Home</span><span class="bs num">12 min</span></div><div class="row" style="height:56px;border-radius:14px;background:var(--s2);padding:0 16px;gap:14px"><span class="ms " style="color:var(--t1);font-size:24px">work</span><span class="b1" style="flex:1">Work</span><span class="bs num">9 min</span></div><div class="row" style="height:56px;border-radius:14px;background:var(--s2);padding:0 16px;gap:14px"><span class="ms " style="color:var(--t1);font-size:24px">park</span><span class="b1" style="flex:1">Parc Merl</span><span class="bs num">8 min</span></div>
+            <div class="hrow" data-tap><span class="ms " style="color:var(--t2);font-size:24px">home</span><span class="b2" style="color:var(--t1);flex:1">Home</span><span class="bs num">12 min</span></div><div class="hrow" data-tap><span class="ms " style="color:var(--t2);font-size:24px">work</span><span class="b2" style="color:var(--t1);flex:1">Work</span><span class="bs num">9 min</span></div><div class="hrow" data-tap><span class="ms " style="color:var(--t2);font-size:24px">park</span><span class="b2" style="color:var(--t1);flex:1">Parc Merl</span><span class="bs num">8 min</span></div>
           </div>
           <div class="card" style="flex:1;display:flex;flex-direction:column;gap:12px">
             <span class="lbl">Continue listening</span>
             <div class="row" style="gap:14px;flex:1;align-items:stretch">
-              <div class="col" style="flex:1;gap:8px"><div class="ph" style="flex:1;min-height:90px">media/podcast-01_show</div><span class="b1" style="font-size:16px">Podcast one</span><div class="prog" style="height:4px"><i style="width:62%"></i></div></div><div class="col" style="flex:1;gap:8px"><div class="ph" style="flex:1;min-height:90px">media/podcast-02_show</div><span class="b1" style="font-size:16px">Podcast two</span><div class="prog" style="height:4px"><i style="width:24%"></i></div></div>
+              <div class="col" style="flex:1;gap:8px" data-tap><div class="ph" style="flex:1;min-height:70px">media/podcast-01_show</div><span class="b2" style="font-size:15px;color:var(--t1)">Podcast one</span><div class="sl" style="height:3px;--v:62%;pointer-events:none"><i style="background:var(--t3)"></i></div></div><div class="col" style="flex:1;gap:8px" data-tap><div class="ph" style="flex:1;min-height:70px">media/podcast-02_show</div><span class="b2" style="font-size:15px;color:var(--t1)">Podcast two</span><div class="sl" style="height:3px;--v:24%;pointer-events:none"><i style="background:var(--t3)"></i></div></div>
             </div></div>
         </div>
       </div>
     </div>
-    <div class="ctx"><div class="card grow" style="display:flex;flex-direction:column;gap:16px">
-      <div class="row" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms " style="font-size:22px">devices</span></div>
-      <div class="art">media/album-01_starman_david-bowie</div>
-      <div class="row" style="justify-content:space-between"><div class="col" style="gap:2px"><span class="h3">Starman</span><span class="b2">David Bowie</span></div><span class="ms " style="font-size:24px">favorite</span></div>
-      <div class="col" style="gap:6px"><div class="prog"><i></i></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span>1:50</span><span>4:14</span></div></div>
-      <div class="row" style="justify-content:space-between"><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div><div class="play"><span class="ms f" style="">play_arrow</span></div><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div></div>
+    <div class="ctx"><div class="card player grow" style="flex:1;">
+      <div class="row full-only" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms " style="font-size:22px">devices</span></div>
+      <div class="art full-only">media/album-01_starman_david-bowie</div>
+      <div class="deck full-only"><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg><div class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="col" style="gap:2px"><span class="h3">Starman</span><span class="b2">David Bowie</span></div><span class="ms " style="font-size:24px">favorite</span></div>
+      <div class="col full-only" style="gap:6px"><div class="sl p-prog"><i></i><b></b></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span class="p-cur">1:50</span><span>4:14</span></div></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div><div class="play"><span class="ms f" style="">play_arrow</span></div><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div></div>
+      <div class="vol full-only"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div>
+      <div class="compact-row" style="align-items:center;gap:16px"><div class="ph" style="width:64px;height:64px;border-radius:12px;font-size:9px">album-01</div><div class="col" style="gap:2px;flex:1"><span class="h3" style="font-size:19px">Starman</span><span class="b2">David Bowie</span></div><div class="play" style="width:56px;height:56px"><span class="ms f" style="font-size:30px">play_arrow</span></div></div>
     </div><div class="card" style="display:flex;align-items:center;gap:18px">
       <div class="icb" style="background:var(--s2);width:56px;height:56px"><span class="ms " style="color:var(--t1)">battery_charging_80</span></div>
       <div class="col" style="gap:2px"><span class="b1 num">78 % · 418 km</span><span class="bs">Locked · all doors closed</span></div></div></div>
   </div>
   <div class="dock"><div class="clim"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div><div class="apps"><div class="dk on"><span class="ms " style="">home</span>Home</div><div class="dk"><span class="ms " style="">navigation</span>Nav</div><div class="dk"><span class="ms " style="">music_note</span>Media</div><div class="dk"><span class="ms " style="">call</span>Phone</div><div class="dk"><span class="ms " style="">directions_car</span>Car</div><div class="dk"><span class="ms " style="">apps</span>Apps</div><div class="sep"></div>
       <div class="dk"><span class="ms " style="color:var(--t1)">graphic_eq</span>NOMI</div>
-      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
+      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div><div class="sep"></div>
+      <div class="dvol"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
 </div></div></section>
-<section class="screen" id="car"><h2>4 · Car</h2><p class="note">Controls sit where they are on the car: frunk at the nose, boot at the tail, doors on their sides, tyre pressures at each wheel. Battery and cabin (with live outside air quality and pollen) on the right.</p><div class="scaler"><div class="frame">
+<section class="screen" id="car"><h2>4 · Car</h2><p class="note">Controls sit where they are on the car: frunk at the nose, boot at the tail, doors on their sides, tyre pressures at each wheel. Battery and cabin (with live outside air quality and pollen) on the right.</p><div class="scaler"><div class="frame" >
 <div class="status">
       <div class="l"><div class="gear"><span class="on">P</span><span>R</span><span>N</span><span>D</span></div>
         <span class="chip"><span class="ms " style="font-size:18px;color:var(--t1)">speed</span>Comfort</span>
@@ -254,9 +239,10 @@
   </div>
   <div class="dock"><div class="clim"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div><div class="apps"><div class="dk"><span class="ms " style="">home</span>Home</div><div class="dk"><span class="ms " style="">navigation</span>Nav</div><div class="dk"><span class="ms " style="">music_note</span>Media</div><div class="dk"><span class="ms " style="">call</span>Phone</div><div class="dk on"><span class="ms " style="">directions_car</span>Car</div><div class="dk"><span class="ms " style="">apps</span>Apps</div><div class="sep"></div>
       <div class="dk"><span class="ms " style="color:var(--t1)">graphic_eq</span>NOMI</div>
-      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
+      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div><div class="sep"></div>
+      <div class="dvol"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
 </div></div></section>
-<section class="screen" id="car-driving"><h2>5 · Car: Driving modes</h2><p class="note">ET9 drive modes as one stacked control: the selected mode is ink, the rest fade by step. What the mode changes is listed beside it, so nothing is hidden behind an extra tap.</p><div class="scaler"><div class="frame">
+<section class="screen" id="car-driving"><h2>5 · Car: Driving modes</h2><p class="note">Tap a mode: the values beside it change (and flash). Custom is the only editable mode; choices are saved to the current driver’s profile, so Pierre and Ashish keep their own.</p><div class="scaler"><div class="frame" data-modes data-driver="Emma">
 <div class="status">
       <div class="l"><div class="gear"><span class="on">P</span><span>R</span><span>N</span><span>D</span></div>
         <span class="chip"><span class="ms " style="font-size:18px;color:var(--t1)">speed</span>Comfort</span>
@@ -269,34 +255,41 @@
       <div class="snav"><div class=""><span class="ms " style="">tune</span>Quick controls</div><div class=""><span class="ms " style="">light_mode</span>Lights</div><div class=""><span class="ms " style="">airline_seat_recline_normal</span>Seats</div><div class="on"><span class="ms " style="">speed</span>Driving</div><div class=""><span class="ms " style="">ev_station</span>Charging</div><div class=""><span class="ms " style="">tire_repair</span>Tyres</div><div class=""><span class="ms " style="">settings</span>System</div></div>
       <div class="col" style="flex:1;gap:20px">
         <div class="row" style="gap:20px;align-items:stretch;flex:1">
-          <div style="width:220px;border-radius:var(--r-card);overflow:hidden;display:flex;flex-direction:column"><div style="flex:1;background:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 19px 'Red Hat Text';color:#fff;cursor:pointer">Comfort<span class="ms " style="color:#fff">check</span></div><div style="flex:1;background:#d9d6e4;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 19px 'Red Hat Text';color:var(--t1);cursor:pointer">Sport</div><div style="flex:1;background:#e2dfeb;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 19px 'Red Hat Text';color:var(--t1);cursor:pointer">Eco</div><div style="flex:1;background:#e9e7f1;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 19px 'Red Hat Text';color:var(--t1);cursor:pointer">Snow</div><div style="flex:1;background:#f0eff6;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:500 19px 'Red Hat Text';color:var(--t1);cursor:pointer">Custom</div></div>
-          <div class="card" style="flex:1;display:flex;flex-direction:column;gap:6px">
-            <span class="lbl" style="margin-bottom:6px">Comfort changes</span>
-            <div class="kv"><div>Steering<b>Light</b></div><div>Suspension<b>Soft</b></div><div>Power response<b>Smooth</b></div><div>Regeneration<b>Standard</b></div><div>Traction<b>Normal</b></div></div>
-            <div class="sp"></div><span class="bs">Quiet and balanced. The default for city driving.</span>
+          <div style="width:220px;border-radius:var(--r-card);overflow:hidden;display:flex;flex-direction:column"><div class="mode" data-m="Comfort" style="background:#d9d6e4">Comfort<span class="ms " style="font-size:22px">check</span></div><div class="mode" data-m="Sport" style="background:#e2dfeb">Sport<span class="ms " style="font-size:22px">check</span></div><div class="mode" data-m="Eco" style="background:#e9e7f1">Eco<span class="ms " style="font-size:22px">check</span></div><div class="mode" data-m="Snow" style="background:#f0eff6">Snow<span class="ms " style="font-size:22px">check</span></div><div class="mode" data-m="Custom" style="background:#f6f5fa">Custom<span class="ms " style="font-size:22px">check</span></div></div>
+          <div class="card" style="flex:1;display:flex;flex-direction:column;gap:6px;padding:20px 24px">
+            <span class="lbl m-title" style="margin-bottom:4px">Comfort changes</span>
+            <div class="kv"><div>Steering<b data-k="Steering">Light</b></div><div>Suspension<b data-k="Suspension">Soft</b></div><div>Power response<b data-k="Power response">Smooth</b></div><div>Regeneration<b data-k="Regeneration">Standard</b></div><div>Traction<b data-k="Traction">Normal</b></div></div>
+            <div class="custom" style="display:none"></div>
+            <div class="sp"></div>
+            <div class="row" style="justify-content:space-between;gap:12px"><span class="bs m-desc">Quiet and balanced. The default for city driving.</span><div class="btn pri sm m-save" style="display:none;flex:none"><span class="ms " style="font-size:20px">save</span>Save as Custom</div></div>
           </div>
         </div>
         <span class="lbl">Driving assists</span>
         <div class="row" style="gap:12px">
-          <div class="card" style="flex:1;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px"><span class="b1" style="font-size:17px">Blind spot detection</span><i class="tog on"></i></div><div class="card" style="flex:1;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px"><span class="b1" style="font-size:17px">Camera view on indicating</span><i class="tog on"></i></div>
+          <div class="card" style="flex:1;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px"><span class="b2" style="color:var(--t1)">Blind spot detection</span><i class="tog on"></i></div><div class="card" style="flex:1;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px"><span class="b2" style="color:var(--t1)">Camera view on indicating</span><i class="tog on"></i></div>
         </div>
       </div>
     </div>
-    <div class="ctx"><div class="card grow" style="display:flex;flex-direction:column;gap:16px">
-      <div class="row" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms " style="font-size:22px">devices</span></div>
-      <div class="art">media/album-01_starman_david-bowie</div>
-      <div class="row" style="justify-content:space-between"><div class="col" style="gap:2px"><span class="h3">Starman</span><span class="b2">David Bowie</span></div><span class="ms " style="font-size:24px">favorite</span></div>
-      <div class="col" style="gap:6px"><div class="prog"><i></i></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span>1:50</span><span>4:14</span></div></div>
-      <div class="row" style="justify-content:space-between"><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div><div class="play"><span class="ms f" style="">play_arrow</span></div><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div></div>
+    <div class="ctx"><div class="card player grow" style="flex:1;">
+      <div class="row full-only" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms " style="font-size:22px">devices</span></div>
+      <div class="art full-only">media/album-01_starman_david-bowie</div>
+      <div class="deck full-only"><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg><div class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="col" style="gap:2px"><span class="h3">Starman</span><span class="b2">David Bowie</span></div><span class="ms " style="font-size:24px">favorite</span></div>
+      <div class="col full-only" style="gap:6px"><div class="sl p-prog"><i></i><b></b></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span class="p-cur">1:50</span><span>4:14</span></div></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div><div class="play"><span class="ms f" style="">play_arrow</span></div><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div></div>
+      <div class="vol full-only"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div>
+      <div class="compact-row" style="align-items:center;gap:16px"><div class="ph" style="width:64px;height:64px;border-radius:12px;font-size:9px">album-01</div><div class="col" style="gap:2px;flex:1"><span class="h3" style="font-size:19px">Starman</span><span class="b2">David Bowie</span></div><div class="play" style="width:56px;height:56px"><span class="ms f" style="font-size:30px">play_arrow</span></div></div>
     </div><div class="card" style="display:flex;align-items:center;gap:18px">
       <div class="icb" style="background:var(--s2);width:56px;height:56px"><span class="ms " style="color:var(--t1)">battery_charging_80</span></div>
       <div class="col" style="gap:2px"><span class="b1 num">78 % · 418 km</span><span class="bs">Locked · all doors closed</span></div></div></div>
   </div>
+  <div class="toast"><span class="ms f" style="">check_circle</span>Saved to Emma’s profile</div>
   <div class="dock"><div class="clim"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div><div class="apps"><div class="dk"><span class="ms " style="">home</span>Home</div><div class="dk"><span class="ms " style="">navigation</span>Nav</div><div class="dk"><span class="ms " style="">music_note</span>Media</div><div class="dk"><span class="ms " style="">call</span>Phone</div><div class="dk on"><span class="ms " style="">directions_car</span>Car</div><div class="dk"><span class="ms " style="">apps</span>Apps</div><div class="sep"></div>
       <div class="dk"><span class="ms " style="color:var(--t1)">graphic_eq</span>NOMI</div>
-      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
+      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div><div class="sep"></div>
+      <div class="dvol"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
 </div></div></section>
-<section class="screen" id="pet-mode"><h2>6 · Pet Mode</h2><p class="note">Full screen, for people walking past the car. Big, calm and readable from outside; the outside temperature is live.</p><div class="scaler"><div class="frame">
+<section class="screen" id="pet-mode"><h2>6 · Pet Mode</h2><p class="note">Full screen, for people walking past the car. Big, calm and readable from outside; the outside temperature is live.</p><div class="scaler"><div class="frame" >
 <div class="status" style="justify-content:flex-end;gap:16px"><span class="time num" style="position:absolute;left:50%;transform:translateX(-50%)">14:05</span><span class="r" style="min-width:0"><span class="ms f" style="color:var(--t1)">lock</span><span class="num" style="color:var(--t1)">76 %</span><span class="ms " style="color:var(--t1)">battery_5_bar</span></span></div>
   <div style="position:absolute;left:24px;right:24px;top:64px;bottom:24px;border-radius:var(--r-pane);background:var(--s1);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px">
     <div style="width:112px;height:112px;border-radius:50%;background:var(--route-soft);display:flex;align-items:center;justify-content:center"><span class="ms f" style="font-size:60px;color:var(--route)">pets</span></div>
@@ -310,7 +303,7 @@
     <span class="cap14" style="position:absolute;bottom:22px">Pet Mode · on since 13:52 · Battery stays above 20 %</span>
   </div>
 </div></div></section>
-<section class="screen" id="parking-suggest"><h2>7 · Reserve parking, step 1: Suggest</h2><p class="note">On the way to Mudam, NOMI offers the nearest garage that fits the ET9. One clear action (reserve), two quiet ones, and a voice shortcut.</p><div class="scaler"><div class="frame">
+<section class="screen" id="parking-suggest"><h2>7 · Reserve parking, step 1: Suggest</h2><p class="note">On the way to Mudam, NOMI offers the nearest garage that fits the ET9. One clear action (reserve), two quiet ones, and a voice shortcut.</p><div class="scaler"><div class="frame" >
 <div class="status">
       <div class="l"><div class="gear"><span>P</span><span>R</span><span>N</span><span class="on">D</span></div>
         <span class="chip"><span class="ms " style="font-size:18px;color:var(--t1)">speed</span>Comfort</span>
@@ -347,17 +340,24 @@
         <div class="row" style="gap:10px"><div class="btn sec" style="flex:1">2 more nearby</div><div class="btn sec" style="flex:1">Not now</div></div>
         <span class="bs row" style="gap:8px;justify-content:center"><span class="ms " style="font-size:20px">mic</span>or say “Hey NOMI, reserve parking”</span>
       </div>
-      <div class="card mini">
-      <div class="ph">album-01</div>
-      <div class="col" style="gap:2px;flex:1"><span class="b1">Starman</span><span class="b2">David Bowie</span></div>
-      <div class="play"><span class="ms f" style="">pause</span></div></div>
+      <div class="card player playing compact" style="">
+      <div class="row full-only" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms " style="font-size:22px">devices</span></div>
+      <div class="art full-only">media/album-01_starman_david-bowie</div>
+      <div class="deck full-only"><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg><div class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="col" style="gap:2px"><span class="h3">Starman</span><span class="b2">David Bowie</span></div><span class="ms " style="font-size:24px">favorite</span></div>
+      <div class="col full-only" style="gap:6px"><div class="sl p-prog"><i></i><b></b></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span class="p-cur">1:50</span><span>4:14</span></div></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div><div class="play"><span class="ms f" style="">pause</span></div><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div></div>
+      <div class="vol full-only"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div>
+      <div class="compact-row" style="align-items:center;gap:16px"><div class="ph" style="width:64px;height:64px;border-radius:12px;font-size:9px">album-01</div><div class="col" style="gap:2px;flex:1"><span class="h3" style="font-size:19px">Starman</span><span class="b2">David Bowie</span></div><div class="play" style="width:56px;height:56px"><span class="ms f" style="font-size:30px">pause</span></div></div>
+    </div>
     </div>
   </div>
   <div class="dock"><div class="clim"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div><div class="apps"><div class="dk"><span class="ms " style="">home</span>Home</div><div class="dk on"><span class="ms " style="">navigation</span>Nav</div><div class="dk"><span class="ms " style="">music_note</span>Media</div><div class="dk"><span class="ms " style="">call</span>Phone</div><div class="dk"><span class="ms " style="">directions_car</span>Car</div><div class="dk"><span class="ms " style="">apps</span>Apps</div><div class="sep"></div>
       <div class="dk"><span class="ms " style="color:var(--t1)">graphic_eq</span>NOMI</div>
-      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
+      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div><div class="sep"></div>
+      <div class="dvol"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
 </div></div></section>
-<section class="screen" id="edit-layout"><h2>8 · Edit layout</h2><p class="note">Parked only. Emma has swapped the panes: the context cards now sit on the left. Cards can be dragged, the split changed, and the side pane folded away.</p><div class="scaler"><div class="frame">
+<section class="screen" id="edit-layout"><h2>8 · Edit layout</h2><p class="note">Parked only. Emma has swapped the panes: the context cards now sit on the left. Cards can be dragged, the split changed, and the side pane folded away.</p><div class="scaler"><div class="frame" >
 <div class="status">
       <div class="l"><div class="gear"><span class="on">P</span><span>R</span><span>N</span><span>D</span></div>
         <span class="chip"><span class="ms " style="font-size:18px;color:var(--t1)">speed</span>Comfort</span>
@@ -388,9 +388,10 @@
   </div>
   <div class="dock dim"><div class="clim"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div><div class="apps"><div class="dk on"><span class="ms " style="">home</span>Home</div><div class="dk"><span class="ms " style="">navigation</span>Nav</div><div class="dk"><span class="ms " style="">music_note</span>Media</div><div class="dk"><span class="ms " style="">call</span>Phone</div><div class="dk"><span class="ms " style="">directions_car</span>Car</div><div class="dk"><span class="ms " style="">apps</span>Apps</div><div class="sep"></div>
       <div class="dk"><span class="ms " style="color:var(--t1)">graphic_eq</span>NOMI</div>
-      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
+      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div><div class="sep"></div>
+      <div class="dvol"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
 </div></div></section>
-<section class="screen" id="settings-display"><h2>9 · Settings › Display</h2><p class="note">New screen for the theme switch. Auto follows sunset (live for Luxembourg) and tunnels; Light and Dark lock the theme.</p><div class="scaler"><div class="frame">
+<section class="screen" id="settings-display"><h2>9 · Settings › Display</h2><p class="note">New screen for the theme switch. Auto follows sunset (live for Luxembourg) and tunnels; Light and Dark lock the theme.</p><div class="scaler"><div class="frame" >
 <div class="status">
       <div class="l"><div class="gear"><span class="on">P</span><span>R</span><span>N</span><span>D</span></div>
         <span class="chip"><span class="ms " style="font-size:18px;color:var(--t1)">speed</span>Comfort</span>
@@ -419,23 +420,28 @@
         </div>
       </div>
     </div>
-    <div class="ctx"><div class="card grow" style="display:flex;flex-direction:column;gap:16px">
-      <div class="row" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms " style="font-size:22px">devices</span></div>
-      <div class="art">media/album-01_starman_david-bowie</div>
-      <div class="row" style="justify-content:space-between"><div class="col" style="gap:2px"><span class="h3">Starman</span><span class="b2">David Bowie</span></div><span class="ms " style="font-size:24px">favorite</span></div>
-      <div class="col" style="gap:6px"><div class="prog"><i></i></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span>1:50</span><span>4:14</span></div></div>
-      <div class="row" style="justify-content:space-between"><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div><div class="play"><span class="ms f" style="">play_arrow</span></div><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div></div>
+    <div class="ctx"><div class="card player grow" style="flex:1;">
+      <div class="row full-only" style="justify-content:space-between"><span class="lbl">Now playing</span><span class="ms " style="font-size:22px">devices</span></div>
+      <div class="art full-only">media/album-01_starman_david-bowie</div>
+      <div class="deck full-only"><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg><div class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><svg class="reel" viewBox="-17 -17 34 34"><circle r="16" fill="#fff" stroke="#c9c4dc" stroke-width="1.5"/><circle r="5" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2.4" stroke-linecap="round"><path d="M0 -6V-12"/><path d="M5.2 3L10.4 6"/><path d="M-5.2 3L-10.4 6"/></g></svg></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="col" style="gap:2px"><span class="h3">Starman</span><span class="b2">David Bowie</span></div><span class="ms " style="font-size:24px">favorite</span></div>
+      <div class="col full-only" style="gap:6px"><div class="sl p-prog"><i></i><b></b></div><div class="row num" style="justify-content:space-between;font-size:13px;color:var(--t3)"><span class="p-cur">1:50</span><span>4:14</span></div></div>
+      <div class="row full-only" style="justify-content:space-between"><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_previous</span></div><div class="play"><span class="ms f" style="">play_arrow</span></div><div class="icb" style="background:transparent"><span class="ms f" style="color:var(--t1)">skip_next</span></div></div>
+      <div class="vol full-only"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div>
+      <div class="compact-row" style="align-items:center;gap:16px"><div class="ph" style="width:64px;height:64px;border-radius:12px;font-size:9px">album-01</div><div class="col" style="gap:2px;flex:1"><span class="h3" style="font-size:19px">Starman</span><span class="b2">David Bowie</span></div><div class="play" style="width:56px;height:56px"><span class="ms f" style="font-size:30px">play_arrow</span></div></div>
     </div><div class="card" style="display:flex;align-items:center;gap:18px">
       <div class="icb" style="background:var(--s2);width:56px;height:56px"><span class="ms " style="color:var(--t1)">battery_charging_80</span></div>
       <div class="col" style="gap:2px"><span class="b1 num">78 % · 418 km</span><span class="bs">Locked · all doors closed</span></div></div></div>
   </div>
   <div class="dock"><div class="clim"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">DRIVER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div><div class="apps"><div class="dk"><span class="ms " style="">home</span>Home</div><div class="dk"><span class="ms " style="">navigation</span>Nav</div><div class="dk"><span class="ms " style="">music_note</span>Media</div><div class="dk"><span class="ms " style="">call</span>Phone</div><div class="dk"><span class="ms " style="">directions_car</span>Car</div><div class="dk on"><span class="ms " style="">apps</span>Apps</div><div class="sep"></div>
       <div class="dk"><span class="ms " style="color:var(--t1)">graphic_eq</span>NOMI</div>
-      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
+      <div class="dk short"><span class="ms " style="">airline_seat_recline_extra</span><i class="lv"><b></b><b></b><b class="off"></b></i></div><div class="sep"></div>
+      <div class="dvol"><span class="ms " style="">volume_up</span><div class="sl" data-sync="vol" style="--v:55%"><i></i><b></b></div></div></div><div class="clim r"><div class="icb"><span class="ms " style="color:var(--t1)">remove</span></div><div class="col" style="gap:0;align-items:center"><span class="t">21.5°</span><span class="side">PASSENGER</span></div><div class="icb"><span class="ms " style="color:var(--t1)">add</span></div></div></div>
 </div></div></section>
 <p class="disc">Vehicle figures follow published NIO ET9 specifications where available; some values are adjusted for the design study. Map data © OpenStreetMap contributors. Weather, air quality and sunset: Open-Meteo, live for Luxembourg.</p>
 </div>
 <script src="hifi.js?v=1"></script>
+<script src="hmi.js?v=1"></script>
 <script src="../map/lux-map.js?v=2"></script>
 <script src="../design/nav-map.js?v=3"></script>
 </body></html>
