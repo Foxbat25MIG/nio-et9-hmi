@@ -29,6 +29,7 @@
       b.innerHTML = `<span class="ms">${muted ? 'volume_off' : 'volume_up'}</span>Tap sounds ${muted ? 'off' : 'on'}`;
       b.setAttribute('aria-pressed', String(!muted));
     });
+    document.querySelectorAll('[data-tapsound]').forEach(x => x.classList.toggle('on', !muted));
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('.sound'); if (!b) return;
@@ -49,7 +50,11 @@
   const frameOf = el => el.closest('.frame') || document;
   document.addEventListener('click', e => {
     const t = e.target;
-    const tog = t.closest('.tog'); if (tog) { tog.classList.toggle('on'); return; }
+    const tog = t.closest('.tog'); if (tog) {
+      tog.classList.toggle('on');
+      if (tog.hasAttribute('data-tapsound')) { muted = !tog.classList.contains('on'); try { localStorage.setItem('nio-sound', muted ? 'off' : 'on'); } catch (er) {} paintSound(); }
+      return;
+    }
     const segItem = t.closest('.seg div, .segx div, .opt span');
     if (segItem) {
       [...segItem.parentElement.children].forEach(c => c.classList.toggle('on', c === segItem));
@@ -62,11 +67,29 @@
       return;
     }
     const dk = t.closest('.dk');
+    if (dk && dk.classList.contains('short')) {   // seat-heat shortcut: 0 → 1 → 2 → 3 → 0
+      const bars = dk.querySelectorAll('.lv b'); const lvl = ([...bars].filter(b => !b.classList.contains('off')).length + 1) % 4;
+      bars.forEach((b, i) => b.classList.toggle('off', i >= lvl)); return;
+    }
+    if (dk && dk.hasAttribute('data-go')) { route(dk.closest('.frame'), dk.dataset.go); return; }
     if (dk && !dk.classList.contains('short') && !dk.closest('.dim')) {
       dk.parentElement.querySelectorAll('.dk').forEach(d => d.classList.toggle('on', d === dk)); return;
     }
     const sn = t.closest('.snav div');
-    if (sn) { sn.parentElement.querySelectorAll('div').forEach(d => d.classList.toggle('on', d === sn)); return; }
+    if (sn) {
+      sn.parentElement.querySelectorAll('div').forEach(d => d.classList.toggle('on', d === sn));
+      if (sn.parentElement.hasAttribute('data-pages')) {
+        const name = sn.textContent.replace(sn.querySelector('.ms').textContent, '').trim();
+        sn.closest('.pane').querySelectorAll('.pg').forEach(pg => pg.classList.toggle('on', pg.dataset.page === name));
+      }
+      return;
+    }
+    const go = t.closest('[data-go]');
+    if (go) { route(go.closest('.frame'), go.dataset.go); return; }
+    const sw = t.closest('.sw'); if (sw) { sw.parentElement.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === sw)); return; }
+    const mem = t.closest('.mem .btn:not(.tint)'); if (mem) { mem.parentElement.querySelectorAll('.btn:not(.tint)').forEach(x => x.classList.toggle('on', x === mem)); return; }
+    const pr = t.closest('.prof'); if (pr) { pr.parentElement.querySelectorAll('.prof').forEach(x => { x.classList.toggle('on', x === pr); x.querySelector('.bs').textContent = x === pr ? 'Driving now' : 'Seat, mirrors, Custom mode, music'; }); return; }
+    const fl = t.closest('[data-flip]'); if (fl) { const s = fl.querySelector('span:last-child'); const a = s.textContent; s.textContent = fl.dataset.flip; fl.dataset.flip = a; return; }
     const cb = t.closest('.clim .icb');
     if (cb) {
       const v = cb.parentElement.querySelector('.t');
@@ -83,9 +106,22 @@
     }
   });
 
+  /* ---------- router (prototype): bottom bar + gear switch screens ---------- */
+  const NAMES = { media: 'Media', phone: 'Phone', apps: 'Apps' };
+  function route(fr, to) {
+    if (!fr) return;
+    let scr = fr.querySelector(`[data-screen="${to}"]`);
+    if (!scr) { scr = fr.querySelector('[data-screen="soon"]'); if (scr) scr.querySelector('.soon-t').textContent = NAMES[to] || to; }
+    fr.querySelectorAll('.scr').forEach(s => s.classList.toggle('on', s === scr));
+    fr.querySelectorAll('.dock .dk[data-go]').forEach(d => d.classList.toggle('on', d.dataset.go === to));
+    const nav = to === 'nav';
+    fr.querySelectorAll('[data-ctx="nav"]').forEach(c => c.style.display = nav ? '' : 'none');
+    fr.querySelectorAll('[data-ctx="other"]').forEach(c => c.style.display = nav ? 'none' : '');
+  }
+
   /* ---------- sliders (progress + volume, volume synced per frame) ---------- */
   function setVol(fr, pct) {
-    fr.querySelectorAll('[data-sync="vol"]').forEach(s => s.style.setProperty('--v', pct + '%'));
+    fr.querySelectorAll('[data-sync="vol"]').forEach(s => { s.style.setProperty('--v', pct + '%'); const o = s.parentElement.querySelector('.val'); if (o) o.textContent = pct + ' %'; });
     fr.querySelectorAll('.vol .ms, .dvol .ms').forEach(i => i.textContent = pct === 0 ? 'volume_off' : pct < 40 ? 'volume_down' : 'volume_up');
   }
   let drag = null;
@@ -100,6 +136,13 @@
     const pct = Math.round(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * 100);
     const step = Math.floor(pct / 10); if (step !== drag.last) { if (drag.last !== -1 && frameVol(frameOf(drag.s)) > 0) tick('soft'); drag.last = step; }
     if (drag.s.dataset.sync === 'vol') setVol(frameOf(drag.s), pct);
+    else if (drag.s.dataset.min !== undefined) {
+      drag.s.style.setProperty('--v', pct + '%');
+      const lo = +drag.s.dataset.min, hi = +drag.s.dataset.max, st = +(drag.s.dataset.step || 1);
+      const v = Math.round((lo + (hi - lo) * pct / 100) / st) * st;
+      const out = drag.s.parentElement.querySelector('.val');
+      if (out) out.textContent = (lo < 0 && v > 0 ? '+' : '') + v + (drag.s.dataset.unit || '');
+    }
     else {
       drag.s.style.setProperty('--v', pct + '%');
       const p = drag.s.closest('.player'); if (p) { p._pos = Math.round(p._dur * pct / 100); paintTime(p); }
@@ -153,7 +196,7 @@
   document.querySelectorAll('[data-modes]').forEach(root => {
     const driver = root.dataset.driver || 'Emma';
     const kv = root.querySelector('.kv'), cu = root.querySelector('.custom'), title = root.querySelector('.m-title'), desc = root.querySelector('.m-desc'), save = root.querySelector('.m-save'), toast = root.querySelector('.toast');
-    const chip = root.querySelector('.status .chip');
+    const chip = root.querySelector('.status .chip') || (root.closest('.frame') || document).querySelector('.status .chip');
     function show(m) {
       root.querySelectorAll('.mode').forEach(x => x.classList.toggle('on', x.dataset.m === m));
       if (chip) chip.lastChild.textContent = m;
