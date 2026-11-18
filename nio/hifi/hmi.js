@@ -37,7 +37,7 @@
   });
   paintSound();
 
-  const TAP = '.icb,.dk,.seg div,.segx div,.play,.btn,.qbtn,.snav div,.tog,.mode,.opt span,.chip,.vol .ms,.dvol .ms,[data-tap]';
+  const TAP = '.icb,.dk,.seg div,.segx div,.play,.btn,.qbtn,.snav div,.tog,.mode,.opt span,.chip,[data-tap]'; // mute icons stay silent
   // no tap sounds while the frame's volume is muted
   const frameVol = fr => { const s = fr && fr.querySelector && fr.querySelector('[data-sync="vol"]'); return s ? (parseFloat(getComputedStyle(s).getPropertyValue('--v')) || 0) : 50; };
   document.addEventListener('pointerdown', e => {
@@ -111,13 +111,21 @@
   function paintTime(p) {
     const c = p.querySelector('.p-cur'); if (c) c.textContent = fmt(p._pos);
     p.querySelectorAll('.p-prog').forEach(s => s.style.setProperty('--v', (100 * p._pos / p._dur).toFixed(2) + '%'));
-    // tape moves from the left pack to the right pack as the song plays
-    const f = p._pos / p._dur, rl = 22 - 10 * f, rr = 12 + 10 * f;
-    const L = p.querySelector('.pk-l'), Rr = p.querySelector('.pk-r'), tp = p.querySelector('.tp');
-    if (L && Rr && tp) {
-      L.setAttribute('r', rl.toFixed(1)); Rr.setAttribute('r', rr.toFixed(1));
-      tp.setAttribute('d', `M${(62 + rl * 0.45).toFixed(1)} ${(30 + rl * 0.89).toFixed(1)}L104 59.5L196 59.5L${(238 - rr * 0.45).toFixed(1)} ${(30 + rr * 0.89).toFixed(1)}`);
+    drawTape(p);
+  }
+  // vintage tape: two reels joined by tape over guide rollers and a head; deck spans the cover width
+  const HUB = '<circle r="9" fill="#fff" stroke="#c9c4dc" stroke-width="1.2"/><circle r="3" fill="#cfcae0"/><g stroke="#9b95b5" stroke-width="2" stroke-linecap="round"><path d="M0 -4V-8"/><path d="M3.5 2L7 4"/><path d="M-3.5 2L-7 4"/></g>';
+  function drawTape(p) {
+    const svg = p.querySelector('svg.tape'); if (!svg) return;
+    const w = Math.round(svg.parentElement.offsetWidth || 300);
+    if (p._tw !== w) {
+      p._tw = w; svg.setAttribute('viewBox', `0 0 ${w} 64`);
+      svg.innerHTML = `<rect x="1" y="1" width="${w - 2}" height="62" rx="12" fill="#e4e1ee"/><path class="tp" fill="none" stroke="#4b3f52" stroke-width="2"/><circle class="pk-l" cx="40" cy="30" fill="#4b3f52"/><circle class="pk-r" cx="${w - 40}" cy="30" fill="#4b3f52"/><g transform="translate(40 30)"><g class="reel">${HUB}</g></g><g transform="translate(${w - 40} 30)"><g class="reel">${HUB}</g></g><circle cx="84" cy="56" r="3.5" fill="#fff" stroke="#9b95b5"/><circle cx="${w - 84}" cy="56" r="3.5" fill="#fff" stroke="#9b95b5"/><rect x="${w / 2 - 10}" y="54" width="20" height="8" rx="2" fill="#9b95b5"/>`;
     }
+    const f = p._pos / p._dur, rl = 22 - 10 * f, rr = 12 + 10 * f;
+    svg.querySelector('.pk-l').setAttribute('r', rl.toFixed(1));
+    svg.querySelector('.pk-r').setAttribute('r', rr.toFixed(1));
+    svg.querySelector('.tp').setAttribute('d', `M${(40 + rl * 0.45).toFixed(1)} ${(30 + rl * 0.89).toFixed(1)}L84 59.5L${w - 84} 59.5L${(w - 40 - rr * 0.45).toFixed(1)} ${(30 + rr * 0.89).toFixed(1)}`);
   }
   function setPlaying(p, on) {
     p.classList.toggle('playing', on);
@@ -125,22 +133,13 @@
   }
   const players = [...document.querySelectorAll('.player')];
   players.forEach(p => { p._dur = 254; p._pos = 110; paintTime(p); });
+  window.addEventListener('load', () => players.forEach(p => { p._tw = 0; paintTime(p); }));
   setInterval(() => players.forEach(p => {
     if (!p.classList.contains('playing') || (drag && p.contains(drag.s))) return;
     p._pos = (p._pos + 1) % p._dur; paintTime(p);
   }), 1000);
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Teenage-Engineering-style segmented meter: discrete steps, 8 fps, scales with volume
-  setInterval(() => players.forEach(p => {
-    const cols = p.querySelectorAll('.temeter span'); if (!cols.length) return;
-    const vol = frameVol(frameOf(p)) / 100;
-    const on = p.classList.contains('playing') && !reduce;
-    cols.forEach((c, i) => {
-      const shape = 0.55 + 0.45 * Math.sin((i + 1) / cols.length * Math.PI);
-      const lvl = on ? Math.round(Math.min(6, (1 + Math.random() * 5) * shape * (0.4 + vol))) : 0;
-      c.querySelectorAll('i').forEach((s, k) => { s.className = k < lvl ? (k === lvl - 1 && lvl >= 5 ? 'top' : 'on') : ''; });
-    });
-  }), 125);
+
 
   /* ---------- drive modes (values change per mode; Custom is editable and saved per driver) ---------- */
   const MODES = {

@@ -309,3 +309,23 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .bs-on .bscam{margin-bottom:0}
 .custom .opt{width:300px}
 .custom .opt span{flex:1;justify-content:center;padding:0 8px}
+/* v4 · layered player (smooth compact/expand), width-aware tape, synced car view, custom grid */
+.player{position:relative;display:block}
+.player.grow{flex:1 1 0}
+.player.fixed{flex:none !important;height:112px}
+.p-full{position:absolute;inset:24px;display:flex;flex-direction:column;gap:12px;transition:opacity .4s var(--ease) .3s}
+.p-compact{position:absolute;left:24px;right:24px;top:24px;height:64px;display:flex;align-items:center;gap:16px;opacity:0;pointer-events:none;transition:opacity .3s var(--ease)}
+.player.compact .p-full{opacity:0;pointer-events:none;transition:opacity .2s var(--ease) 0s}
+.player.compact .p-compact{opacity:1;pointer-events:auto;transition:opacity .35s var(--ease) .45s}
+.deck{height:64px;flex:none}
+.tape{width:100%;height:64px}
+[data-blindspot] .ctx .bscam{flex:none;height:0;margin-bottom:-16px;transition:height .8s cubic-bezier(.45,0,.2,1),margin .8s cubic-bezier(.45,0,.2,1),padding .8s cubic-bezier(.45,0,.2,1),opacity .35s var(--ease)}
+[data-blindspot].bs-on .ctx .bscam{height:580px;margin-bottom:0;transition:height .8s cubic-bezier(.45,0,.2,1),margin .8s cubic-bezier(.45,0,.2,1),padding .8s cubic-bezier(.45,0,.2,1),opacity .45s var(--ease) .3s}
+[data-blindspot] .ctx .player{flex:none !important;height:708px;transition:height .8s cubic-bezier(.45,0,.2,1)}
+[data-blindspot].bs-on .ctx .player{height:112px}
+.app.v-car .dash{animation:none}
+.custom>div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:center}
+.custom .opt{width:auto;min-width:0}
+.custom .opt span{min-width:0;flex:1 1 0;padding:0 4px}
+.m-desc{flex:1;min-width:0}
+.app.v-car .mapicon{visibility:hidden}
