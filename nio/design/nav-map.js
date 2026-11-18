@@ -7,7 +7,7 @@
   const pane = document.querySelector('[data-navmap]');
   if (!M || !pane) return;
 
-  const CX = 300, CY = 540;               // car position on screen (px in the 1440×900 frame's map pane)
+  const CX = 250, CY = 540;               // car position on screen (px in the 1440×900 frame's map pane)
   const K = M.k;                          // metres per px
   const R = M.route, S = [0];
   for (let i = 1; i < R.length; i++) S.push(S[i - 1] + Math.hypot(R[i][0] - R[i - 1][0], R[i][1] - R[i - 1][1]));
