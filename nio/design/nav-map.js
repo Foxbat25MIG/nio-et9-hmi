@@ -20,7 +20,7 @@
     const t = (s - S[i - 1]) / ((S[i] - S[i - 1]) || 1);
     return [R[i - 1][0] + t * (R[i][0] - R[i - 1][0]), R[i - 1][1] + t * (R[i][1] - R[i - 1][1])];
   };
-  const bearing = s => { const a = at(s - 12), b = at(s + 30); return Math.atan2(b[0] - a[0], -(b[1] - a[1])) * 180 / Math.PI; };
+  const bearing = s => { const a = at(s - 25), b = at(s + 70); return Math.atan2(b[0] - a[0], -(b[1] - a[1])) * 180 / Math.PI; };
 
   /* ---------- build layers ---------- */
   const X0 = -560, Y0 = -940, W = 1360, H = 1300;
@@ -109,7 +109,7 @@
         if (ln) ui.lanes.innerHTML = ln.map(x => x.endsWith('*') ? `<span class="ms go f">${x.slice(0, -1)}</span>` : `<span class="ms">${x}</span>`).join('');
       }
       const nx = steps[i + 1];
-      if (ui.then) ui.then.textContent = nx ? `then ${nx.m.replace('slight ', '')} onto ${short(nx.n)}` : '';
+      if (ui.then) ui.then.textContent = nx ? `then ${nx.t === 'fork' ? 'keep ' + nx.m.replace('slight ', '') : nx.m} onto ${short(nx.n)}` : '';
     }
   }
   const startClock = 13 * 3600 + 48 * 60 + 10, startDriven = 1.7, startMin = 6;
@@ -157,7 +157,7 @@
   if (reduce) return;
 
   const SPEED = 13.3 / K;               // 48 km/h in px per simulated second
-  const PLAY = 2;                        // play back at 2× real time
+  const PLAY = 2.5;                      // play back at 2.5× real time
   let s = S0, sim = 0, last = null, hold = 1.2;
   function speedFactor(s) {               // slow down through the two turns
     let f = 1;
