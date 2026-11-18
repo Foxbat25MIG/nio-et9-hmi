@@ -329,3 +329,15 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .custom .opt span{min-width:0;flex:1 1 0;padding:0 4px}
 .m-desc{flex:1;min-width:0}
 .app.v-car .mapicon{visibility:hidden}
+/* car view motion: road markings roll under the car; traffic drifts; cyclist passes during the blind-spot event */
+.app.v-car .roadmove{animation:roll 1.6s linear infinite}
+@keyframes roll{from{transform:translateY(0)}to{transform:translateY(384px)}}
+.app.v-car .ego{animation:sway 3.2s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+.app.v-car .car-ahead{animation:ahead 7s ease-in-out infinite alternate}
+@keyframes ahead{from{transform:translateY(0)}to{transform:translateY(-36px)}}
+.app.v-car .car-behind{animation:behind 9s ease-in-out infinite alternate}
+@keyframes behind{from{transform:translateY(0)}to{transform:translateY(28px)}}
+.cyclist{transition:transform 4s linear}
+.bs-on .cyclist{transform:translateY(-70px)}
+@media (prefers-reduced-motion:reduce){.app.v-car .roadmove,.app.v-car .ego,.app.v-car .car-ahead,.app.v-car .car-behind{animation:none}}
