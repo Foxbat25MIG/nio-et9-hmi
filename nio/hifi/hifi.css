@@ -292,3 +292,20 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .dk{width:78px}
 .dvol{padding:0 8px}.dvol .sl{width:96px}
 .player.compact{flex:0 0 auto !important}
+/* v3 · tape deck, TE-style meter, top-down car view, fixes */
+.deck{height:auto;padding:0;background:none;display:block}
+.tape{display:block;width:100%;height:64px}
+.tape .reel{transform-box:fill-box;transform-origin:center;width:auto;height:auto}
+.temeter{display:flex;gap:3px;align-items:flex-end;height:30px;flex:none}
+.temeter span{display:flex;flex-direction:column-reverse;gap:2px}
+.temeter i{display:block;width:6px;height:3px;border-radius:1px;background:#dcd9e6}
+.temeter i.on{background:var(--ink)}
+.temeter i.top{background:#7f9be0}
+.carview{background:#e7e5ef}
+.app.v-car .dash{animation:road .9s linear infinite}
+@keyframes road{to{stroke-dashoffset:-64}}
+@media (prefers-reduced-motion:reduce){.app.v-car .dash{animation:none}}
+.bscam{margin-bottom:-16px;transition:flex-grow var(--dur-panel) var(--ease),opacity .4s var(--ease),padding var(--dur-panel) var(--ease),margin var(--dur-panel) var(--ease)}
+.bs-on .bscam{margin-bottom:0}
+.custom .opt{width:300px}
+.custom .opt span{flex:1;justify-content:center;padding:0 8px}

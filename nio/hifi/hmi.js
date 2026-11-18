@@ -38,8 +38,11 @@
   paintSound();
 
   const TAP = '.icb,.dk,.seg div,.segx div,.play,.btn,.qbtn,.snav div,.tog,.mode,.opt span,.chip,.vol .ms,.dvol .ms,[data-tap]';
+  // no tap sounds while the frame's volume is muted
+  const frameVol = fr => { const s = fr && fr.querySelector && fr.querySelector('[data-sync="vol"]'); return s ? (parseFloat(getComputedStyle(s).getPropertyValue('--v')) || 0) : 50; };
   document.addEventListener('pointerdown', e => {
-    if (e.target.closest('.frame') && e.target.closest(TAP)) tick();
+    const fr = e.target.closest('.frame');
+    if (fr && e.target.closest(TAP) && frameVol(fr) > 0) tick();
   });
 
   /* ---------- selection groups, toggles, climate, views ---------- */
@@ -95,7 +98,7 @@
   function move(e) {
     const r = drag.s.getBoundingClientRect();
     const pct = Math.round(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * 100);
-    const step = Math.floor(pct / 10); if (step !== drag.last) { if (drag.last !== -1) tick('soft'); drag.last = step; }
+    const step = Math.floor(pct / 10); if (step !== drag.last) { if (drag.last !== -1 && frameVol(frameOf(drag.s)) > 0) tick('soft'); drag.last = step; }
     if (drag.s.dataset.sync === 'vol') setVol(frameOf(drag.s), pct);
     else {
       drag.s.style.setProperty('--v', pct + '%');
@@ -108,6 +111,13 @@
   function paintTime(p) {
     const c = p.querySelector('.p-cur'); if (c) c.textContent = fmt(p._pos);
     p.querySelectorAll('.p-prog').forEach(s => s.style.setProperty('--v', (100 * p._pos / p._dur).toFixed(2) + '%'));
+    // tape moves from the left pack to the right pack as the song plays
+    const f = p._pos / p._dur, rl = 22 - 10 * f, rr = 12 + 10 * f;
+    const L = p.querySelector('.pk-l'), Rr = p.querySelector('.pk-r'), tp = p.querySelector('.tp');
+    if (L && Rr && tp) {
+      L.setAttribute('r', rl.toFixed(1)); Rr.setAttribute('r', rr.toFixed(1));
+      tp.setAttribute('d', `M${(62 + rl * 0.45).toFixed(1)} ${(30 + rl * 0.89).toFixed(1)}L104 59.5L196 59.5L${(238 - rr * 0.45).toFixed(1)} ${(30 + rr * 0.89).toFixed(1)}`);
+    }
   }
   function setPlaying(p, on) {
     p.classList.toggle('playing', on);
@@ -120,26 +130,27 @@
     p._pos = (p._pos + 1) % p._dur; paintTime(p);
   }), 1000);
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Teenage-Engineering-style segmented meter: discrete steps, 8 fps, scales with volume
   setInterval(() => players.forEach(p => {
-    const bars = p.querySelectorAll('.meter i'); if (!bars.length) return;
-    const fr = frameOf(p); const vs = fr.querySelector('[data-sync="vol"]');
-    const vol = vs ? (parseFloat(getComputedStyle(vs).getPropertyValue('--v')) || 0) / 100 : 0.6;
+    const cols = p.querySelectorAll('.temeter span'); if (!cols.length) return;
+    const vol = frameVol(frameOf(p)) / 100;
     const on = p.classList.contains('playing') && !reduce;
-    bars.forEach((b, i) => {
-      const mid = 1 - Math.abs(i - (bars.length - 1) / 2) / bars.length;
-      b.style.height = on ? Math.max(12, Math.min(100, (35 + Math.random() * 65) * mid * (0.35 + vol))) + '%' : '12%';
+    cols.forEach((c, i) => {
+      const shape = 0.55 + 0.45 * Math.sin((i + 1) / cols.length * Math.PI);
+      const lvl = on ? Math.round(Math.min(6, (1 + Math.random() * 5) * shape * (0.4 + vol))) : 0;
+      c.querySelectorAll('i').forEach((s, k) => { s.className = k < lvl ? (k === lvl - 1 && lvl >= 5 ? 'top' : 'on') : ''; });
     });
-  }), 130);
+  }), 125);
 
   /* ---------- drive modes (values change per mode; Custom is editable and saved per driver) ---------- */
   const MODES = {
-    Comfort: { Steering: 'Light', Suspension: 'Soft', 'Power response': 'Smooth', Regeneration: 'Standard', Traction: 'Normal', d: 'Quiet and balanced. The default for city driving.' },
-    Sport:   { Steering: 'Firm', Suspension: 'Firm', 'Power response': 'Sharp', Regeneration: 'High', Traction: 'Sport', d: 'Quicker response and a tighter body. More energy use.' },
-    Eco:     { Steering: 'Light', Suspension: 'Standard', 'Power response': 'Gentle', Regeneration: 'High', Traction: 'Normal', d: 'Gentle power and strong regeneration for the most range.' },
-    Snow:    { Steering: 'Light', Suspension: 'Soft', 'Power response': 'Gentle', Regeneration: 'Low', Traction: 'Snow', d: 'Soft power delivery and low regeneration for grip on snow and ice.' },
+    Comfort: { Steering: 'Light', Suspension: 'Soft', Power: 'Smooth', Regeneration: 'Standard', Traction: 'Normal', d: 'Quiet and balanced. The default for city driving.' },
+    Sport:   { Steering: 'Firm', Suspension: 'Firm', Power: 'Sharp', Regeneration: 'High', Traction: 'Sport', d: 'Quicker response and a tighter body. More energy use.' },
+    Eco:     { Steering: 'Light', Suspension: 'Standard', Power: 'Gentle', Regeneration: 'High', Traction: 'Normal', d: 'Gentle power and strong regeneration for the most range.' },
+    Snow:    { Steering: 'Light', Suspension: 'Soft', Power: 'Gentle', Regeneration: 'Low', Traction: 'Snow', d: 'Soft power delivery and low regeneration for grip on snow and ice.' },
   };
-  const OPTS = { Steering: ['Light', 'Standard', 'Firm'], Suspension: ['Soft', 'Standard', 'Firm'], 'Power response': ['Gentle', 'Smooth', 'Sharp'], Regeneration: ['Low', 'Standard', 'High'], Traction: ['Normal', 'Sport', 'Snow'] };
-  const custom = { Emma: { Steering: 'Standard', Suspension: 'Soft', 'Power response': 'Smooth', Regeneration: 'High', Traction: 'Normal' } };
+  const OPTS = { Steering: ['Light', 'Standard', 'Firm'], Suspension: ['Soft', 'Standard', 'Firm'], Power: ['Gentle', 'Smooth', 'Sharp'], Regeneration: ['Low', 'Standard', 'High'], Traction: ['Normal', 'Sport', 'Snow'] };
+  const custom = { Emma: { Steering: 'Standard', Suspension: 'Soft', Power: 'Smooth', Regeneration: 'High', Traction: 'Normal' } };
   document.querySelectorAll('[data-modes]').forEach(root => {
     const driver = root.dataset.driver || 'Emma';
     const kv = root.querySelector('.kv'), cu = root.querySelector('.custom'), title = root.querySelector('.m-title'), desc = root.querySelector('.m-desc'), save = root.querySelector('.m-save'), toast = root.querySelector('.toast');
