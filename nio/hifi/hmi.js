@@ -253,7 +253,11 @@
     const p = fr.querySelector('.player');
     if (p && p.classList.contains('radio')) { const st = [['Radio 100,7', '100.7'], ['RTL Radio Lëtzebuerg', '92.5'], ['Eldoradio', '105.0']]; fr._st = ((fr._st || 0) + dir + 3) % 3; setStation(fr, ...st[fr._st]); return; }
     if (dir < 0 && p && p._pos > 3) { p._pos = 0; paintTime(p); return; }
-    setSong(fr, (fr._song || 0) + dir, true);
+    // skip stays inside what you're listening to: songs step through songs, podcasts through podcasts
+    const cur = SONGS[fr._song || 0] || SONGS[0], kind = cur[4] === 'pod' ? 'pod' : 'music';
+    const list = SONGS.map((s, i) => i).filter(i => (SONGS[i][4] === 'pod' ? 'pod' : 'music') === kind && (kind === 'pod' || SONGS[i][2] < 1200));
+    const at = Math.max(0, list.indexOf(fr._song || 0));
+    setSong(fr, list[(at + dir + list.length) % list.length], true);
   }
   function setStation(fr, name, f) {
     fr.querySelectorAll('.player').forEach(p => {
@@ -603,7 +607,7 @@
   }, 700);
   document.querySelectorAll('.sf-card').forEach(sfPaint);
   document.querySelectorAll('.frame').forEach(fr => { const on = fr.querySelector('.scr.on'); if (on) fr.dataset.scr = on.dataset.screen; });
-  document.querySelectorAll('.player').forEach(p => { const h = p.querySelector('.h3'), s = h && SONGS.find(x => x[0] === h.textContent); if (s && s[3]) setArt(p, { img: s[3] }); });
+  document.querySelectorAll('.player').forEach(p => { const h = p.querySelector('.h3'), i = h ? SONGS.findIndex(x => x[0] === h.textContent) : -1, s = SONGS[i]; if (i >= 0) { const fr = frameOf(p); if (fr._song == null) fr._song = i; } if (s && s[3]) setArt(p, { img: s[3] }); });
   document.querySelectorAll('[data-song] .ph:not(.cov)').forEach(ph => { const s = SONGS.find(x => x[0] === ph.closest('[data-song]').dataset.song.split('|')[0]); if (s && s[3]) { ph.classList.add('cov'); ph.style.backgroundImage = `url(${s[3]})`; ph.textContent = ''; } });
 
   // previews: short tones at the row's own level
