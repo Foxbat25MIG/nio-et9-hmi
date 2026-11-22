@@ -648,3 +648,7 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .av-i{background:linear-gradient(135deg,#e7e3fd,#cddcf7);color:#22304f;font-family:"Red Hat Display";font-weight:500}
 .call-av{display:flex}.call-av .av{box-shadow:0 0 0 6px rgba(255,255,255,.5),0 10px 30px rgba(36,30,72,.15)}
 .prof .av{margin-bottom:2px}.prof.on .av{box-shadow:0 0 0 3px var(--route)}
+.drv{border-radius:50%;cursor:pointer;opacity:.6;transition:opacity var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.drv .av{display:block}
+.drv:hover{opacity:.9}.drv:active{transform:scale(.94)}
+.drv.on{opacity:1}.drv.on .av{box-shadow:0 0 0 3px var(--sel),0 0 0 5px var(--route)}

@@ -58,6 +58,12 @@
       return;
     }
     if (pClick(t) || calClick(t) || sndClick(t)) return;
+    const drv = t.closest('[data-drv]');
+    if (drv) { const fr = frameOf(drv), n = drv.dataset.drv;
+      drv.parentElement.querySelectorAll('[data-drv]').forEach(d => d.classList.toggle('on', d === drv));
+      fr.querySelectorAll('.drv-n').forEach(x => x.textContent = n);
+      fr.querySelectorAll('.prof').forEach(pf => { const on = pf.querySelector('.h3') && pf.querySelector('.h3').textContent === n; pf.classList.toggle('on', on); const s = pf.querySelector('.bs'); if (s) s.textContent = on ? 'Driving now' : 'Seat, mirrors, Custom mode, music'; });
+      toast(fr, `Welcome back, ${n} · seat, mirrors and music restored`); return; }
     const mv = t.closest('[data-mv]'); if (mv) { g2048Move(mv.closest('.gamewrap'), mv.dataset.mv); return; }
     if (t.closest('[data-g2048-new]')) { g2048New(t.closest('.gamewrap')); return; }
     const mk = t.closest('[data-mk]'); if (mk) { minesTap(mk); return; }
