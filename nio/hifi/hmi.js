@@ -667,12 +667,15 @@
   const CY = new Date().getFullYear();
   const CAT = { work: '#cddcf7', art: '#f3dde4', hike: '#d5ead8', ski: '#d5ead8', life: '#e9dcf3' };
   const EVENTS = [
-    [11, 22, '14:00', 'Mudam visit', 'Kirchberg', 'art'], [11, 22, '16:00', 'Ville Haute walk', 'Old town', 'life'], [11, 22, '18:00', 'Grand Ducal Palace', 'Tour', 'art'], [11, 22, '20:30', 'Dinner at Aké', 'Booked by Ashish', 'life'],
     [11, 24, '10:00', 'Client walkthrough', 'Limpertsberg apartment', 'work'], [11, 26, '19:00', 'Gallery opening', 'Casino Luxembourg', 'art'],
     [11, 28, '08:30', 'Hike · Mullerthal Trail', 'Route 1, Echternach', 'hike'], [12, 2, '11:00', 'Fabric and tile samples', 'Studio', 'work'],
     [12, 11, 'All day', 'Ski weekend', 'Saas-Fee, until Sunday', 'ski'], [12, 12, 'All day', 'Ski weekend', 'Saas-Fee', 'ski'], [12, 13, 'All day', 'Ski weekend', 'Saas-Fee', 'ski'],
     [12, 17, '18:30', 'Christmas market sketch walk', "Place d'Armes", 'art']].map(e => ({ d: new Date(CY, e[0] - 1, e[1]), t: e[2], n: e[3], w: e[4], c: e[5] }));
-  const IDEAS = [['Showroom visit', 'Kitchen supplier, Bertrange', 'work'], ['Museum late', 'MNHA', 'art'], ['Hike · Schiessentümpel loop', 'Mullerthal', 'hike'], ['Lunch with Ashish', 'Grund', 'life'],
+  // today's plan (matches Home) and tomorrow's lunch with Ashish (matches his message), always relative to the real date
+  const TD = new Date(); TD.setHours(0, 0, 0, 0); const dPlus = k => new Date(TD.getFullYear(), TD.getMonth(), TD.getDate() + k);
+  EVENTS.push({ d: dPlus(0), t: '14:00', n: 'Mudam visit', w: 'Kirchberg', c: 'art' }, { d: dPlus(0), t: '16:00', n: 'Ville Haute walk', w: 'Old town', c: 'life' },
+    { d: dPlus(0), t: '18:00', n: 'Grand Ducal Palace', w: 'Tour', c: 'art' }, { d: dPlus(1), t: '14:00', n: 'Lunch with Ashish', w: 'Aké', c: 'life' });
+  const IDEAS = [['Showroom visit', 'Kitchen supplier, Bertrange', 'work'], ['Museum late', 'MNHA', 'art'], ['Hike · Schiessentümpel loop', 'Mullerthal', 'hike'], ['Coffee with Bora', 'Grund', 'life'],
     ['Design review', 'Clausen loft', 'work'], ['Life drawing class', 'Studio Bonnevoie', 'art'], ['Ski pass renewal', 'Online', 'life'], ['Moodboard session', 'Studio', 'work'], ['Hike · Müllerthal sunrise', 'Berdorf', 'hike']];
   const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   const evOn = d => EVENTS.filter(e => sameDay(e.d, d)).sort((a, b) => a.t.localeCompare(b.t));
