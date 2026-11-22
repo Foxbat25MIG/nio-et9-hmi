@@ -524,7 +524,9 @@
   function sndTabs(snd, k) { snd.querySelectorAll('.snd-tabs div').forEach(d => d.classList.toggle('on', d.dataset.sndGo === k)); }
   // scrolling the page lights up the section you are in
   document.addEventListener('scroll', e => {
-    const snd = e.target; if (!snd.classList || !snd.classList.contains('snd') || snd._jump) return;
+    const snd = e.target; if (!snd.classList || !snd.classList.contains('snd')) return;
+    snd.classList.toggle('scrolled', snd.scrollTop > 4);
+    if (snd._jump) return;
     const top = snd.getBoundingClientRect().top + snd.querySelector('.snd-tabs').offsetHeight + 24;
     let cur = 'vol'; snd.querySelectorAll('.snd-sec').forEach(s => { if (s.getBoundingClientRect().top <= top) cur = s.dataset.sec; });
     if (snd.scrollTop + snd.clientHeight >= snd.scrollHeight - 4) cur = 'car';

@@ -629,3 +629,8 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .snd-tabs div:hover{background:var(--s2)}
 .snd-tabs div.on{background:var(--sel);color:var(--on-sel);font-weight:500}
 .snd-sec{display:flex;flex-direction:column;gap:16px;margin-bottom:16px}
+/* frosted category bar: content scrolling under it blurs, a soft fade hints there is more beneath */
+.snd-tabs{background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border:1px solid rgba(255,255,255,.7);transition:box-shadow .3s var(--ease)}
+.snd-tabs::after{content:"";position:absolute;left:12px;right:12px;top:100%;height:18px;pointer-events:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);-webkit-mask:linear-gradient(#000,transparent);mask:linear-gradient(#000,transparent);opacity:0;transition:opacity .3s var(--ease)}
+.snd.scrolled .snd-tabs{box-shadow:0 10px 28px rgba(36,30,72,.12)}
+.snd.scrolled .snd-tabs::after{opacity:1}
