@@ -790,3 +790,12 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .wt{transform:translateY(-6px) scale(.98);transform-origin:top left}
 .app.noroute .wt,.app.wt-open .wt{transform:none}
 .app.noroute .carview .cv-chip{transform:translateX(-10px)}
+/* Where-to card: height glides, contents fade in, view switch always stays */
+.app.wt-cover .seg[data-views]{opacity:1;pointer-events:auto}
+.wt-card{overflow:hidden;transition:height .6s cubic-bezier(.2,.8,.2,1)}
+.wt-body{flex:1 1 auto}
+.wt-list{flex:1 1 auto;min-height:0;max-height:none}
+.app.wt-kbon .wt-list{max-height:none;flex:1 1 0;min-height:96px}
+@keyframes wtIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.app.wt-open .wt-body,.app.wt-preview .wt-prev,.app.wt-kbon .wt-keys,.wt-list>*{animation:wtIn .45s cubic-bezier(.2,.8,.2,1) both}
+.wt-quick{animation:wtIn .45s cubic-bezier(.2,.8,.2,1) both}

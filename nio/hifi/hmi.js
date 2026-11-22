@@ -836,6 +836,18 @@
       + '<span class="lbl" style="margin-top:8px">Recent</span>' + PLACES.map((p, i) => [p, i]).filter(([p]) => p[5] === 'recent').map(([p, i]) => prow(p, i)).join('');
     list.innerHTML = h;
   }
+  // every change to the Where-to card glides: measure, change, animate height on the 600 ms panel curve
+  function wtMorph(app, change) {
+    const card = app.querySelector('.wt-card'); if (!card) { change(); return; }
+    const h0 = card.getBoundingClientRect().height / (app.getBoundingClientRect().height / app.offsetHeight || 1);
+    card.style.transition = 'none'; card.style.height = 'auto';
+    change();
+    const h1 = card.offsetHeight;
+    card.style.height = h0 + 'px'; card.offsetHeight; card.style.transition = '';
+    card.style.height = h1 + 'px'; card._targetH = h1;
+    clearTimeout(card._mt); card._mt = setTimeout(() => { card.style.height = ''; card._targetH = null; }, 650);
+    stackLeft(app);
+  }
   function wtOpen(app, on) { app.classList.toggle('wt-open', on); if (!on) { app.classList.remove('wt-kbon'); app.classList.remove('wt-preview'); } }
   function wtPreview(app, i) {
     const p = PLACES[i]; app._wt.sel = i;
@@ -866,31 +878,35 @@
     const app = t.closest('.app[data-navmap]');
     const undo = t.closest('[data-undo]'); if (undo) { const el = undo.closest('.utoast'); if (el._app) el._app.classList.remove('noroute'); el.classList.remove('show'); return true; }
     if (!app || !app._wt) return false;
-    if (t.closest('[data-endroute]')) { routeEnd(app); return true; }
-    if (t.closest('[data-whereto]')) { wtOpen(app, !app.classList.contains('wt-open')); return true; }
+    if (t.closest('[data-endroute]')) { wtMorph(app, () => routeEnd(app)); return true; }
+    if (t.closest('[data-whereto]')) { wtMorph(app, () => wtOpen(app, !app.classList.contains('wt-open'))); return true; }
     if (!t.closest('.wt')) return false;
     const W = app._wt;
-    if (t.closest('[data-wt-close]')) { if (app.classList.contains('wt-preview')) app.classList.remove('wt-preview'); else { wtOpen(app, false); W.q = ''; W.cat = null; wtList(app); } return true; }
-    if (t.closest('[data-wt-kb]')) { const on = !app.classList.contains('wt-kbon'); wtOpen(app, true); app.classList.remove('wt-preview'); app.classList.toggle('wt-kbon', on); return true; }
-    const k = t.closest('[data-wt-key]'); if (k) { W.q = k.dataset.wtKey === '⌫' ? W.q.slice(0, -1) : (W.q + k.dataset.wtKey).replace(/^ /, ''); if (W.q.length === 1) W.q = W.q.toUpperCase(); W.cat = null; wtList(app); return true; }
+    if (t.closest('[data-wt-close]')) { wtMorph(app, () => { if (app.classList.contains('wt-preview')) app.classList.remove('wt-preview'); else { wtOpen(app, false); W.q = ''; W.cat = null; wtList(app); } }); return true; }
+    if (t.closest('[data-wt-kb]')) { const on = !app.classList.contains('wt-kbon'); wtMorph(app, () => { wtOpen(app, true); app.classList.remove('wt-preview'); app.classList.toggle('wt-kbon', on); }); return true; }
+    const k = t.closest('[data-wt-key]'); if (k) { wtMorph(app, () => { W.q = k.dataset.wtKey === '⌫' ? W.q.slice(0, -1) : (W.q + k.dataset.wtKey).replace(/^ /, ''); if (W.q.length === 1) W.q = W.q.toUpperCase(); W.cat = null; wtList(app); }); return true; }
     if (t.closest('[data-wt-mic]')) {
-      wtOpen(app, true); app.classList.remove('wt-preview', 'wt-kbon'); const q = app.querySelector('.wt-q'); W.q = ''; W.cat = null; wtList(app); q.textContent = 'Listening…'; app.classList.add('wt-listen');
-      const word = 'Mudam'; let n = 0; setTimeout(function typeIt() { n++; W.q = word.slice(0, n); wtList(app); if (n < word.length) setTimeout(typeIt, 120); else app.classList.remove('wt-listen'); }, 1100); return true; }
-    const c = t.closest('[data-wt-cat]'); if (c) { W.cat = W.cat === c.dataset.wtCat ? null : c.dataset.wtCat; W.q = ''; wtOpen(app, true); app.classList.remove('wt-preview'); wtList(app); return true; }
-    const pl = t.closest('[data-wt-place]'); if (pl) { wtPreview(app, +pl.dataset.wtPlace); return true; }
-    if (t.closest('[data-wt-back]')) { app.classList.remove('wt-preview'); return true; }
+      const q = app.querySelector('.wt-q'); wtMorph(app, () => { wtOpen(app, true); app.classList.remove('wt-preview', 'wt-kbon'); W.q = ''; W.cat = null; wtList(app); }); q.textContent = 'Listening…'; app.classList.add('wt-listen');
+      const word = 'Mudam'; let n = 0; setTimeout(function typeIt() { n++; W.q = word.slice(0, n); wtMorph(app, () => wtList(app)); if (n < word.length) setTimeout(typeIt, 120); else app.classList.remove('wt-listen'); }, 1100); return true; }
+    const c = t.closest('[data-wt-cat]'); if (c) { wtMorph(app, () => { W.cat = W.cat === c.dataset.wtCat ? null : c.dataset.wtCat; W.q = ''; wtOpen(app, true); app.classList.remove('wt-preview'); wtList(app); }); return true; }
+    const pl = t.closest('[data-wt-place]'); if (pl) { wtMorph(app, () => wtPreview(app, +pl.dataset.wtPlace)); return true; }
+    if (t.closest('[data-wt-back]')) { wtMorph(app, () => app.classList.remove('wt-preview')); return true; }
     if (t.closest('[data-wt-go]')) { routeStart(app, W.sel); return true; }
-    if (t.closest('.wt-bar')) { wtOpen(app, true); return true; }
+    if (t.closest('.wt-bar')) { if (!app.classList.contains('wt-open')) wtMorph(app, () => wtOpen(app, true)); return true; }
     return true;
   }
   // left column: top card, view switch and car-view chips always stack with the same 16 px gap
   function stackLeft(app) {
     if (!app.offsetParent) return;
     const G = 16, noroute = app.classList.contains('noroute'), open = app.classList.contains('wt-open'), car = app.classList.contains('v-car');
-    const top = noroute ? app.querySelector('.wt .wt-card') : app.querySelector('.tcard');
+    const card = app.querySelector('.wt .wt-card');
+    const top = noroute || open ? card : app.querySelector('.tcard');
     const seg = app.querySelector('.seg[data-views]');
-    const chips = car ? [noroute ? null : app.querySelector('.carview .cv-chip'), app.querySelector('.carview .tl-chip')].filter(Boolean) : [];
-    let y = 20 + (top ? top.offsetHeight : 0) + G;
+    // the open panel never covers the view switch: cap its height so Serene / Map / Car always fits below
+    if (card) card.style.maxHeight = (app.offsetHeight - 20 - G - (seg ? seg.offsetHeight : 0) - 20) + 'px';
+    const chips = car && !open ? [noroute ? null : app.querySelector('.carview .cv-chip'), app.querySelector('.carview .tl-chip')].filter(Boolean) : [];
+    const th = top ? (top === card && card._targetH ? card._targetH : top.offsetHeight) : 0;
+    let y = 20 + th + G;
     [seg, ...chips].forEach(el => { if (!el) return; const v = y + 'px'; if (el.style.top !== v) el.style.top = v; y += el.offsetHeight + G; });
     app.classList.toggle('wt-cover', open);
   }
