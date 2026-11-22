@@ -167,6 +167,7 @@
   const SPEED = 13.3 / K;               // 48 km/h in px per simulated second
   const PLAY = 2.5;                      // play back at 2.5× real time
   let s = S0, sim = 0, last = null, hold = 1.2, shown = 48;
+  pane._navRestart = () => { s = S0; sim = 0; rot = bearing(S0); lastStep = null; hold = 0.8; draw(s, rot); setTurn(s); setTrip(s, 0); };
   function speedFactor(s) {               // slow down through the two turns
     let f = 1;
     for (const st of steps) { const d = Math.abs(st.s - s); if (d < 22) f = Math.min(f, 0.45 + 0.55 * d / 22); }

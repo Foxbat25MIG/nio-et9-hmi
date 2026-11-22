@@ -57,7 +57,7 @@
       if (tog.hasAttribute('data-tapsound')) { muted = !tog.classList.contains('on'); try { localStorage.setItem('nio-sound', muted ? 'off' : 'on'); } catch (er) {} paintSound(); }
       return;
     }
-    if (pClick(t) || calClick(t) || sndClick(t)) return;
+    if (navClick(t) || pClick(t) || calClick(t) || sndClick(t)) return;
     const drv = t.closest('[data-drv]');
     if (drv) { const fr = frameOf(drv), n = drv.dataset.drv;
       drv.parentElement.querySelectorAll('[data-drv]').forEach(d => d.classList.toggle('on', d === drv));
@@ -442,6 +442,7 @@
     }
     const navOn = () => !fr.querySelector('[data-screen]') || fr.querySelector('[data-screen="nav"].on');
     let t0 = null, bsWas = false, wasCar = false;
+    app._dashRestart = () => { t0 = null; phase = ''; };
     function setBS(on) {
       if (on === bsWas) return; bsWas = on;
       fr.classList.toggle('bs-on', on); if (pl) pl.classList.toggle('compact', on);
@@ -789,6 +790,109 @@
         }).catch(() => { c.querySelector('.wc-t').textContent = 'weather unavailable'; });
     });
   }
+
+  /* ---------- Navigation: end route (with Undo) → free drive with a "Where to?" panel ---------- */
+  const PLACES = [
+    // [name, sub, km, min, icon, group]
+    ['Home', 'Belair · Rue de Hollerich', 6.2, 14, 'home', 'fav'], ['Work', 'Studio · Clausen', 4.1, 11, 'work', 'fav'], ['Mudam', 'Museum · Kirchberg', 3.3, 9, 'museum', 'fav'],
+    ['Parc Merl', 'Park · Merl', 2.8, 8, 'park', 'fav'], ['Aké', 'Lunch with Ashish · tomorrow 14:00', 3.6, 10, 'restaurant', 'fav'],
+    ['Parking Trois Glands', 'Underground · Kirchberg', 3.0, 7, 'local_parking', 'recent'], ['Casino Luxembourg', 'Gallery · Ville Haute', 2.4, 7, 'palette', 'recent'],
+    ["Place d'Armes", 'Square · Ville Haute', 2.1, 6, 'location_city', 'recent'], ['Kirchberg Shopping', 'Shopping · Kirchberg', 4.0, 10, 'shopping_bag', 'recent'],
+    ['Charging hub · Kirchberg', '8 fast chargers · 4 free', 3.9, 10, 'ev_station', 'Charging'], ["Charging hub · Cloche d'Or", '6 fast chargers · 2 free', 5.4, 13, 'ev_station', 'Charging'], ['Fast charger · Gare', '2 chargers · 1 free', 1.6, 5, 'ev_station', 'Charging'],
+    ['Power Swap · Bertrange', 'Battery swap · about 5 min', 7.8, 15, 'battery_charging_full', 'Swap'], ['Power Swap · Kirchberg', 'Battery swap · about 5 min', 4.4, 11, 'battery_charging_full', 'Swap'],
+    ['Parking Trois Glands ', '86 free · fits 2.00 m', 3.0, 7, 'local_parking', 'Parking'], ['Kirchberg Shopping parking', '210 free · fits 2.10 m', 4.0, 10, 'local_parking', 'Parking'], ['Parking Coque', '41 free · fits 1.90 m', 4.6, 12, 'local_parking', 'Parking'],
+    ['Café · Grund', 'Coffee · open until 18:00', 2.6, 8, 'local_cafe', 'Coffee'], ['Coffee bar · Ville Haute', 'Coffee · open until 19:00', 2.2, 7, 'local_cafe', 'Coffee'], ['Café · Kirchberg', 'Coffee · open until 20:00', 3.5, 9, 'local_cafe', 'Coffee'],
+    ['Aké ', 'Restaurant · Ville Haute', 3.6, 10, 'restaurant', 'Food'], ["Brasserie · Place d'Armes", 'Restaurant · open now', 2.1, 6, 'restaurant', 'Food'], ['Bistro · Clausen', 'Restaurant · open now', 3.1, 9, 'restaurant', 'Food']];
+  const CATS = [['Charging', 'ev_station'], ['Swap', 'battery_charging_full'], ['Parking', 'local_parking'], ['Coffee', 'local_cafe'], ['Food', 'restaurant']];
+  const clockAdd = m => { const t = 13 * 60 + 48 + m; return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
+  const prow = (p, i) => `<div class="wt-row" data-wt-place="${i}" data-tap><span class="wt-ic"><span class="ms">${p[4]}</span></span><div class="col" style="gap:0;flex:1;min-width:0"><span class="b2 ell" style="color:var(--t1)">${p[0].trim()}</span><span class="bs ell">${p[1]}</span></div><div class="col" style="gap:0;align-items:flex-end"><span class="b2 num" style="color:var(--t1)">${p[3]} min</span><span class="bs num">${p[2].toFixed(1)} km</span></div></div>`;
+  const KEYS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
+  function wtBuild(app) {
+    const wt = document.createElement('div'); wt.className = 'wt';
+    wt.innerHTML = `<div class="wt-card float">
+      <div class="wt-bar"><span class="ms" style="color:var(--t2)">search</span><span class="wt-q">Where to?</span>
+        <div class="icb wt-kb" data-wt-kb data-tap title="Keyboard"><span class="ms">keyboard</span></div><div class="icb wt-mic" data-wt-mic data-tap title="Hey NOMI"><span class="ms">mic</span></div>
+        <div class="icb wt-x" data-wt-close data-tap title="Close"><span class="ms">close</span></div></div>
+      <div class="wt-quick">${PLACES.filter(p => p[5] === 'fav').slice(0, 3).map(p => `<div class="chip2" data-wt-place="${PLACES.indexOf(p)}" data-tap><span class="ms" style="font-size:20px;margin-right:6px">${p[4]}</span>${p[0]}</div>`).join('')}</div>
+      <div class="wt-body">
+        <div class="wt-cats">${CATS.map(([c, i]) => `<div class="wt-cat" data-wt-cat="${c}" data-tap><span class="ms">${i}</span><span>${c}</span></div>`).join('')}</div>
+        <div class="wt-list"></div>
+        <div class="wt-prev"></div>
+      </div>
+      <div class="wt-keys">${KEYS.map(r => `<div class="wt-kr">${[...r].map(k => `<div class="wt-k" data-wt-key="${k}" data-tap>${k}</div>`).join('')}</div>`).join('')}
+        <div class="wt-kr"><div class="wt-k wide" data-wt-key="⌫" data-tap><span class="ms">backspace</span></div><div class="wt-k space" data-wt-key=" " data-tap>space</div><div class="wt-k wide go" data-wt-kb data-tap>Done</div></div></div>
+    </div>`;
+    app.appendChild(wt); app._wt = { q: '', cat: null };
+    wtList(app);
+  }
+  function wtList(app) {
+    const W = app._wt, list = app.querySelector('.wt-list'), q = W.q.trim().toLowerCase();
+    app.querySelector('.wt-q').textContent = W.q || 'Where to?'; app.querySelector('.wt-q').classList.toggle('typed', !!W.q);
+    app.querySelectorAll('.wt-cat').forEach(c => c.classList.toggle('on', c.dataset.wtCat === W.cat));
+    let h = '';
+    if (q) { const r = PLACES.map((p, i) => [p, i]).filter(([p]) => (p[0] + ' ' + p[1]).toLowerCase().includes(q)); h = `<span class="lbl">Results</span>` + (r.length ? r.map(([p, i]) => prow(p, i)).join('') : '<span class="bs">No places found. Try “Mudam” or “coffee”.</span>'); }
+    else if (W.cat) h = `<span class="lbl">${W.cat} nearby</span>` + PLACES.map((p, i) => [p, i]).filter(([p]) => p[5] === W.cat).map(([p, i]) => prow(p, i)).join('');
+    else h = '<span class="lbl">Favourites</span>' + PLACES.map((p, i) => [p, i]).filter(([p]) => p[5] === 'fav').map(([p, i]) => prow(p, i)).join('')
+      + '<span class="lbl" style="margin-top:8px">Recent</span>' + PLACES.map((p, i) => [p, i]).filter(([p]) => p[5] === 'recent').map(([p, i]) => prow(p, i)).join('');
+    list.innerHTML = h;
+  }
+  function wtOpen(app, on) { app.classList.toggle('wt-open', on); if (!on) { app.classList.remove('wt-kbon'); app.classList.remove('wt-preview'); } }
+  function wtPreview(app, i) {
+    const p = PLACES[i]; app._wt.sel = i;
+    app.querySelector('.wt-prev').innerHTML = `<div class="row" style="gap:14px;align-items:center"><span class="wt-ic big"><span class="ms">${p[4]}</span></span><div class="col" style="gap:0;min-width:0"><span class="h2 ell">${p[0].trim()}</span><span class="bs">${p[1]}</span></div></div>
+      <div class="wt-stats"><div><b class="num">${p[3]} min</b><span class="lbl">Drive</span></div><div><b class="num">${p[2].toFixed(1)} km</b><span class="lbl">Distance</span></div><div><b class="num">${clockAdd(p[3])}</b><span class="lbl">Arrive</span></div></div>
+      <span class="bs">Fastest route via Route d'Esch · light traffic${p[4] === 'local_parking' ? ' · Parking app can reserve a space' : ''}</span>
+      <div class="row" style="gap:10px"><div class="btn sec" data-wt-back data-tap><span class="ms" style="font-size:22px">arrow_back</span>Back</div><div class="btn pri" style="flex:1" data-wt-go data-tap><span class="ms f" style="font-size:22px">navigation</span>Start</div></div>`;
+    app.classList.add('wt-preview'); app.classList.remove('wt-kbon'); wtOpen(app, true);
+  }
+  function routeStart(app, i) {
+    const p = PLACES[i], name = p[0].trim(), eta = clockAdd(p[3]);
+    const pinT = app.querySelector('.nm-pin-t'); if (pinT) pinT.innerHTML = `${name}<small>${eta}</small>`;
+    const pinD = app.querySelector('.nm-pin-dot'); if (pinD) pinD.innerHTML = `<span class="ms f" style="font-size:18px;color:#fff">${p[4]}</span>`;
+    const to = app.querySelector('[data-nav="to"]'); if (to) to.textContent = 'To ' + name.replace(/^Parking /, '');
+    const e = app.querySelector('[data-nav="eta"]'); if (e) e.textContent = eta;
+    app.classList.remove('noroute'); wtOpen(app, false); app._wt.q = ''; app._wt.cat = null; wtList(app);
+    if (app._navRestart) app._navRestart(); if (app._dashRestart) app._dashRestart();
+    toast(frameOf(app), `Route to ${name} · ${p[3]} min`);
+  }
+  function routeEnd(app) {
+    app.classList.add('noroute'); wtOpen(app, false);
+    const fr = frameOf(app); let el = fr.querySelector('.utoast');
+    if (!el) { el = document.createElement('div'); el.className = 'utoast'; fr.appendChild(el); }
+    el.innerHTML = `<span>Route ended</span><b data-undo data-tap>Undo</b>`; el.classList.add('show'); clearTimeout(el._t);
+    el._app = app; el._t = setTimeout(() => el.classList.remove('show'), 5000);
+  }
+  function navClick(t) {
+    const app = t.closest('.app[data-navmap]');
+    const undo = t.closest('[data-undo]'); if (undo) { const el = undo.closest('.utoast'); if (el._app) el._app.classList.remove('noroute'); el.classList.remove('show'); return true; }
+    if (!app || !app._wt) return false;
+    if (t.closest('[data-endroute]')) { routeEnd(app); return true; }
+    if (t.closest('[data-whereto]')) { wtOpen(app, !app.classList.contains('wt-open')); return true; }
+    if (!t.closest('.wt')) return false;
+    const W = app._wt;
+    if (t.closest('[data-wt-close]')) { if (app.classList.contains('wt-preview')) app.classList.remove('wt-preview'); else { wtOpen(app, false); W.q = ''; W.cat = null; wtList(app); } return true; }
+    if (t.closest('[data-wt-kb]')) { const on = !app.classList.contains('wt-kbon'); wtOpen(app, true); app.classList.remove('wt-preview'); app.classList.toggle('wt-kbon', on); return true; }
+    const k = t.closest('[data-wt-key]'); if (k) { W.q = k.dataset.wtKey === '⌫' ? W.q.slice(0, -1) : (W.q + k.dataset.wtKey).replace(/^ /, ''); if (W.q.length === 1) W.q = W.q.toUpperCase(); W.cat = null; wtList(app); return true; }
+    if (t.closest('[data-wt-mic]')) {
+      wtOpen(app, true); app.classList.remove('wt-preview', 'wt-kbon'); const q = app.querySelector('.wt-q'); W.q = ''; W.cat = null; wtList(app); q.textContent = 'Listening…'; app.classList.add('wt-listen');
+      const word = 'Mudam'; let n = 0; setTimeout(function typeIt() { n++; W.q = word.slice(0, n); wtList(app); if (n < word.length) setTimeout(typeIt, 120); else app.classList.remove('wt-listen'); }, 1100); return true; }
+    const c = t.closest('[data-wt-cat]'); if (c) { W.cat = W.cat === c.dataset.wtCat ? null : c.dataset.wtCat; W.q = ''; wtOpen(app, true); app.classList.remove('wt-preview'); wtList(app); return true; }
+    const pl = t.closest('[data-wt-place]'); if (pl) { wtPreview(app, +pl.dataset.wtPlace); return true; }
+    if (t.closest('[data-wt-back]')) { app.classList.remove('wt-preview'); return true; }
+    if (t.closest('[data-wt-go]')) { routeStart(app, W.sel); return true; }
+    if (t.closest('.wt-bar')) { wtOpen(app, true); return true; }
+    return true;
+  }
+  // wire up every live navigation pane (hero + prototype), not the static gallery frames
+  document.querySelectorAll('.app[data-navmap]:not([data-static])').forEach(app => {
+    const icon = app.querySelector('[data-nav="icon"]'), eta = app.querySelector('[data-nav="eta"]');
+    if (icon) icon.closest('.float').classList.add('tcard');
+    const tb = eta && eta.closest('.float');
+    if (tb) { tb.classList.add('tripbar'); const end = [...tb.querySelectorAll('div')].find(d => d.querySelector(':scope > .ms') && d.querySelector(':scope > .ms').textContent.trim() === 'close'); if (end) { end.dataset.endroute = ''; end.setAttribute('data-tap', ''); end.classList.add('endbtn'); }
+      const lb = [...tb.querySelectorAll('.lbl')].find(l => /^to /i.test(l.textContent.trim())); if (lb) lb.dataset.nav = 'to'; }
+    const s = app.querySelector('.mapctl .icb'); if (s) { s.dataset.whereto = ''; s.setAttribute('data-tap', ''); }
+    wtBuild(app);
+  });
 
   /* ---------- Parking app: suggest → compare → time → confirm → booked ---------- */
   const GAR = [['Parking Trois Glands', 2.40], ['Kirchberg Shopping', 1.80], ['Parking Coque', 1.20]];
