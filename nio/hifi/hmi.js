@@ -5,9 +5,9 @@
   /* ---------- tap sound (on by default, mute switch on the page) ---------- */
   let muted = false;
   try { muted = localStorage.getItem('nio-sound') === 'off'; } catch (e) {}
-  let ac = null;
+  let ac = null, tapK = 1;               // tapK: Settings › Sound › Touch sounds (40 % = normal)
   function tick(kind) {
-    if (muted) return;
+    if (muted || tapK <= 0) return;
     try {
       ac = ac || new (window.AudioContext || window.webkitAudioContext)();
       if (ac.state === 'suspended') ac.resume();
@@ -17,7 +17,7 @@
       o.frequency.setValueAtTime(base, t);
       o.frequency.exponentialRampToValueAtTime(base * 0.5, t + 0.04);
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(kind === 'soft' ? 0.035 : 0.09, t + 0.004);
+      g.gain.exponentialRampToValueAtTime((kind === 'soft' ? 0.035 : 0.09) * tapK, t + 0.004);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
       f.type = 'lowpass'; f.frequency.value = 3400;
       o.connect(f); f.connect(g); g.connect(ac.destination);
@@ -57,7 +57,7 @@
       if (tog.hasAttribute('data-tapsound')) { muted = !tog.classList.contains('on'); try { localStorage.setItem('nio-sound', muted ? 'off' : 'on'); } catch (er) {} paintSound(); }
       return;
     }
-    if (pClick(t) || calClick(t)) return;
+    if (pClick(t) || calClick(t) || sndClick(t)) return;
     const mv = t.closest('[data-mv]'); if (mv) { g2048Move(mv.closest('.gamewrap'), mv.dataset.mv); return; }
     if (t.closest('[data-g2048-new]')) { g2048New(t.closest('.gamewrap')); return; }
     const mk = t.closest('[data-mk]'); if (mk) { minesTap(mk); return; }
@@ -481,6 +481,66 @@
     list.prepend(row); row.animate([{ background: 'var(--sel)' }, { background: 'transparent' }], { duration: 1600, easing: 'ease-out' });
     return row;
   }
+  /* ---------- Settings › Sound ---------- */
+  const EQP = { Balanced: [0, 0, 0], Vocal: [-2, 3, 1], Bass: [5, 0, -1], Concert: [2, -1, 3] };
+  function eqPaint(card) {
+    const v = [...card.querySelectorAll('[data-eq]')].map(s => Math.round((parseFloat(s.style.getPropertyValue('--v')) / 100) * 12 - 6));
+    const y = x => 45 - x * 6.5;
+    card.querySelector('.eq-p').setAttribute('d', `M0 ${y(v[0])}C60 ${y(v[0])} 110 ${y(v[0])} 150 ${(y(v[0]) + y(v[1])) / 2}S200 ${y(v[1])} 230 ${y(v[1])}S320 ${y(v[2])} 400 ${y(v[2])}`);
+  }
+  function eqChanged(s) { if (!s) return; const card = s.closest('.scard'); card.querySelectorAll('.eq-pre div').forEach(d => d.classList.toggle('on', d.textContent === 'Custom')); card.querySelector('.eq-name').textContent = 'Custom'; eqPaint(card); }
+  function eqPreset(d) {
+    const card = d.closest('.scard'), p = EQP[d.textContent]; card.querySelectorAll('.eq-pre div').forEach(x => x.classList.toggle('on', x === d));
+    card.querySelector('.eq-name').textContent = d.textContent; if (!p) return;
+    card.querySelectorAll('[data-eq]').forEach((s, i) => { s.style.setProperty('--v', ((p[i] + 6) / 12 * 100) + '%'); s.parentElement.querySelector('.val').textContent = (p[i] > 0 ? '+' : '') + p[i] + ' dB'; });
+    eqPaint(card);
+  }
+  const SF = { 'All seats': [50, 50], Driver: [30, 36], Front: [50, 34], Rear: [50, 68] };
+  function sfSet(pad, x, y, label) {
+    const dot = pad.querySelector('.sf-dot'); dot.style.left = x + '%'; dot.style.top = y + '%';
+    const bal = Math.round((x - 50) / 5), fade = Math.round((50 - y) / 5);
+    const rd = pad.closest('.scard').querySelector('.sf-read');
+    rd.textContent = `${label || (bal === 0 && fade === 0 ? 'Centred' : 'Custom')} · balance ${bal > 0 ? 'R' + bal : bal < 0 ? 'L' + (-bal) : 0} · fade ${fade > 0 ? 'F' + fade : fade < 0 ? 'R' + (-fade) : 0}`;
+    if (!label) pad.closest('.scard').querySelectorAll('.sf-focus div').forEach(d => d.classList.remove('on'));
+  }
+  let sfDrag = null;
+  document.addEventListener('pointerdown', e => { const pad = e.target.closest('.sf-pad'); if (!pad) return; sfDrag = pad; sfMove(e); });
+  document.addEventListener('pointermove', e => { if (sfDrag) sfMove(e); });
+  document.addEventListener('pointerup', () => { sfDrag = null; });
+  function sfMove(e) { const r = sfDrag.getBoundingClientRect(); sfSet(sfDrag, Math.max(12, Math.min(88, (e.clientX - r.left) / r.width * 100)), Math.max(14, Math.min(86, (e.clientY - r.top) / r.height * 100))); }
+  // previews: short tones at the row's own level
+  function tone(seq, vol) {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume();
+      let t0 = ac.currentTime + 0.02;
+      seq.forEach(([f, d, type]) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.16 * vol), t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+        o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + d + 0.02); t0 += d * 0.85; });
+    } catch (e) {}
+  }
+  const TONES = { nav: [[880, .18], [1175, .3]], call: [[440, .25], [480, .25], [440, .25]], nomi: [[660, .12], [990, .12], [1320, .28]], ring: [[1046, .14], [1318, .14], [1568, .3]],
+    chime: [[1200, .3, 'triangle']], tap: [[2100, .06, 'triangle']], lock: [[1320, .08], [990, .16]], lockClassic: [[880, .12, 'square'], [880, .12, 'square']],
+    welcome: [[523, .25], [659, .25], [784, .25], [1046, .6]], welcomeB: [[784, .3], [659, .3], [880, .7]] };
+  function sndClick(t) {
+    const pv = t.closest('[data-snd-test]');
+    if (pv) { const v = parseFloat(pv.parentElement.querySelector('.sl').style.getPropertyValue('--v')) / 100; tone(TONES[pv.dataset.sndTest], v); return true; }
+    const pl = t.closest('[data-snd-play]');
+    if (pl) { const card = pl.closest('.row'); const ch = card.querySelector('.segx .on').textContent;
+      if (ch === 'Off') { toast(frameOf(pl), 'This sound is off'); return true; }
+      tone(pl.dataset.sndPlay === 'lock' ? (ch === 'Classic' ? TONES.lockClassic : TONES.lock) : (ch === 'Breeze' ? TONES.welcomeB : TONES.welcome), 0.7); return true; }
+    const eq = t.closest('.eq-pre div'); if (eq) { eqPreset(eq); return true; }
+    const sf = t.closest('.sf-focus div'); if (sf) { sf.parentElement.querySelectorAll('div').forEach(d => d.classList.toggle('on', d === sf)); sfSet(sf.closest('.scard').querySelector('.sf-pad'), ...SF[sf.textContent], sf.textContent); return true; }
+    if (t.closest('[data-sf-reset]')) { const c = t.closest('.scard'); c.querySelectorAll('.sf-focus div').forEach((d, i) => d.classList.toggle('on', i === 0)); sfSet(c.querySelector('.sf-pad'), 50, 50, 'Centred'); return true; }
+    return false;
+  }
+  // long-press the dock volume to open Settings › Sound
+  let lpT = null, lpX = 0, lpFired = false;
+  document.addEventListener('click', e => { if (lpFired) { lpFired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);   // a long-press is not a mute tap
+  document.addEventListener('pointerdown', e => { const v = e.target.closest('.dock .dvol, .dock .vol'); if (!v) return; lpX = e.clientX;
+    lpT = setTimeout(() => { lpT = null; if (drag) { drag.s.classList.remove('drag'); drag = null; } const fr = frameOf(v); route(fr, 'settings:Sound'); lpFired = true; toast(fr, 'Sound settings'); }, 650); });
+  document.addEventListener('pointermove', e => { if (lpT && Math.abs(e.clientX - lpX) > 8) { clearTimeout(lpT); lpT = null; } });
+  document.addEventListener('pointerup', () => { if (lpT) { clearTimeout(lpT); lpT = null; } });
+
   function toast(fr, msg) {
     let el = fr.querySelector('.htoast'); if (!el) { el = document.createElement('div'); el.className = 'htoast'; fr.appendChild(el); }
     el.textContent = msg; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2200);
@@ -759,6 +819,11 @@
       const fr = frameOf(drag.s); if (fr.style) fr.style.filter = `brightness(${(0.45 + pct / 100 * 0.86).toFixed(3)})`;
     }
     else if (drag.s.dataset.min !== undefined) {
+      let pct2 = pct; const fl = +drag.s.dataset.floor || 0;
+      if (pct2 < fl) { pct2 = fl; if (!drag.s._fl) { drag.s._fl = 1; toast(frameOf(drag.s), `Safety chimes stay at ${fl} % or louder`); setTimeout(() => drag.s && (drag.s._fl = 0), 2500); } }
+      if (pct2 !== pct) { drag.s.style.setProperty('--v', pct2 + '%'); const o = drag.s.parentElement.querySelector('.val'); if (o) o.textContent = pct2 + ' %'; return; }
+      if (drag.s.hasAttribute('data-touchvol')) { tapK = pct / 40; muted = pct === 0; paintSound(); }
+      if (drag.s.dataset.eq) setTimeout(() => eqChanged(drag && drag.s), 0);
       drag.s.style.setProperty('--v', pct + '%');
       const lo = +drag.s.dataset.min, hi = +drag.s.dataset.max, st = +(drag.s.dataset.step || 1);
       const v = Math.round((lo + (hi - lo) * pct / 100) / st) * st;
