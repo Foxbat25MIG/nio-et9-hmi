@@ -498,7 +498,7 @@
   /* Equaliser: 6 bands (60 Hz – 8 kHz), ±12 dB, presets, live curve */
   const EQP = { Balanced: [0, 0, 0, 0, 0, 0], Vocal: [-2, -1, 2, 4, 3, 0], 'Bass boost': [7, 5, 1, 0, 0, 1], Concert: [3, 1, -1, 1, 3, 4],
     Jazz: [3, 2, -1, 1, 2, 3], Classical: [2, 1, 0, 0, 2, 4], Electronic: [6, 3, 0, -1, 2, 5], Podcast: [-4, -1, 3, 5, 3, -2], 'Night drive': [3, 2, 0, -1, -2, -3] };
-  const eqY = v => 110 - v * 8.2;        // ±12 dB → svg 220 tall
+  const eqY = v => 110 - v * 110 / 12;   // ±12 dB fills the 220-unit box, same scale as the knob tracks
   function eqPaint(card) {
     const v = card._eq || (card._eq = [0, 0, 0, 0, 0, 0]);
     card.querySelectorAll('.eqb').forEach((b, i) => { b.style.setProperty('--p', ((12 - v[i]) / 24 * 100) + '%'); b.querySelector('.eqv').textContent = (v[i] > 0 ? '+' : '') + v[i]; b.classList.toggle('up', v[i] > 0); b.classList.toggle('dn', v[i] < 0); });
