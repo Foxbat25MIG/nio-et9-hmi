@@ -715,3 +715,6 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .eqk{position:absolute;left:50%;top:var(--p);width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--route),0 4px 12px rgba(36,30,72,.2);transition:top .35s var(--ease),transform var(--dur-press) var(--ease)}
 .eqb.drag .eqk{transition:none;transform:scale(1.12)}
 .eqf{font:500 13px "Red Hat Text";color:var(--t1);margin-top:auto}
+.eqk{width:18px;height:18px;margin:-9px 0 0 -9px;box-shadow:0 0 0 2px var(--route),0 2px 6px rgba(36,30,72,.18)}
+.eqb.drag .eqk{transform:scale(1.2)}
+.eqt{width:4px}
