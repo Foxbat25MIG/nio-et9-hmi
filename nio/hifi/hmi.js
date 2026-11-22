@@ -50,14 +50,14 @@
   const frameOf = el => el.closest('.frame') || document;
   document.addEventListener('click', e => {
     const t = e.target;
-    const tog = t.closest('.tog'); if (tog) {
+    const tog = t.closest('.tog'); if (tog && !tog.hasAttribute('data-seattog')) {
       tog.classList.toggle('on');
       if (tog.hasAttribute('data-guard')) { const on = tog.classList.contains('on'), gc = tog.closest('.av-c, .app, .frame').querySelector('.gm-card');
         if (gc) { gc.classList.toggle('on', on); gc.querySelector('.gm-st').textContent = on ? 'Guard Mode is on' : 'Guard Mode is off'; gc.querySelector('.gm-sub').textContent = on ? 'Watching with 4 cameras while the ET9 is parked and locked' : 'Turn it on to record when someone comes close'; } }
       if (tog.hasAttribute('data-tapsound')) { muted = !tog.classList.contains('on'); try { localStorage.setItem('nio-sound', muted ? 'off' : 'on'); } catch (er) {} paintSound(); }
       return;
     }
-    if (navClick(t) || pClick(t) || calClick(t) || sndClick(t)) return;
+    if (seatClick(t) || navClick(t) || pClick(t) || calClick(t) || sndClick(t)) return;
     const drv = t.closest('[data-drv]');
     if (drv) { const fr = frameOf(drv), n = drv.dataset.drv;
       drv.parentElement.querySelectorAll('[data-drv]').forEach(d => d.classList.toggle('on', d === drv));
@@ -655,8 +655,9 @@
   // long-press the dock volume to open Settings › Sound
   let lpT = null, lpX = 0, lpFired = false;
   document.addEventListener('click', e => { if (lpFired) { lpFired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);   // a long-press is not a mute tap
-  document.addEventListener('pointerdown', e => { const v = e.target.closest('.dock .dvol, .dock .vol'); if (!v) return; lpX = e.clientX;
-    lpT = setTimeout(() => { lpT = null; if (drag) { drag.s.classList.remove('drag'); drag = null; } const fr = frameOf(v); route(fr, 'settings:Sound'); lpFired = true; toast(fr, 'Sound settings'); }, 650); });
+  document.addEventListener('pointerdown', e => { const v = e.target.closest('.dock .dvol, .dock .vol, .dock .dk.short'); if (!v) return; lpX = e.clientX;
+    const seat = v.classList.contains('short');
+    lpT = setTimeout(() => { lpT = null; if (drag) { drag.s.classList.remove('drag'); drag = null; } const fr = frameOf(v); route(fr, seat ? 'car:Seats' : 'settings:Sound'); lpFired = true; toast(fr, seat ? 'Seat settings' : 'Sound settings'); }, 650); });
   document.addEventListener('pointermove', e => { if (lpT && Math.abs(e.clientX - lpX) > 8) { clearTimeout(lpT); lpT = null; } });
   document.addEventListener('pointerup', () => { if (lpT) { clearTimeout(lpT); lpT = null; } });
 
@@ -924,6 +925,60 @@
     wtBuild(app);
   });
 
+  /* ---------- Seats: four seats, position, comfort, massage, one-touch modes ---------- */
+  const SEATDEF = { height: 45, fore: 55, recline: 12, tilt: 2, lumbar: 40, bolster: 50, headh: 50, headt: 30, leg: 0, heat: '2', vent: 'Off', arm: false, mass: false, mint: 3, mspd: 2 };
+  const SEATS0 = { Driver: { ...SEATDEF }, Passenger: { ...SEATDEF, heat: 'Off', fore: 50 }, 'Rear left': { ...SEATDEF, heat: 'Off', recline: 18, fore: 50 }, 'Rear right': { ...SEATDEF, heat: '1', recline: 22, fore: 50, leg: 30 } };
+  const stOf = w => w._st || (w._st = { sel: 'Driver', s: JSON.parse(JSON.stringify(SEATS0)), mem: {} });
+  const parked = w => { const fr = frameOf(w), g = fr.querySelector('.gear .on'); return !g || g.textContent.trim() === 'P'; };
+  function stPaint(w) {
+    const S = stOf(w), v = S.s[S.sel], rear = S.sel.startsWith('Rear');
+    w.querySelectorAll('[data-seatpick]').forEach(g => { const n = g.dataset.seatpick, s = S.s[n]; g.classList.toggle('on', n === S.sel);
+      g.querySelector('.b-heat').classList.toggle('lit', s.heat !== 'Off'); g.querySelector('.b-vent').classList.toggle('lit', s.vent !== 'Off'); g.querySelector('.b-mass').classList.toggle('lit', s.mass); });
+    w.querySelectorAll('.st-name').forEach(e => e.textContent = S.sel);
+    w.classList.toggle('st-isrear', rear);
+    w.querySelectorAll('[data-seatk]').forEach(sl => { const k = sl.dataset.seatk, lo = +sl.dataset.min, hi = +sl.dataset.max; sl.style.setProperty('--v', ((v[k] - lo) / (hi - lo) * 100) + '%'); const o = sl.parentElement.querySelector('.val'); if (o) o.textContent = (k === 'leg' ? Math.round(v[k]) : v[k]) + (sl.dataset.unit || ''); });
+    w.querySelectorAll('[data-seatopt]').forEach(o => o.querySelectorAll('span').forEach(x => x.classList.toggle('on', x.textContent === v[o.dataset.seatopt])));
+    w.querySelectorAll('[data-seattog]').forEach(tg => tg.classList.toggle('on', !!v[tg.dataset.seattog]));
+    // side view: the drawing follows every slider
+    const q = s => w.querySelector(s);
+    q('.ss-all').style.transform = `translate(${(v.fore - 50) * .7}px, ${-(v.height - 50) * .3}px)`;
+    q('.ss-back').style.transform = `rotate(${-v.recline * 1.4}deg)`;
+    q('.ss-cush').style.transform = `rotate(${-v.tilt}deg)`;
+    q('.ss-head').style.transform = `translate(${-(v.headt - 50) * .14}px, ${-(v.headh - 50) * .3}px)`;
+    q('.ss-lum').style.transform = `translateX(${(v.lumbar - 50) * .08}px)`;
+    q('.ss-leg').style.transform = `translateX(${v.leg * .5}px) rotate(${v.leg * .25}deg)`;
+    q('.ss-leg').style.opacity = rear ? 1 : 0;
+    // massage dots
+    const m = q('.st-mass'); m.classList.toggle('on', !!v.mass); m.style.setProperty('--dur', (2.6 - v.mspd * .6) + 's'); m.style.setProperty('--amp', (.35 + v.mint * .13).toFixed(2));
+    q('.st-mass-s').textContent = v.mass ? `16-point hot stone · intensity ${v.mint} · speed ${v.mspd}` : '16-point hot stone · off';
+    q('.st-lock').style.visibility = S.sel === 'Driver' && !parked(w) ? 'visible' : 'hidden';
+  }
+  function stSet(w, changes, msg) { const S = stOf(w); Object.entries(changes).forEach(([n, c]) => Object.assign(S.s[n], c)); stPaint(w); if (msg) toast(frameOf(w), msg); }
+  function seatClick(t) {
+    const w = t.closest('.st-wrap'); if (!w) return false; const S = stOf(w);
+    const pk = t.closest('[data-seatpick]'); if (pk) { S.sel = pk.dataset.seatpick; stPaint(w); return true; }
+    const o = t.closest('[data-seatopt] span'); if (o) { S.s[S.sel][o.parentElement.dataset.seatopt] = o.textContent; stPaint(w); return true; }
+    const tg = t.closest('[data-seattog]'); if (tg) { const k = tg.dataset.seattog; S.s[S.sel][k] = !S.s[S.sel][k]; stPaint(w); return true; }
+    const md = t.closest('[data-seatmode]');
+    if (md) {
+      const k = md.dataset.seatmode, driverMoving = S.sel === 'Driver' && !parked(w);
+      if (k === 'vip') { S.sel = 'Rear right'; stSet(w, { 'Rear right': { recline: 45, leg: 100, tilt: 8, headt: 60, heat: '1' }, Passenger: { fore: 0, recline: 0, headh: 20 } }, 'VIP Position · passenger seat forward, rear right reclined to 135°'); }
+      else if (driverMoving && (k === 'zero' || k === 'nap')) toast(frameOf(w), 'Available for the driver seat when parked');
+      else if (k === 'zero') stSet(w, { [S.sel]: { recline: 38, tilt: 10, leg: S.sel.startsWith('Rear') ? 80 : 0, headt: 55 } }, `Zero-gravity · ${S.sel}`);
+      else if (k === 'nap') stSet(w, { [S.sel]: { recline: 42, tilt: 6, heat: '1', mass: true, mint: 2, mspd: 1, leg: S.sel.startsWith('Rear') ? 100 : 0 } }, `Nap · ${S.sel} · wakes you gently in 20 min`);
+      else if (k === 'reset') stSet(w, { [S.sel]: { recline: 12, tilt: 2, leg: 0, headt: 30, headh: 50, mass: false, fore: S.sel === 'Passenger' ? 50 : S.s[S.sel].fore } }, `${S.sel} back upright`);
+      w.querySelectorAll('.st-mode').forEach(x => x.classList.toggle('on', x === md)); setTimeout(() => md.classList.remove('on'), 1200);
+      return true;
+    }
+    const mem = t.closest('[data-seatmem]'); if (mem) { const key = (w.querySelector('.drv-n') || {}).textContent + mem.dataset.seatmem; w.querySelectorAll('[data-seatmem]').forEach(x => x.classList.toggle('on', x === mem));
+      if (S.mem[key]) { Object.assign(S.s.Driver, S.mem[key]); S.sel = 'Driver'; stPaint(w); toast(frameOf(w), `Memory ${mem.dataset.seatmem} restored`); } else toast(frameOf(w), `Memory ${mem.dataset.seatmem} is empty · tap Save to store this position`); return true; }
+    if (t.closest('[data-seatsave]')) { const on = w.querySelector('[data-seatmem].on'), key = (w.querySelector('.drv-n') || {}).textContent + on.dataset.seatmem; S.mem[key] = { ...S.s.Driver }; toast(frameOf(w), `Saved to memory ${on.dataset.seatmem} for ${w.querySelector('.drv-n').textContent}`); return true; }
+    return false;
+  }
+  function seatSlider(sl) { const w = sl.closest('.st-wrap'); if (!w) return; const S = stOf(w), lo = +sl.dataset.min, hi = +sl.dataset.max, st = +(sl.dataset.step || 1);
+    S.s[S.sel][sl.dataset.seatk] = Math.round((lo + (hi - lo) * parseFloat(sl.style.getPropertyValue('--v')) / 100) / st) * st; stPaint(w); }
+  document.querySelectorAll('.st-wrap').forEach(stPaint);
+
   /* ---------- Parking app: suggest → compare → time → confirm → booked ---------- */
   const GAR = [['Parking Trois Glands', 2.40], ['Kirchberg Shopping', 1.80], ['Parking Coque', 1.20]];
   function pPaint(pf) {
@@ -1080,6 +1135,7 @@
       if (pct2 !== pct) { drag.s.style.setProperty('--v', pct2 + '%'); const o = drag.s.parentElement.querySelector('.val'); if (o) o.textContent = pct2 + ' %'; return; }
       if (drag.s.hasAttribute('data-touchvol')) { tapK = pct / 40; muted = pct === 0; paintSound(); }
       if (drag.s.dataset.spk || drag.s.dataset.stage) { const sl = drag.s; setTimeout(() => sfSlider(sl), 0); }
+      if (drag.s.dataset.seatk) { const sl = drag.s; setTimeout(() => seatSlider(sl), 0); }
       drag.s.style.setProperty('--v', pct + '%');
       const lo = +drag.s.dataset.min, hi = +drag.s.dataset.max, st = +(drag.s.dataset.step || 1);
       const v = Math.round((lo + (hi - lo) * pct / 100) / st) * st;

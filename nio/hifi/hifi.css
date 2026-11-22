@@ -805,3 +805,41 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .wt-bar .icb{width:40px;height:40px;flex:none;border-radius:12px}
 .wt-bar .icb .ms{font-size:22px}
 .wt-quick,.wt-cats{flex:none}
+/* ---------- Seats ---------- */
+.st-wrap{flex:1;min-width:0;display:flex;min-height:0;max-height:100%}
+.st{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;overflow:auto;scrollbar-width:none;padding-bottom:8px}
+.st .scard{gap:12px;flex:none}
+.st-pickwrap{width:220px;flex:none;background:var(--s2);border-radius:20px;padding:8px}
+.st-pick{width:100%;display:block}
+.st-body{fill:#fbfaff;stroke:#cfcbdc;stroke-width:2}.st-console{fill:#ece9f4}
+.st-front{font:600 10px "Red Hat Text";letter-spacing:.14em;fill:#a9a4bb}
+.st-seat{cursor:pointer}
+.st-cush{fill:#e7e3f2;stroke:#d5d0e3;stroke-width:1.5;transition:fill .3s var(--ease),stroke .3s var(--ease)}
+.st-hr{fill:#dcd7ea;transition:fill .3s var(--ease)}
+.st-seat:hover .st-cush{fill:#ddd8ee}
+.st-seat.on .st-cush{fill:var(--sel);stroke:#7a6bf2;stroke-width:2.5}.st-seat.on .st-hr{fill:#b9c6ec}
+.st-lbl{font:500 11px "Red Hat Text";fill:var(--t2)}
+.st-badges circle{fill:#d5d0e3;transition:fill .3s}
+.st-badges .b-heat.lit{fill:#e08a4a}.st-badges .b-vent.lit{fill:#4f8fd8}.st-badges .b-mass.lit{fill:#7a6bf2}
+.st-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.st-mode{border-radius:14px;background:var(--s2);padding:10px 12px;display:grid;grid-template-columns:28px 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;cursor:pointer;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.st-mode .ms{grid-row:span 2;color:var(--route)}
+.st-mode b{font:500 15px "Red Hat Text";color:var(--t1)}.st-mode .bs{font-size:12px}
+.st-mode:hover{background:var(--s3)}.st-mode:active{transform:scale(.98)}
+.st-mode.on{background:var(--sel)}
+.st-mem.on{background:var(--sel);color:var(--on-sel);border-color:var(--sel)}
+.st-sidewrap{width:250px;flex:none;background:var(--s2);border-radius:20px;padding:10px}
+.st-side{width:100%;display:block;overflow:visible}
+.st-floor{stroke:#cfcbdc;stroke-width:2;stroke-dasharray:6 6}
+.st-side rect{fill:#d8d2ec}
+.ss-back rect:first-child{fill:#c9c0ee}.ss-cush rect{fill:#c9c0ee}.ss-head rect{fill:#b3a6ef}.ss-lum{fill:#7a6bf2!important}.ss-leg rect{fill:#b3a6ef}.ss-rail{fill:#e2deee!important}
+.ss-all,.ss-back,.ss-cush,.ss-head,.ss-lum,.ss-leg{transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .4s var(--ease)}
+.ss-back{transform-origin:118px 140px}.ss-cush{transform-origin:120px 145px}.ss-leg{transform-origin:200px 158px}
+.st-rear{display:none!important}.st-isrear .st-rear{display:grid!important}
+.st-lock{color:#d94a4a}
+.st-masswrap{display:flex;flex-direction:column;align-items:center;gap:6px;width:170px;flex:none}
+.st-mass{width:130px;display:block}
+.sm-back{fill:#ece9f4;stroke:#d5d0e3;stroke-width:2}
+.st-mass .md{fill:#cfc8ec;transform-box:fill-box;transform-origin:center;transition:fill .3s}
+.st-mass.on .md{fill:#7a6bf2;animation:mpulse var(--dur,1.4s) ease-in-out infinite;animation-delay:calc(var(--i) * var(--dur,1.4s) / 16)}
+@keyframes mpulse{0%,100%{transform:scale(1);opacity:var(--amp,.7)}50%{transform:scale(1.55);opacity:1}}
