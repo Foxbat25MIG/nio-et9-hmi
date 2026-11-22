@@ -58,6 +58,7 @@
     const segItem = t.closest('.seg div, .segx div, .opt span');
     if (segItem) {
       [...segItem.parentElement.children].forEach(c => c.classList.toggle('on', c === segItem));
+      if (segItem.parentElement.classList.contains('g-mode')) { chessNew(segItem.closest('.gamewrap')); return; }
       if (segItem.parentElement.hasAttribute('data-tabs')) {
         const i = [...segItem.parentElement.children].indexOf(segItem);
         const tp = segItem.parentElement.parentElement.querySelector('.tabpanes');
@@ -96,10 +97,28 @@
     const song = t.closest('[data-song]');
     if (song) {
       const [ti, ar] = song.dataset.song.split('|');
-      fr0.querySelectorAll('.player').forEach(p => { p.querySelectorAll('.h3').forEach(h => h.textContent = ti); p.querySelectorAll('.b2').forEach(b => b.textContent = ar); p._pos = 0; setPlaying(p, true); paintTime(p); });
-      if (song.dataset.station) { const sc = song.closest('.tp'); sc.querySelector('.radio-f').textContent = song.dataset.station; sc.querySelector('.radio-n').textContent = ti; sc.querySelector('.dial i').style.left = (((+song.dataset.station) - 87.5) / 20.5 * 100).toFixed(1) + '%'; }
+      if (song.dataset.station) {
+        setStation(fr0, ti, song.dataset.station);
+        const sc = song.closest('.tp'); sc.querySelector('.radio-f').textContent = song.dataset.station; sc.querySelector('.radio-n').textContent = ti; sc.querySelector('.dial i').style.left = (((+song.dataset.station) - 87.5) / 20.5 * 100).toFixed(1) + '%';
+      } else setSong(fr0, songIndex(ti, ar), true);
+      closePicker(fr0);
       return;
     }
+    if (t.closest('[data-prev]')) { stepSong(fr0, -1); return; }
+    if (t.closest('[data-next]')) { stepSong(fr0, 1); return; }
+    if (t.closest('[data-pick]')) { openPicker(fr0); return; }
+    if (t.closest('.picker-x') || t.classList.contains('pickerov')) { closePicker(fr0); return; }
+    const ytc = t.closest('[data-yt]'); if (ytc) { ytc.parentElement.querySelectorAll('[data-yt]').forEach(x => x.classList.toggle('on', x === ytc)); const box = ytc.closest('.yt').querySelector('.ytbox'); if (box.classList.contains('playing')) loadYT(box, ytc.dataset.yt); return; }
+    const ytp = t.closest('[data-ytplay]'); if (ytp) { const yt = ytp.closest('.yt'); const box = yt.querySelector('.ytbox'); box.classList.add('playing'); loadYT(box, yt.querySelector('[data-yt].on').dataset.yt); return; }
+    const cln = t.closest('[data-clean]'); if (cln) { cleaning(fr0); return; }
+    if (t.closest('[data-chess-new]')) { chessNew(t.closest('.gamewrap')); return; }
+    const csq = t.closest('.chess i'); if (csq) { chessTap(csq); return; }
+    const gm = t.closest('.g-mode div'); if (gm) { setTimeout(() => chessNew(gm.closest('.gamewrap')), 0); }
+    const sc0 = t.closest('.sudoku i'); if (sc0) { suSelect(sc0); return; }
+    const nm = t.closest('[data-num]'); if (nm) { suEnter(nm.closest('.gamewrap'), +nm.dataset.num); return; }
+    if (t.closest('[data-su-new]')) { suNew(t.closest('.gamewrap')); return; }
+    const tva = t.closest('.tv-a .btn'); if (tva) { tvAnswer(tva); return; }
+    if (t.closest('.tv-next')) { tvNext(t.closest('.trivia')); return; }
     const call = t.closest('[data-call]');
     if (call) {
       const ov = fr0.querySelector('.callov'); let n = call.dataset.call;
@@ -116,13 +135,6 @@
     const key = t.closest('.key'); if (key) { const d = fr0.querySelector('.kp-num'); if (d.textContent.length < 18) d.textContent += key.dataset.key; return; }
     if (t.closest('.kp-num') || (t.textContent === 'backspace' && t.closest('.tp'))) { const d = fr0.querySelector('.kp-num'); if (d.textContent.length > 5) d.textContent = d.textContent.slice(0, -1); return; }
     const rd = t.closest('[data-read]'); if (rd) { say(fr0, rd.dataset.read); return; }
-    const sq = t.closest('.chess i');
-    if (sq) { const b = sq.parentElement, sel = b.querySelector('.sel');
-      if (sel && sel !== sq) { sq.textContent = sel.textContent; sel.textContent = ''; sel.classList.remove('sel'); const st = b.closest('.row').querySelector('.chess-s'); st.textContent = st.textContent === 'White to move' ? 'Black to move' : 'White to move'; }
-      else if (sq.textContent.trim()) sq.classList.toggle('sel'); return; }
-    const su = t.closest('.sudoku .emp'); if (su) { su.textContent = ((+su.textContent || 0) % 9) + 1; return; }
-    const an = t.closest('.trivia .ans');
-    if (an) { const ok = an.dataset.ok === '1'; an.classList.add(ok ? 'ok' : 'no'); an.closest('.trivia').querySelector('.tv-r').textContent = ok ? 'Correct. The Alzette runs through the Grund.' : 'Not quite. Try another answer.'; return; }
     if (t.closest('[data-nomi]')) { openNomi(fr0); return; }
     if (t.closest('.nomi-x') || t.classList.contains('nomiov')) { fr0.querySelector('.nomiov').classList.remove('on'); return; }
     const ask = t.closest('[data-ask]'); if (ask) { nomiAsk(fr0, ask.dataset.ask, ask.textContent); return; }
@@ -174,6 +186,212 @@
     }, 700);
   }
 
+  /* ---------- music library (shared by every player in a frame) ---------- */
+  const SONGS = [
+    ['Starman', 'David Bowie', 254], ['Heroes', 'David Bowie', 367], ['Life on Mars?', 'David Bowie', 228], ['Space Oddity', 'David Bowie', 315],
+    ['Dancing Queen', 'ABBA', 231], ['Mamma Mia', 'ABBA', 212], ['Waterloo', 'ABBA', 166], ['The Winner Takes It All', 'ABBA', 294],
+    ['Get Lucky', 'Daft Punk', 369], ['One More Time', 'Daft Punk', 320], ['Instant Crush', 'Daft Punk', 337], ['Digital Love', 'Daft Punk', 298],
+    ['Memory Box', 'Peter Cat Recording Co.', 312], ['Floated By', 'Peter Cat Recording Co.', 305], ['Soulless Friends', 'Peter Cat Recording Co.', 268], ['People Never Change', 'Peter Cat Recording Co.', 241],
+    ['Last Nite', 'The Strokes', 193], ['Reptilia', 'The Strokes', 221], ['Someday', 'The Strokes', 187], ['The Adults Are Talking', 'The Strokes', 309]];
+  function songIndex(ti, ar) {
+    let i = SONGS.findIndex(s => s[0] === ti);
+    if (i < 0) { SONGS.push([ti, ar, 2400]); i = SONGS.length - 1; }   // audiobooks, podcasts
+    return i;
+  }
+  function setSong(fr, i, play) {
+    const [ti, ar, d] = SONGS[(i + SONGS.length) % SONGS.length];
+    fr._song = (i + SONGS.length) % SONGS.length;
+    fr.querySelectorAll('.player').forEach(p => {
+      p.classList.remove('radio');
+      p.querySelectorAll('.h3').forEach(h => h.textContent = ti); p.querySelectorAll('.b2').forEach(b => b.textContent = ar);
+      p._dur = d; p._pos = 0; if (play !== false) setPlaying(p, true); paintTime(p);
+      const e = p.querySelector('.p-full'); if (e) { e.animate([{ opacity: .4 }, { opacity: 1 }], { duration: 400, easing: 'ease-out' }); }
+    });
+    const pk = fr.querySelector('.pickerov'); if (pk) pk.querySelectorAll('[data-song]').forEach(r => r.classList.toggle('on', r.dataset.song.split('|')[0] === ti));
+  }
+  function stepSong(fr, dir) {
+    const p = fr.querySelector('.player');
+    if (p && p.classList.contains('radio')) { const st = [['Radio 100,7', '100.7'], ['RTL Radio Lëtzebuerg', '92.5'], ['Eldoradio', '105.0']]; fr._st = ((fr._st || 0) + dir + 3) % 3; setStation(fr, ...st[fr._st]); return; }
+    if (dir < 0 && p && p._pos > 3) { p._pos = 0; paintTime(p); return; }
+    setSong(fr, (fr._song || 0) + dir, true);
+  }
+  function setStation(fr, name, f) {
+    fr.querySelectorAll('.player').forEach(p => {
+      p.classList.add('radio'); p.querySelectorAll('.h3').forEach(h => h.textContent = name); p.querySelectorAll('.b2').forEach(b => b.textContent = 'Live radio · ' + f);
+      p.querySelectorAll('.lb-s').forEach(x => x.textContent = 'DAB+ ' + f); setPlaying(p, true);
+    });
+  }
+  function openPicker(fr) {
+    let ov = fr.querySelector('.pickerov');
+    if (!ov) {
+      ov = document.createElement('div'); ov.className = 'pickerov';
+      const by = {}; SONGS.slice(0, 20).forEach(s => (by[s[1]] = by[s[1]] || []).push(s));
+      ov.innerHTML = `<div class="picker"><div class="row" style="justify-content:space-between;align-items:center"><span class="h2">Choose a song</span><div class="icb picker-x" style="background:var(--s2)"><span class="ms" style="color:var(--t1)">close</span></div></div><div class="pk-list">` +
+        Object.entries(by).map(([a, l]) => `<div class="pk-art"><span class="lbl">${a}</span>` + l.map(s => `<div class="pk-row" data-song="${s[0]}|${s[1]}" data-tap><span class="b2" style="color:var(--t1);flex:1">${s[0]}</span><span class="bs num">${fmt(s[2])}</span></div>`).join('') + '</div>').join('') + '</div></div>';
+      fr.appendChild(ov);
+    }
+    const cur = fr.querySelector('.player .h3'); ov.querySelectorAll('[data-song]').forEach(r => r.classList.toggle('on', cur && r.dataset.song.split('|')[0] === cur.textContent));
+    requestAnimationFrame(() => ov.classList.add('on'));
+  }
+  function closePicker(fr) { const ov = fr && fr.querySelector('.pickerov'); if (ov) ov.classList.remove('on'); }
+
+  /* ---------- video (YouTube channels, uploads playlist on loop) ---------- */
+  function loadYT(box, list) {
+    const f = box.querySelector('iframe');
+    f.src = `https://www.youtube-nocookie.com/embed/videoseries?list=${list}&autoplay=1&mute=1&loop=1&rel=0&modestbranding=1`;
+  }
+  function isParked(fr) { const g = fr.querySelector('.gear .on'); return g && g.textContent.trim() === 'P'; }
+
+  /* ---------- screen cleaning: touch locked for 30 s ---------- */
+  function cleaning(fr) {
+    let ov = fr.querySelector('.cleanov');
+    if (!ov) { ov = document.createElement('div'); ov.className = 'cleanov'; fr.appendChild(ov); }
+    let n = 30; ov.innerHTML = `<span class="ms" style="font-size:56px;color:#fff">cleaning_services</span><span class="h2" style="color:#fff">Cleaning mode</span><span class="bs cl-n" style="color:#d8d5e3">Touch unlocks in 30 s</span>`;
+    ov.classList.add('on'); clearInterval(ov._t);
+    ov._t = setInterval(() => { n--; ov.querySelector('.cl-n').textContent = `Touch unlocks in ${n} s`; if (n <= 0) { clearInterval(ov._t); ov.classList.remove('on'); } }, 1000);
+  }
+
+  /* ---------- Chess (chess.js rules; play the computer or a friend) ---------- */
+  const PIECE = { p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚' }, VAL = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+  function chessNew(w) {
+    if (!w || !w.querySelector('.chess')) return;
+    if (!window.Chess) { w.querySelector('.chess-s').textContent = 'Chess engine is loading…'; return; }
+    w._g = new Chess(); w._sel = null; chessDraw(w);
+  }
+  function chessDraw(w) {
+    const g = w._g, b = w.querySelector('.chess'), files = 'abcdefgh';
+    let html = '';
+    const targets = w._sel ? g.moves({ square: w._sel, verbose: true }).map(m => m.to) : [];
+    for (let r = 8; r >= 1; r--) for (let c = 0; c < 8; c++) {
+      const sq = files[c] + r, pc = g.get(sq);
+      const cls = ((r + c) % 2 ? 'lt1' : 'dk1') + (w._sel === sq ? ' sel' : '') + (targets.includes(sq) ? ' tgt' : '') + (pc ? (pc.color === 'w' ? ' pw' : ' pb') : '');
+      html += `<i class="${cls}" data-sq="${sq}" data-tap>${pc ? PIECE[pc.type] : ''}</i>`;
+    }
+    b.innerHTML = html;
+    const s = w.querySelector('.chess-s');
+    s.textContent = g.in_checkmate() ? (g.turn() === 'w' ? 'Checkmate · Black wins' : 'Checkmate · White wins') : g.in_draw() ? 'Draw' : (g.turn() === 'w' ? 'White' : 'Black') + ' to move' + (g.in_check() ? ' · check' : '');
+  }
+  function chessTap(sqEl) {
+    const w = sqEl.closest('.gamewrap'), g = w._g; if (!g || g.game_over()) return;
+    const vsCpu = w.querySelector('.g-mode .on').textContent.includes('Computer');
+    if (vsCpu && g.turn() === 'b') return;
+    const sq = sqEl.dataset.sq, pc = g.get(sq);
+    if (w._sel) {
+      const mv = g.move({ from: w._sel, to: sq, promotion: 'q' });
+      w._sel = null;
+      if (mv) { chessDraw(w); if (vsCpu && !g.game_over()) setTimeout(() => chessCpu(w), 450); return; }
+    }
+    if (pc && pc.color === g.turn()) w._sel = sq;
+    chessDraw(w);
+  }
+  function chessCpu(w) {   // one-move look-ahead: best capture, avoid hanging pieces, else random
+    const g = w._g, moves = g.moves({ verbose: true }); if (!moves.length) return;
+    let best = null, bs = -1e9;
+    for (const m of moves) {
+      let sc = (m.captured ? VAL[m.captured] * 10 : 0) + (m.flags.includes('p') ? 80 : 0) + Math.random();
+      g.move(m); if (g.in_checkmate()) sc += 1000; else if (g.in_check()) sc += 2;
+      const replies = g.moves({ verbose: true }); const worst = replies.reduce((x, r) => Math.max(x, r.captured ? VAL[r.captured] * 10 : 0), 0);
+      g.undo(); sc -= worst * 0.9;
+      if (sc > bs) { bs = sc; best = m; }
+    }
+    g.move(best); chessDraw(w);
+  }
+
+  /* ---------- Sudoku (numpad, conflicts, solved check) ---------- */
+  const PUZ = [
+    ['530070000600195000098000060800060003400803001700020006060000280000419005000080079', '534678912672195348198342567859761423426853791713924856961537284287419635345286179'],
+    ['000260701680070090190004500820100040004602900050003028009300074040050036703018000', '435269781682571493197834562826195347374682915951743628519326874248957136763418259'],
+    ['100489006730000040000001295007120600500703008006095700914600000020000037800512004', '152489376739256841468371295387124659591763428246895713914637582625948137873512964']];
+  function suNew(w) {
+    if (!w || !w.querySelector('.sudoku')) return;
+    w._pi = ((w._pi ?? -1) + 1) % PUZ.length; const [p] = PUZ[w._pi];
+    w.querySelector('.sudoku').innerHTML = [...p].map((ch, k) => `<i class="${ch !== '0' ? 'giv' : 'emp'}${(k % 9) === 2 || (k % 9) === 5 ? ' bx' : ''}${Math.floor(k / 9) === 2 || Math.floor(k / 9) === 5 ? ' by' : ''}" data-k="${k}" ${ch === '0' ? 'data-tap' : ''}>${ch !== '0' ? ch : ''}</i>`).join('');
+    w._suSel = null; w.querySelector('.su-s').textContent = 'Pick a square, then a number.';
+  }
+  function suSelect(c) { const w = c.closest('.gamewrap'); if (c.classList.contains('giv')) return; w.querySelectorAll('.sudoku i').forEach(x => x.classList.toggle('sel', x === c)); w._suSel = c; }
+  function suEnter(w, n) {
+    const c = w._suSel; if (!c) { w.querySelector('.su-s').textContent = 'Pick an empty square first.'; return; }
+    c.textContent = n ? n : '';
+    const cells = [...w.querySelectorAll('.sudoku i')], v = cells.map(x => x.textContent);
+    cells.forEach((x, k) => {
+      const r = Math.floor(k / 9), cc = k % 9, br = r - r % 3, bc = cc - cc % 3;
+      let bad = false;
+      if (v[k]) for (let j = 0; j < 81; j++) { if (j === k || v[j] !== v[k]) continue; const r2 = Math.floor(j / 9), c2 = j % 9; if (r2 === r || c2 === cc || (r2 - r2 % 3 === br && c2 - c2 % 3 === bc)) { bad = true; break; } }
+      x.classList.toggle('bad', bad && x.classList.contains('emp'));
+    });
+    const s = w.querySelector('.su-s');
+    if (v.join('') === PUZ[w._pi][1]) s.textContent = 'Solved. Nicely done.';
+    else s.textContent = cells.some(x => x.classList.contains('bad')) ? 'That number clashes with another.' : `${v.filter(x => !x).length} squares left`;
+  }
+
+  /* ---------- Trivia (endless, Open Trivia DB; offline fallback) ---------- */
+  const TVBANK = [['Geography', 'What is the capital of Australia?', 'Canberra', ['Sydney', 'Melbourne', 'Perth']], ['Science', 'What gas do plants absorb from the air?', 'Carbon dioxide', ['Oxygen', 'Nitrogen', 'Helium']], ['History', 'In which year did the Berlin Wall fall?', '1989', ['1979', '1991', '1985']], ['Music', 'Which band recorded “Dancing Queen”?', 'ABBA', ['Queen', 'Blondie', 'Roxette']], ['Geography', 'Which river flows through the Grund in Luxembourg City?', 'Alzette', ['Moselle', 'Sûre', 'Rhine']], ['Science', 'How many planets are in our solar system?', '8', ['7', '9', '10']]];
+  const dec = s => { const d = document.createElement('textarea'); d.innerHTML = s; return d.value; };
+  async function tvFill(tr) {
+    if (!tr._q || !tr._q.length) {
+      try { const j = await fetch('https://opentdb.com/api.php?amount=10&type=multiple').then(r => r.json()); tr._q = j.results.map(q => [dec(q.category), dec(q.question), dec(q.correct_answer), q.incorrect_answers.map(dec)]); }
+      catch (e) { tr._q = TVBANK.slice().sort(() => Math.random() - .5); }
+      if (!tr._q.length) tr._q = TVBANK.slice().sort(() => Math.random() - .5);
+    }
+  }
+  async function tvNext(tr) {
+    if (!tr) return; await tvFill(tr);
+    const [cat, q, ok, no] = tr._q.shift();
+    tr.querySelector('.tv-cat').textContent = cat; tr.querySelector('.tv-q').textContent = q; tr.querySelector('.tv-r').textContent = '';
+    tr.querySelector('.tv-next').style.visibility = 'hidden';
+    tr.querySelector('.tv-a').innerHTML = [ok, ...no].sort(() => Math.random() - .5).map(a => `<div class="btn sec" data-ok="${a === ok ? 1 : 0}" style="justify-content:flex-start;height:56px">${a.replace(/</g, '&lt;')}</div>`).join('');
+    tr._done = false;
+  }
+  function tvAnswer(b) {
+    const tr = b.closest('.trivia'); if (tr._done) return; tr._done = true;
+    const ok = b.dataset.ok === '1'; tr._score = (tr._score || 0) + (ok ? 1 : 0); tr._n = (tr._n || 0) + 1;
+    b.classList.add(ok ? 'ok' : 'no'); if (!ok) tr.querySelector('.tv-a [data-ok="1"]').classList.add('ok');
+    tr.querySelector('.tv-score').textContent = `Score ${tr._score} / ${tr._n}`;
+    tr.querySelector('.tv-r').textContent = ok ? 'Correct.' : 'Not this time.';
+    tr.querySelector('.tv-next').style.visibility = 'visible';
+  }
+
+  /* ---------- one dashboard: blind spot + red light + smooth right turn, 12 s loop ---------- */
+  document.querySelectorAll('[data-dash]').forEach(fr => {
+    const w = fr.querySelector('.cv-world'); if (!w) return;
+    w.dataset.dash = '1';
+    const app = w.closest('.app'), cv = w.closest('.carview'), chipT = cv.querySelector('.cv-chip-t'), tlT = cv.querySelector('.tl-t');
+    const ex = +w.dataset.ex, y0 = +w.dataset.y0, R = +w.dataset.r, Y = 440, D = Y - y0, A = Math.PI / 2 * R;
+    const cam = fr.querySelector('.ctx .bscam'), pl = fr.querySelector('.ctx .player');
+    const T = 12, SV = 580, V0 = SV / 6, SE = D + A + 200;
+    const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    const sAt = t => t < 5 ? V0 * t : t < 7 ? V0 * 5 + V0 * ((t - 5) - (t - 5) * (t - 5) / 4) : t < 8.6 ? SV : t < 11.6 ? SV + (SE - SV) * ease((t - 8.6) / 3) : SE;
+    const pose = s => s < D ? [ex, Y - s, 0] : s < D + A ? (f => [ex + R - R * Math.cos(f), y0 - R * Math.sin(f), f * 180 / Math.PI])((s - D) / R) : [ex + R + (s - D - A), y0 - R, 90];
+    const navOn = () => !fr.querySelector('[data-screen]') || fr.querySelector('[data-screen="nav"].on');
+    let t0 = null, bsWas = false;
+    function setBS(on) {
+      if (on === bsWas) return; bsWas = on;
+      fr.classList.toggle('bs-on', on); if (pl) pl.classList.toggle('compact', on);
+      if (cam) {
+        const ctx = cam.parentElement, other = [...ctx.children].filter(c => c !== cam && c !== pl && c.offsetParent !== null).reduce((h, c) => h + c.offsetHeight + 16, 0);
+        cam.style.height = on ? Math.max(200, ctx.clientHeight - other - 112 - 16) + 'px' : '0px';
+      }
+    }
+    function frame(ts) {
+      if (t0 === null) t0 = ts;
+      const t = ((ts - t0) / 1000) % T;
+      const active = navOn();
+      fr.classList.toggle('bs-sig', active && t > 1.8 && t < 10.8);
+      setBS(active && t > 2.6 && t < 6.6);
+      const green = t > 8.4; cv.classList.toggle('tl-green', green); cv.classList.toggle('tl-red', !green);
+      if (app.classList.contains('v-car')) {
+        const s = sAt(t), [x, y, h] = pose(s);
+        w.setAttribute('transform', `translate(${ex} ${Y}) rotate(${-h}) translate(${-x} ${-y})`);
+        w.classList.toggle('fade', t > 11.6 || t < 0.15);
+        if (chipT) chipT.textContent = s < SV - 1 ? `Lane 3 of 3 · turn right in ${Math.max(1, Math.round((SV - s) / 40) + 2)} m` : t < 8.6 ? 'Waiting at the junction' : 'Turning right';
+        if (tlT) tlT.textContent = green ? 'Green · go' : t > 6.4 ? 'Red light · stopping' : 'Traffic light ahead · red';
+      }
+      requestAnimationFrame(frame);
+    }
+    const rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!rm) requestAnimationFrame(frame); else { cv.classList.add('tl-red'); }
+  });
+
   /* ---------- router (prototype): bottom bar + gear switch screens ---------- */
   const NAMES = { media: 'Media', phone: 'Phone', apps: 'Apps' };
   function route(fr, to) {
@@ -181,7 +399,7 @@
     let arg = null;
     if (to.includes(':')) { [to, arg] = to.split(':'); }
     let scr = fr.querySelector(`[data-screen="${to}"]`);
-    if (!scr) { scr = fr.querySelector('[data-screen="soon"]'); if (scr) scr.querySelector('.soon-t').textContent = NAMES[to] || to; }
+    if (!scr) return;
     fr.querySelectorAll('.scr').forEach(s => s.classList.toggle('on', s === scr));
     fr.querySelectorAll('.dock .dk[data-go]').forEach(d => d.classList.toggle('on', d.dataset.go === to));
     const nav = to === 'nav';
@@ -200,6 +418,11 @@
     route(fr, 'appview');
     fr.querySelectorAll('.dock .dk[data-go]').forEach(d => d.classList.toggle('on', d.dataset.go === 'apps'));
     if (window.nioLive) window.nioLive();
+    const gw = c.querySelector('.gamewrap');
+    if (name === 'Chess') chessNew(gw);
+    if (name === 'Sudoku') suNew(gw);
+    if (name === 'Trivia') tvNext(c.querySelector('.trivia'));
+    if (name === 'YouTube') { const box = c.querySelector('.ytbox'); if (isParked(fr)) { box.classList.add('playing'); loadYT(box, c.querySelector('[data-yt].on').dataset.yt); } }
   }
 
   /* ---------- sliders (progress + volume, volume synced per frame) ---------- */
@@ -219,6 +442,10 @@
     const pct = Math.round(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * 100);
     const step = Math.floor(pct / 10); if (step !== drag.last) { if (drag.last !== -1 && frameVol(frameOf(drag.s)) > 0) tick('soft'); drag.last = step; }
     if (drag.s.dataset.sync === 'vol') setVol(frameOf(drag.s), pct);
+    else if (drag.s.hasAttribute('data-bright')) {
+      drag.s.style.setProperty('--v', pct + '%');
+      const fr = frameOf(drag.s); if (fr.style) fr.style.filter = `brightness(${(0.45 + pct / 100 * 0.86).toFixed(3)})`;
+    }
     else if (drag.s.dataset.min !== undefined) {
       drag.s.style.setProperty('--v', pct + '%');
       const lo = +drag.s.dataset.min, hi = +drag.s.dataset.max, st = +(drag.s.dataset.step || 1);
@@ -323,6 +550,7 @@
   });
   /* ---------- car view: 5 s loop, drive to the junction and turn right (heading-up) ---------- */
   document.querySelectorAll('.cv-world').forEach(w => {
+    if (w.closest('[data-dash]')) return;   // driven by the dashboard timeline
     const app = w.closest('.app'), chipT = app && app.querySelector('.cv-chip-t');
     const ex = +w.dataset.ex, y0 = +w.dataset.y0, R = +w.dataset.r, Y = 440, D = Y - y0, A = Math.PI / 2 * R, V = 200, PX_M = 40;
     const pose = s => {

@@ -422,3 +422,59 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .nomi-log .acts{display:flex;gap:10px}
 .chip2{height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--s1);display:flex;align-items:center;font:400 15px "Red Hat Text";color:var(--t1);cursor:pointer;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
 .chip2:hover{background:var(--s2)}.chip2:active{transform:scale(.96)}
+/* ---------- round 6 ---------- */
+.srow{padding:8px 0}
+.clim .t{width:96px}
+/* player: radio has no timeline; tape runs while playing */
+.livebadge{display:none;align-items:center;gap:8px;font:500 13px "Red Hat Text";letter-spacing:.06em;color:#d94a4a}
+.livebadge i{width:8px;height:8px;border-radius:50%;background:#d94a4a;animation:blinkdot 1.6s ease-in-out infinite}
+@keyframes blinkdot{50%{opacity:.3}}
+.player.radio .livebadge{display:flex}
+.player.radio .p-progrow{display:none}
+.tape .tp{stroke:#5a4a5e;stroke-width:3;stroke-dasharray:7 4}
+.player.playing .tape .tp{animation:taperun .9s linear infinite}
+@keyframes taperun{to{stroke-dashoffset:-22}}
+.art[data-pick]{cursor:pointer}
+.pickerov{position:absolute;inset:0;z-index:45;background:rgba(31,28,41,.14);display:flex;align-items:center;justify-content:flex-end;padding:64px 24px 128px;opacity:0;pointer-events:none;transition:opacity .35s var(--ease)}
+.pickerov.on{opacity:1;pointer-events:auto}
+.picker{width:457px;height:100%;background:var(--s1);border-radius:var(--r-card);box-shadow:0 20px 60px rgba(36,30,72,.18);padding:20px 22px;display:flex;flex-direction:column;gap:12px;transform:translateX(16px);transition:transform .4s var(--ease)}
+.pickerov.on .picker{transform:none}
+.pk-list{flex:1;overflow:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:14px}
+.pk-art{display:flex;flex-direction:column}
+.pk-row{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 10px;border-radius:12px;cursor:pointer;transition:background-color var(--dur-hover) var(--ease)}
+.pk-row:hover{background:var(--s2)}.pk-row.on{background:var(--sel)}.pk-row.on .b2{color:var(--on-sel)!important}
+/* dashboard: camera opens above the player, player shrinks smoothly */
+[data-dash] .ctx .bscam{flex:none !important;height:0;margin-bottom:-16px;transition:height .8s cubic-bezier(.45,0,.2,1),margin .8s cubic-bezier(.45,0,.2,1),padding .8s cubic-bezier(.45,0,.2,1),opacity .4s var(--ease)}
+[data-dash].bs-on .ctx .bscam{margin-bottom:0;opacity:1;padding:24px;border-width:2px}
+[data-dash] .ctx .player,[data-dash] .ctx .player.compact{flex:1 1 0 !important;height:auto;min-height:112px}
+/* traffic light */
+.carview .tl-r,.carview .tl-y,.carview .tl-g{fill:#4b4560}
+.carview.tl-red .tl-r{fill:#ff5a5a}.carview.tl-green .tl-g{fill:#3fd07f}
+.tl-dot{width:14px;height:14px;border-radius:50%;background:#d94a4a;box-shadow:0 0 0 4px rgba(217,74,74,.18);transition:background-color .3s,box-shadow .3s}
+.carview.tl-green .tl-dot{background:#2fae6a;box-shadow:0 0 0 4px rgba(47,174,106,.18)}
+/* phone */
+.favgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.fav{padding:18px}
+/* video */
+.ytbox{position:relative;flex:1;min-height:0;border-radius:var(--r-card);overflow:hidden;background:#1b1a21}
+.ytbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:none}
+.ytbox.playing iframe{display:block}
+.ytlock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.ytbox.playing .ytlock{display:none}
+.chip2.on{background:var(--sel);border-color:var(--sel);color:var(--on-sel)}
+/* cleaning */
+.cleanov{position:absolute;inset:0;z-index:60;background:rgba(31,28,41,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
+.cleanov.on{opacity:1;pointer-events:auto}
+/* games */
+.gamewrap{display:flex;align-items:center;justify-content:center;gap:32px;height:100%}
+.gside .btn{align-self:flex-start}
+.chess i.pw{color:#fff;-webkit-text-stroke:1.2px #2d2840}
+.chess i.pb{color:#2d2840}
+.chess i.tgt{box-shadow:inset 0 0 0 999px rgba(122,107,242,.22)}
+.chess i.sel{box-shadow:inset 0 0 0 4px var(--route)}
+.sudoku i.sel{background:var(--sel)}
+.sudoku i.bad{color:#d94a4a;background:#f6d9d9}
+.numpad{display:grid;grid-template-columns:repeat(5,44px);gap:8px}
+.numpad .key{height:44px;border-radius:12px}
+.numpad .key b{font-size:20px}
+.trivia .btn.ok{background:#d5ead8;border-color:#9ccfa6}.trivia .btn.no{background:#f6d9d9;border-color:#e8a9a9}
