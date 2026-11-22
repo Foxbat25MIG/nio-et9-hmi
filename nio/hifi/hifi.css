@@ -431,9 +431,6 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 @keyframes blinkdot{50%{opacity:.3}}
 .player.radio .livebadge{display:flex}
 .player.radio .p-progrow{display:none}
-.tape .tp{stroke:#5a4a5e;stroke-width:3;stroke-dasharray:7 4}
-.player.playing .tape .tp{animation:taperun .9s linear infinite}
-@keyframes taperun{to{stroke-dashoffset:-22}}
 .art[data-pick]{cursor:pointer}
 .pickerov{position:absolute;inset:0;z-index:45;background:rgba(31,28,41,.14);display:flex;align-items:center;justify-content:flex-end;padding:64px 24px 128px;opacity:0;pointer-events:none;transition:opacity .35s var(--ease)}
 .pickerov.on{opacity:1;pointer-events:auto}
@@ -478,3 +475,40 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .numpad .key{height:44px;border-radius:12px}
 .numpad .key b{font-size:20px}
 .trivia .btn.ok{background:#d5ead8;border-color:#9ccfa6}.trivia .btn.no{background:#f6d9d9;border-color:#e8a9a9}
+/* ---------- round 7 ---------- */
+.cov,.art.cov{background-size:cover;background-position:center;color:transparent}
+.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.callbtn.sm{width:40px;height:40px;margin:0 0 0 12px;flex:none}
+/* apps: five labelled groups, all on one screen */
+.agroups{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0}
+.acol{display:flex;flex-direction:column;gap:16px}
+.agroup{background:var(--s1);border-radius:var(--r-card);padding:14px 16px 10px;display:flex;flex-direction:column;gap:8px}
+.agroup .agrid{grid-template-columns:repeat(5,1fr);gap:4px;flex:none}
+.agroup .aico{width:56px;height:56px;border-radius:16px}
+.agroup .aico .ms{font-size:26px!important}
+.agroup .atile{font-size:13px;gap:6px;padding:6px 2px;text-align:center}
+.agroup .atile:hover{background:var(--s2)}
+/* parking flow */
+.pflow{height:100%}
+.pst{display:none;height:100%;overflow:auto;scrollbar-width:none}
+.pst.on{display:block;animation:scrin .4s var(--ease)}
+.pchips>div{flex:1}
+.htoast{position:absolute;left:50%;bottom:150px;z-index:70;transform:translate(-50%,12px);background:var(--ink);color:#fff;font:500 16px "Red Hat Text";border-radius:999px;padding:12px 20px;opacity:0;pointer-events:none;transition:opacity .3s var(--ease),transform .3s var(--ease)}
+.htoast.show{opacity:1;transform:translate(-50%,0)}
+/* 2048 */
+.b2048{display:grid;grid-template-columns:repeat(4,96px);grid-template-rows:repeat(4,96px);gap:10px;padding:10px;background:#cfcbdc;border-radius:16px;touch-action:none;user-select:none}
+.b2048 i{display:flex;align-items:center;justify-content:center;border-radius:10px;background:#e4e1ee;font:500 34px "Red Hat Display";font-style:normal;color:var(--t1);transition:background-color .15s}
+.b2048 .t2{background:#f4f2fa}.b2048 .t4{background:#ebe6fb}.b2048 .t8{background:#d9d0fb}.b2048 .t16{background:#c6b9f7}
+.b2048 .t32{background:#b3a2f4}.b2048 .t64{background:#9d88f1;color:#fff}.b2048 .t128{background:#8a72ee;color:#fff;font-size:30px}
+.b2048 .t256{background:#7a6bf2;color:#fff;font-size:30px}.b2048 .t512{background:#6a55e0;color:#fff;font-size:30px}
+.b2048 .t1024,.b2048 .t2048,.b2048 .t4096{background:#2d2840;color:#fff;font-size:26px}
+.arrows{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,56px);gap:6px}
+.arrows .key{height:56px;border-radius:14px}
+/* minesweeper */
+.bmines{display:grid;grid-template-columns:repeat(9,48px);grid-template-rows:repeat(9,48px);gap:3px;padding:6px;background:#cfcbdc;border-radius:14px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.bmines i{display:flex;align-items:center;justify-content:center;border-radius:8px;background:#ebe8f4;font:600 22px "Red Hat Display";font-style:normal;cursor:pointer;transition:background-color .15s}
+.bmines i:hover{background:#f4f2fa}
+.bmines i.op{background:var(--s1);cursor:default}
+.bmines i.fl .ms{color:#d94a4a;font-size:24px}
+.bmines i.mine{background:#f6d9d9}.bmines i.mine .ms{color:#2d2840;font-size:24px}.bmines i.boom{background:#e88}
+.bmines .n1{color:#4f6fb8}.bmines .n2{color:#2f8f5a}.bmines .n3{color:#d94a4a}.bmines .n4{color:#5b3fa8}.bmines .n5{color:#a8563f}.bmines .n6{color:#2f8f8f}

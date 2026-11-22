@@ -55,6 +55,11 @@
       if (tog.hasAttribute('data-tapsound')) { muted = !tog.classList.contains('on'); try { localStorage.setItem('nio-sound', muted ? 'off' : 'on'); } catch (er) {} paintSound(); }
       return;
     }
+    if (pClick(t)) return;
+    const mv = t.closest('[data-mv]'); if (mv) { g2048Move(mv.closest('.gamewrap'), mv.dataset.mv); return; }
+    if (t.closest('[data-g2048-new]')) { g2048New(t.closest('.gamewrap')); return; }
+    const mk = t.closest('[data-mk]'); if (mk) { minesTap(mk); return; }
+    if (t.closest('[data-mines-new]')) { minesNew(t.closest('.gamewrap')); return; }
     const segItem = t.closest('.seg div, .segx div, .opt span');
     if (segItem) {
       [...segItem.parentElement.children].forEach(c => c.classList.toggle('on', c === segItem));
@@ -100,7 +105,10 @@
       if (song.dataset.station) {
         setStation(fr0, ti, song.dataset.station);
         const sc = song.closest('.tp'); sc.querySelector('.radio-f').textContent = song.dataset.station; sc.querySelector('.radio-n').textContent = ti; sc.querySelector('.dial i').style.left = (((+song.dataset.station) - 87.5) / 20.5 * 100).toFixed(1) + '%';
-      } else setSong(fr0, songIndex(ti, ar), true);
+      } else {
+        setSong(fr0, songIndex(ti, ar), true);
+        if (song.dataset.pos) fr0.querySelectorAll('.player').forEach(p => { p._pos = Math.round(p._dur * song.dataset.pos / 100); paintTime(p); });
+      }
       closePicker(fr0);
       return;
     }
@@ -126,12 +134,13 @@
       ov.querySelector('.call-n').textContent = n; ov.querySelector('.call-s').textContent = 'Calling…';
       ov.querySelectorAll('[data-ctog]').forEach(b => b.classList.remove('on'));
       ov.classList.add('on'); clearInterval(ov._t);
+      if (!ov._held) { ov._held = [...fr0.querySelectorAll('.player.playing')]; ov._held.forEach(p => setPlaying(p, false)); }
       const start = Date.now() + 2000;
       ov._t = setInterval(() => { const s = Math.floor((Date.now() - start) / 1000); if (s >= 0) ov.querySelector('.call-s').textContent = fmt(s); }, 250);
       return;
     }
     const cbt = t.closest('.cbtn');
-    if (cbt) { if (cbt.classList.contains('end')) { const ov = cbt.closest('.callov'); clearInterval(ov._t); ov.classList.remove('on'); } else cbt.classList.toggle('on'); return; }
+    if (cbt) { if (cbt.classList.contains('end')) { const ov = cbt.closest('.callov'); clearInterval(ov._t); ov.classList.remove('on'); (ov._held || []).forEach(p => setPlaying(p, true)); ov._held = null; } else cbt.classList.toggle('on'); return; }
     const key = t.closest('.key'); if (key) { const d = fr0.querySelector('.kp-num'); if (d.textContent.length < 18) d.textContent += key.dataset.key; return; }
     if (t.closest('.kp-num') || (t.textContent === 'backspace' && t.closest('.tp'))) { const d = fr0.querySelector('.kp-num'); if (d.textContent.length > 5) d.textContent = d.textContent.slice(0, -1); return; }
     const rd = t.closest('[data-read]'); if (rd) { say(fr0, rd.dataset.read); return; }
@@ -192,19 +201,22 @@
     ['Dancing Queen', 'ABBA', 231], ['Mamma Mia', 'ABBA', 212], ['Waterloo', 'ABBA', 166], ['The Winner Takes It All', 'ABBA', 294],
     ['Get Lucky', 'Daft Punk', 369], ['One More Time', 'Daft Punk', 320], ['Instant Crush', 'Daft Punk', 337], ['Digital Love', 'Daft Punk', 298],
     ['Memory Box', 'Peter Cat Recording Co.', 312], ['Floated By', 'Peter Cat Recording Co.', 305], ['Soulless Friends', 'Peter Cat Recording Co.', 268], ['People Never Change', 'Peter Cat Recording Co.', 241],
-    ['Last Nite', 'The Strokes', 193], ['Reptilia', 'The Strokes', 221], ['Someday', 'The Strokes', 187], ['The Adults Are Talking', 'The Strokes', 309]];
+    ['Last Nite', 'The Strokes', 193], ['Reptilia', 'The Strokes', 221], ['Someday', 'The Strokes', 187], ['The Adults Are Talking', 'The Strokes', 309],
+    ['60. Danny DeVito, Everybody', 'The Always Sunny Podcast', 4620, 'https://i.ytimg.com/vi/52c7vu7jfR8/hqdefault.jpg'],
+    ["The AI Tsunami is Here & Society Isn't Ready", 'People by WTF · Nikhil Kamath', 5640, 'https://i.ytimg.com/vi/68ylaeBbdsg/hqdefault.jpg']];
   function songIndex(ti, ar) {
     let i = SONGS.findIndex(s => s[0] === ti);
     if (i < 0) { SONGS.push([ti, ar, 2400]); i = SONGS.length - 1; }   // audiobooks, podcasts
     return i;
   }
   function setSong(fr, i, play) {
-    const [ti, ar, d] = SONGS[(i + SONGS.length) % SONGS.length];
+    const [ti, ar, d, cov] = SONGS[(i + SONGS.length) % SONGS.length];
     fr._song = (i + SONGS.length) % SONGS.length;
     fr.querySelectorAll('.player').forEach(p => {
       p.classList.remove('radio');
       p.querySelectorAll('.h3').forEach(h => h.textContent = ti); p.querySelectorAll('.b2').forEach(b => b.textContent = ar);
       p._dur = d; p._pos = 0; if (play !== false) setPlaying(p, true); paintTime(p);
+      p.querySelectorAll('.art').forEach(a => { if (a._ph == null) a._ph = a.textContent; a.classList.toggle('cov', !!cov); a.style.backgroundImage = cov ? `url(${cov})` : ''; a.textContent = cov ? '' : a._ph; });
       const e = p.querySelector('.p-full'); if (e) { e.animate([{ opacity: .4 }, { opacity: 1 }], { duration: 400, easing: 'ease-out' }); }
     });
     const pk = fr.querySelector('.pickerov'); if (pk) pk.querySelectorAll('[data-song]').forEach(r => r.classList.toggle('on', r.dataset.song.split('|')[0] === ti));
@@ -357,8 +369,8 @@
     w.dataset.dash = '1';
     const app = w.closest('.app'), cv = w.closest('.carview'), chipT = cv.querySelector('.cv-chip-t'), tlT = cv.querySelector('.tl-t');
     const ex = +w.dataset.ex, y0 = +w.dataset.y0, R = +w.dataset.r, Y = 440, D = Y - y0, A = Math.PI / 2 * R;
-    const cam = fr.querySelector('.ctx .bscam'), pl = fr.querySelector('.ctx .player');
-    const T = 12, SV = 580, V0 = SV / 6, SE = D + A + 200;
+    const cam = fr.querySelector('.ctx .bscam'), pl = fr.querySelector('.ctx .player'), upr = [...w.querySelectorAll('.upr')];
+    const T = 12, SV = +w.dataset.sv || 580, V0 = SV / 6, SE = D + A + 200;
     const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
     const sAt = t => t < 5 ? V0 * t : t < 7 ? V0 * 5 + V0 * ((t - 5) - (t - 5) * (t - 5) / 4) : t < 8.6 ? SV : t < 11.6 ? SV + (SE - SV) * ease((t - 8.6) / 3) : SE;
     const pose = s => s < D ? [ex, Y - s, 0] : s < D + A ? (f => [ex + R - R * Math.cos(f), y0 - R * Math.sin(f), f * 180 / Math.PI])((s - D) / R) : [ex + R + (s - D - A), y0 - R, 90];
@@ -382,8 +394,9 @@
       if (app.classList.contains('v-car')) {
         const s = sAt(t), [x, y, h] = pose(s);
         w.setAttribute('transform', `translate(${ex} ${Y}) rotate(${-h}) translate(${-x} ${-y})`);
+        upr.forEach(g => g.setAttribute('transform', `translate(${g.dataset.x} ${g.dataset.y}) rotate(${h})`));   // signs stay readable
         w.classList.toggle('fade', t > 11.6 || t < 0.15);
-        if (chipT) chipT.textContent = s < SV - 1 ? `Lane 3 of 3 · turn right in ${Math.max(1, Math.round((SV - s) / 40) + 2)} m` : t < 8.6 ? 'Waiting at the junction' : 'Turning right';
+        if (chipT) chipT.textContent = s < SV - 1 ? `Lane 3 of 3 · turn right in ${Math.max(1, Math.round((SV - s) / 10) + 4)} m` : t < 8.6 ? 'Waiting at the junction' : 'Turning right';
         if (tlT) tlT.textContent = green ? 'Green · go' : t > 6.4 ? 'Red light · stopping' : 'Traffic light ahead · red';
       }
       requestAnimationFrame(frame);
@@ -391,6 +404,101 @@
     const rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!rm) requestAnimationFrame(frame); else { cv.classList.add('tl-red'); }
   });
+
+  function toast(fr, msg) {
+    let el = fr.querySelector('.htoast'); if (!el) { el = document.createElement('div'); el.className = 'htoast'; fr.appendChild(el); }
+    el.textContent = msg; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+  /* ---------- Parking app: suggest → compare → time → confirm → booked ---------- */
+  const GAR = [['Parking Trois Glands', 2.40], ['Kirchberg Shopping', 1.80], ['Parking Coque', 1.20]];
+  function pPaint(pf) {
+    const [name, rate] = GAR[+pf.dataset.g], at = pf.dataset.at, h = parseInt(pf.dataset.dur) + (+pf.dataset.ext || 0);
+    const [hh, mm] = at.split(':').map(Number), end = `${String((hh + h) % 24).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+    const set = (k, v) => pf.querySelectorAll(`[data-pv="${k}"]`).forEach(x => x.textContent = v);
+    set('name', name); set('until', end); set('span', `${at} – ${end}`); set('total', '€' + (rate * h).toFixed(2));
+  }
+  function pClick(t) {
+    const pf = t.closest('.pflow'); if (!pf) return false;
+    const ps = t.closest('[data-pset]'), pg = t.closest('[data-pgo]');
+    if (!ps && !pg && !t.closest('[data-pext]')) return false;
+    if (ps) {
+      const [k, v] = ps.dataset.pset.split('|'); pf.dataset[k] = v;
+      if (ps.parentElement.classList.contains('pchips')) [...ps.parentElement.children].forEach(c => c.classList.toggle('on', c === ps));
+    }
+    if (t.closest('[data-pext]')) { pf.dataset.ext = (+pf.dataset.ext || 0) + 1; toast(frameOf(pf), 'Booking extended by 1 hour'); }
+    if (pg) {
+      if (pg.hasAttribute('data-pcancel')) { pf.dataset.ext = 0; toast(frameOf(pf), 'Booking cancelled · refunded to saved payment method'); }
+      pf.querySelectorAll('.pst').forEach(s => s.classList.toggle('on', s.dataset.st === pg.dataset.pgo));
+    }
+    pPaint(pf); return true;
+  }
+
+  /* ---------- 2048 ---------- */
+  function g2048New(w) {
+    if (!w) return; w._b = Array(16).fill(0); w._sc = 0; g2048Add(w); g2048Add(w); g2048Draw(w);
+    w.querySelector('.g-s').textContent = 'Swipe on the board or use the arrows.';
+    const b = w.querySelector('.b2048');
+    if (!b._sw) { b._sw = 1; let sx, sy;
+      b.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; });
+      b.addEventListener('pointerup', e => { if (sx == null) return; const dx = e.clientX - sx, dy = e.clientY - sy; sx = null; if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return; g2048Move(w, Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up')); }); }
+  }
+  function g2048Add(w) { const e = w._b.map((v, i) => v ? -1 : i).filter(i => i >= 0); if (e.length) w._b[e[Math.floor(Math.random() * e.length)]] = Math.random() < .9 ? 2 : 4; }
+  function g2048Draw(w, fresh) {
+    w.querySelector('.b2048').innerHTML = w._b.map(v => `<i class="t${Math.min(v, 4096)}">${v || ''}</i>`).join('');
+    w.querySelector('.g-score').textContent = 'Score ' + w._sc;
+  }
+  function g2048Move(w, dir) {
+    if (!w._b) return;
+    const idx = (r, c) => dir === 'left' ? r * 4 + c : dir === 'right' ? r * 4 + 3 - c : dir === 'up' ? c * 4 + r : (3 - c) * 4 + r;
+    let moved = false;
+    for (let r = 0; r < 4; r++) {
+      const line = [0, 1, 2, 3].map(c => w._b[idx(r, c)]).filter(Boolean), out = [];
+      for (let i = 0; i < line.length; i++) { if (line[i] === line[i + 1]) { out.push(line[i] * 2); w._sc += line[i] * 2; i++; } else out.push(line[i]); }
+      while (out.length < 4) out.push(0);
+      out.forEach((v, c) => { if (w._b[idx(r, c)] !== v) moved = true; w._b[idx(r, c)] = v; });
+    }
+    if (moved) g2048Add(w); g2048Draw(w);
+    const s = w.querySelector('.g-s');
+    if (w._b.includes(2048)) s.textContent = 'You made 2048. Keep going?';
+    else if (!w._b.includes(0) && ![0, 1, 2, 3].some(r => [0, 1, 2].some(c => w._b[r * 4 + c] === w._b[r * 4 + c + 1] || w._b[c * 4 + r] === w._b[(c + 1) * 4 + r]))) s.textContent = 'No moves left. Start a new game.';
+  }
+
+  /* ---------- Minesweeper (9 × 9, 10 mines, first tap is always safe) ---------- */
+  function minesNew(w) {
+    if (!w) return; w._m = null; w._open = 0; w._over = false; w._fl = 0;
+    w.querySelector('.bmines').innerHTML = Array.from({ length: 81 }, (_, k) => `<i data-mk="${k}" data-tap></i>`).join('');
+    w.querySelector('.m-left').textContent = '10 mines'; w.querySelector('.m-s').textContent = 'Tap to reveal. Hold, or switch to Flag, to mark a mine.';
+    const b = w.querySelector('.bmines');
+    if (!b._lp) { b._lp = 1; let tm;
+      b.addEventListener('pointerdown', e => { const c = e.target.closest('[data-mk]'); if (!c) return; tm = setTimeout(() => { tm = null; c._held = true; minesFlag(w, c); }, 450); });
+      ['pointerup', 'pointerleave'].forEach(ev => b.addEventListener(ev, () => { if (tm) clearTimeout(tm); tm = null; })); }
+  }
+  const nb = k => { const r = Math.floor(k / 9), c = k % 9, o = []; for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const R = r + dr, C = c + dc; if ((dr || dc) && R >= 0 && R < 9 && C >= 0 && C < 9) o.push(R * 9 + C); } return o; };
+  function minesFlag(w, c) {
+    if (w._over || c.classList.contains('op')) return;
+    c.classList.toggle('fl'); c.innerHTML = c.classList.contains('fl') ? '<span class="ms f">flag</span>' : '';
+    w._fl += c.classList.contains('fl') ? 1 : -1; w.querySelector('.m-left').textContent = `${10 - w._fl} mines`;
+  }
+  function minesTap(c) {
+    const w = c.closest('.gamewrap'); if (c._held) { c._held = false; return; }
+    if (w._over) return;
+    if (w.querySelector('.m-mode .on').textContent.includes('Flag')) { minesFlag(w, c); return; }
+    if (c.classList.contains('fl')) return;
+    const k = +c.dataset.mk;
+    if (!w._m) { const safe = new Set([k, ...nb(k)]); w._m = new Set(); while (w._m.size < 10) { const r = Math.floor(Math.random() * 81); if (!safe.has(r)) w._m.add(r); } }
+    const cells = w.querySelectorAll('.bmines i');
+    if (w._m.has(k)) {
+      w._over = true; w._m.forEach(m => { cells[m].classList.add('mine'); cells[m].innerHTML = '<span class="ms f">brightness_7</span>'; }); c.classList.add('boom');
+      w.querySelector('.m-s').textContent = 'Mine. Start a new game to try again.'; return;
+    }
+    const stack = [k];
+    while (stack.length) {
+      const q = stack.pop(), el = cells[q]; if (el.classList.contains('op') || el.classList.contains('fl')) continue;
+      const n = nb(q).filter(x => w._m.has(x)).length; el.classList.add('op', 'n' + n); el.textContent = n || ''; w._open++;
+      if (!n) nb(q).forEach(x => stack.push(x));
+    }
+    if (w._open === 71) { w._over = true; w.querySelector('.m-s').textContent = 'Cleared. Well played.'; }
+  }
 
   /* ---------- router (prototype): bottom bar + gear switch screens ---------- */
   const NAMES = { media: 'Media', phone: 'Phone', apps: 'Apps' };
@@ -422,6 +530,8 @@
     if (name === 'Chess') chessNew(gw);
     if (name === 'Sudoku') suNew(gw);
     if (name === 'Trivia') tvNext(c.querySelector('.trivia'));
+    if (name === '2048') g2048New(gw);
+    if (name === 'Minesweeper') minesNew(gw);
     if (name === 'YouTube') { const box = c.querySelector('.ytbox'); if (isParked(fr)) { box.classList.add('playing'); loadYT(box, c.querySelector('[data-yt].on').dataset.yt); } }
   }
 
@@ -460,9 +570,10 @@
   }
 
   /* ---------- player ---------- */
-  const fmt = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  const fmt = s => s >= 3600 ? `${Math.floor(s / 3600)}:${String(Math.floor(s % 3600 / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   function paintTime(p) {
     const c = p.querySelector('.p-cur'); if (c) c.textContent = fmt(p._pos);
+    const d = p.querySelector('.p-dur'); if (d) d.textContent = fmt(p._dur);
     p.querySelectorAll('.p-prog').forEach(s => s.style.setProperty('--v', (100 * p._pos / p._dur).toFixed(2) + '%'));
     drawTape(p);
   }
@@ -473,12 +584,12 @@
     const w = Math.round(svg.parentElement.offsetWidth || 300);
     if (p._tw !== w) {
       p._tw = w; svg.setAttribute('viewBox', `0 0 ${w} 64`);
-      svg.innerHTML = `<rect x="1" y="1" width="${w - 2}" height="62" rx="12" fill="#e4e1ee"/><path class="tp" fill="none" stroke="#4b3f52" stroke-width="2"/><circle class="pk-l" cx="40" cy="30" fill="#4b3f52"/><circle class="pk-r" cx="${w - 40}" cy="30" fill="#4b3f52"/><g transform="translate(40 30)"><g class="reel">${HUB}</g></g><g transform="translate(${w - 40} 30)"><g class="reel">${HUB}</g></g><circle cx="84" cy="56" r="3.5" fill="#fff" stroke="#9b95b5"/><circle cx="${w - 84}" cy="56" r="3.5" fill="#fff" stroke="#9b95b5"/><rect x="${w / 2 - 10}" y="54" width="20" height="8" rx="2" fill="#9b95b5"/>`;
+      svg.innerHTML = `<rect x="1" y="1" width="${w - 2}" height="62" rx="12" fill="#e4e1ee"/><path class="tline" fill="none" stroke="#4b3f52" stroke-width="2" stroke-linejoin="round"/><circle class="pk-l" cx="40" cy="30" fill="#4b3f52"/><circle class="pk-r" cx="${w - 40}" cy="30" fill="#4b3f52"/><g transform="translate(40 30)"><g class="reel">${HUB}</g></g><g transform="translate(${w - 40} 30)"><g class="reel">${HUB}</g></g><circle cx="84" cy="56" r="3.5" fill="#fff" stroke="#9b95b5"/><circle cx="${w - 84}" cy="56" r="3.5" fill="#fff" stroke="#9b95b5"/><rect x="${w / 2 - 10}" y="54" width="20" height="8" rx="2" fill="#9b95b5"/>`;
     }
     const f = p._pos / p._dur, rl = 22 - 10 * f, rr = 12 + 10 * f;
     svg.querySelector('.pk-l').setAttribute('r', rl.toFixed(1));
     svg.querySelector('.pk-r').setAttribute('r', rr.toFixed(1));
-    svg.querySelector('.tp').setAttribute('d', `M${(40 + rl * 0.45).toFixed(1)} ${(30 + rl * 0.89).toFixed(1)}L84 59.5L${w - 84} 59.5L${(w - 40 - rr * 0.45).toFixed(1)} ${(30 + rr * 0.89).toFixed(1)}`);
+    svg.querySelector(".tline").setAttribute('d', `M${(40 + rl * 0.45).toFixed(1)} ${(30 + rl * 0.89).toFixed(1)}L84 59.5L${w - 84} 59.5L${(w - 40 - rr * 0.45).toFixed(1)} ${(30 + rr * 0.89).toFixed(1)}`);
   }
   function setPlaying(p, on) {
     p.classList.toggle('playing', on);
