@@ -52,10 +52,12 @@
     const t = e.target;
     const tog = t.closest('.tog'); if (tog) {
       tog.classList.toggle('on');
+      if (tog.hasAttribute('data-guard')) { const on = tog.classList.contains('on'), gc = tog.closest('.av-c, .app, .frame').querySelector('.gm-card');
+        if (gc) { gc.classList.toggle('on', on); gc.querySelector('.gm-st').textContent = on ? 'Guard Mode is on' : 'Guard Mode is off'; gc.querySelector('.gm-sub').textContent = on ? 'Watching with 4 cameras while the ET9 is parked and locked' : 'Turn it on to record when someone comes close'; } }
       if (tog.hasAttribute('data-tapsound')) { muted = !tog.classList.contains('on'); try { localStorage.setItem('nio-sound', muted ? 'off' : 'on'); } catch (er) {} paintSound(); }
       return;
     }
-    if (pClick(t)) return;
+    if (pClick(t) || calClick(t)) return;
     const mv = t.closest('[data-mv]'); if (mv) { g2048Move(mv.closest('.gamewrap'), mv.dataset.mv); return; }
     if (t.closest('[data-g2048-new]')) { g2048New(t.closest('.gamewrap')); return; }
     const mk = t.closest('[data-mk]'); if (mk) { minesTap(mk); return; }
@@ -136,13 +138,15 @@
       ov.classList.add('on'); clearInterval(ov._t);
       if (!ov._held) { ov._held = [...fr0.querySelectorAll('.player.playing')]; ov._held.forEach(p => setPlaying(p, false)); }
       const start = Date.now() + 2000;
+      ov._log = logCall(fr0, n); ov._t0 = start;
       ov._t = setInterval(() => { const s = Math.floor((Date.now() - start) / 1000); if (s >= 0) ov.querySelector('.call-s').textContent = fmt(s); }, 250);
       return;
     }
     const cbt = t.closest('.cbtn');
-    if (cbt) { if (cbt.classList.contains('end')) { const ov = cbt.closest('.callov'); clearInterval(ov._t); ov.classList.remove('on'); (ov._held || []).forEach(p => setPlaying(p, true)); ov._held = null; } else cbt.classList.toggle('on'); return; }
+    if (cbt) { if (cbt.classList.contains('end')) { const ov = cbt.closest('.callov'); clearInterval(ov._t); ov.classList.remove('on'); (ov._held || []).forEach(p => setPlaying(p, true)); ov._held = null;
+        if (ov._log) { const m = Math.max(1, Math.round((Date.now() - ov._t0) / 60000)); ov._log.querySelector('.bs').textContent = Date.now() < ov._t0 ? 'Outgoing · cancelled' : `Outgoing · ${m} min`; ov._log = null; } } else cbt.classList.toggle('on'); return; }
     const key = t.closest('.key'); if (key) { const d = fr0.querySelector('.kp-num'); if (d.textContent.length < 18) d.textContent += key.dataset.key; return; }
-    if (t.closest('.kp-num') || (t.textContent === 'backspace' && t.closest('.tp'))) { const d = fr0.querySelector('.kp-num'); if (d.textContent.length > 5) d.textContent = d.textContent.slice(0, -1); return; }
+    if (t.closest('[data-kpdel]')) { const d = fr0.querySelector('.kp-num'); d.textContent = d.textContent.trimEnd().slice(0, -1); return; }
     const rd = t.closest('[data-read]'); if (rd) { say(fr0, rd.dataset.read); return; }
     if (t.closest('[data-nomi]')) { openNomi(fr0); return; }
     if (t.closest('.nomi-x') || t.classList.contains('nomiov')) { fr0.querySelector('.nomiov').classList.remove('on'); return; }
@@ -216,10 +220,19 @@
       p.classList.remove('radio');
       p.querySelectorAll('.h3').forEach(h => h.textContent = ti); p.querySelectorAll('.b2').forEach(b => b.textContent = ar);
       p._dur = d; p._pos = 0; if (play !== false) setPlaying(p, true); paintTime(p);
-      p.querySelectorAll('.art').forEach(a => { if (a._ph == null) a._ph = a.textContent; a.classList.toggle('cov', !!cov); a.style.backgroundImage = cov ? `url(${cov})` : ''; a.textContent = cov ? '' : a._ph; });
+      setArt(p, cov ? { img: cov } : null);
       const e = p.querySelector('.p-full'); if (e) { e.animate([{ opacity: .4 }, { opacity: 1 }], { duration: 400, easing: 'ease-out' }); }
     });
     const pk = fr.querySelector('.pickerov'); if (pk) pk.querySelectorAll('[data-song]').forEach(r => r.classList.toggle('on', r.dataset.song.split('|')[0] === ti));
+  }
+  // cover art: song placeholder, podcast cover, or the radio station's own tile
+  function setArt(p, a) {
+    p.querySelectorAll('.art').forEach(el => {
+      if (el._ph == null) el._ph = el.innerHTML;
+      el.classList.toggle('cov', !!(a && a.img)); el.classList.toggle('radioart', !!(a && a.radio));
+      el.style.backgroundImage = a && a.img ? `url(${a.img})` : '';
+      el.innerHTML = !a ? el._ph : a.img ? '' : `<span class="ra-l">DAB+ · Luxembourg</span><span class="ra-f">${a.f}</span><span class="ra-n">${a.radio}</span>`;
+    });
   }
   function stepSong(fr, dir) {
     const p = fr.querySelector('.player');
@@ -229,7 +242,7 @@
   }
   function setStation(fr, name, f) {
     fr.querySelectorAll('.player').forEach(p => {
-      p.classList.add('radio'); p.querySelectorAll('.h3').forEach(h => h.textContent = name); p.querySelectorAll('.b2').forEach(b => b.textContent = 'Live radio · ' + f);
+      p.classList.add('radio'); setArt(p, { radio: name, f }); p.querySelectorAll('.h3').forEach(h => h.textContent = name); p.querySelectorAll('.b2').forEach(b => b.textContent = 'Live radio · ' + f);
       p.querySelectorAll('.lb-s').forEach(x => x.textContent = 'DAB+ ' + f); setPlaying(p, true);
     });
   }
@@ -363,19 +376,44 @@
     tr.querySelector('.tv-next').style.visibility = 'visible';
   }
 
-  /* ---------- one dashboard: blind spot + red light + smooth right turn, 12 s loop ---------- */
+  /* ---------- one dashboard, 15 s loop, following the real route:
+     Route d'Esch (3 lanes) → red light → right onto Avenue Marie-Thérèse (2 lanes each way)
+     → move to the left lane for Boulevard Joseph II, 170 m on. Speeds ramp like a real car. ---------- */
   document.querySelectorAll('[data-dash]').forEach(fr => {
     const w = fr.querySelector('.cv-world'); if (!w) return;
     w.dataset.dash = '1';
-    const app = w.closest('.app'), cv = w.closest('.carview'), chipT = cv.querySelector('.cv-chip-t'), tlT = cv.querySelector('.tl-t');
-    const ex = +w.dataset.ex, y0 = +w.dataset.y0, R = +w.dataset.r, Y = 440, D = Y - y0, A = Math.PI / 2 * R;
+    const app = w.closest('.app'), cv = w.closest('.carview'), chipT = cv.querySelector('.cv-chip-t'), chipS = cv.querySelector('.cv-chip .bs'), tlT = cv.querySelector('.tl-t');
+    const ex = +w.dataset.ex, y0 = +w.dataset.y0, R = +w.dataset.r, LC = +w.dataset.lc || 140, Y = 440, D = Y - y0, A = Math.PI / 2 * R;
     const cam = fr.querySelector('.ctx .bscam'), pl = fr.querySelector('.ctx .player'), upr = [...w.querySelectorAll('.upr')];
-    const T = 12, SV = +w.dataset.sv || 580, V0 = SV / 6, SE = D + A + 200;
-    const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-    const sAt = t => t < 5 ? V0 * t : t < 7 ? V0 * 5 + V0 * ((t - 5) - (t - 5) * (t - 5) / 4) : t < 8.6 ? SV : t < 11.6 ? SV + (SE - SV) * ease((t - 8.6) / 3) : SE;
-    const pose = s => s < D ? [ex, Y - s, 0] : s < D + A ? (f => [ex + R - R * Math.cos(f), y0 - R * Math.sin(f), f * 180 / Math.PI])((s - D) / R) : [ex + R + (s - D - A), y0 - R, 90];
+    const T = 15, SV = +w.dataset.sv || 392, MPX = 0.039;           // 136 px car ≈ 5.3 m
+    const sm = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
+    const V0 = 120, VT = 140, VE = 230;                            // cruise, through the turn, after the turn (px/s)
+    const vel = t => t < 5 ? V0 : t < 7 ? V0 * (1 - sm((t - 5) / 2)) : t < 8.6 ? 0 : t < 11.2 ? VT * sm((t - 8.6) / 2.6) : VT + (VE - VT) * sm((t - 11.2) / 2.8);
+    const DT = 0.005, ST = [0]; for (let k = 1; k <= T / DT; k++) ST.push(ST[k - 1] + (vel((k - .5) * DT)) * DT);
+    const SOFF = SV - ST[Math.round(7 / DT)];                      // stop exactly at SV
+    const sAt = t => SOFF + ST[Math.min(ST.length - 1, Math.round(t / DT))];
+    const U0 = 140, UL = 420;                                       // lane change starts 140 px after the turn, lasts 420 px
+    const pose = s => {
+      if (s < D) return [ex, Y - s, 0];
+      if (s < D + A) { const f = (s - D) / R; return [ex + R - R * Math.cos(f), y0 - R * Math.sin(f), f * 180 / Math.PI]; }
+      const u = s - D - A, k = (u - U0) / UL, yy = y0 - R - LC * sm(k);
+      const slope = k > 0 && k < 1 ? LC * 6 * k * (1 - k) / UL : 0;
+      return [ex + R + u, yy, 90 - Math.atan(slope) * 180 / Math.PI];
+    };
+    const $ = s => app.querySelector(`[data-nav="${s}"]`);
+    const ui = { dist: $('dist'), street: $('street'), icon: $('icon'), lanes: $('lanes'), then: $('then') };
+    const lanesHTML = l => l.map(x => x.endsWith('*') ? `<span class="ms go f">${x.slice(0, -1)}</span>` : `<span class="ms">${x}</span>`).join('');
+    let phase = '';
+    function card(ph, dist) {
+      if (ui.dist) ui.dist.textContent = dist;
+      if (ph === phase) return; phase = ph;
+      const c = ph === 'right' ? ['turn_right', 'Avenue Marie-Thérèse', ['straight', 'straight', 'turn_right*'], 'then left onto Bd Joseph II']
+                               : ['turn_left', 'Boulevard Joseph II', ['turn_left*', 'straight'], 'then keep left onto Bd de la Foire'];
+      if (ui.icon) ui.icon.textContent = c[0]; if (ui.street) ui.street.textContent = c[1];
+      if (ui.lanes) { ui.lanes.style.visibility = 'visible'; ui.lanes.innerHTML = lanesHTML(c[2]); } if (ui.then) ui.then.textContent = c[3];
+    }
     const navOn = () => !fr.querySelector('[data-screen]') || fr.querySelector('[data-screen="nav"].on');
-    let t0 = null, bsWas = false;
+    let t0 = null, bsWas = false, wasCar = false;
     function setBS(on) {
       if (on === bsWas) return; bsWas = on;
       fr.classList.toggle('bs-on', on); if (pl) pl.classList.toggle('compact', on);
@@ -384,6 +422,7 @@
         cam.style.height = on ? Math.max(200, ctx.clientHeight - other - 112 - 16) + 'px' : '0px';
       }
     }
+    const m = px => Math.max(5, Math.round(px * MPX / 5) * 5) + ' m';
     function frame(ts) {
       if (t0 === null) t0 = ts;
       const t = ((ts - t0) / 1000) % T;
@@ -391,24 +430,125 @@
       fr.classList.toggle('bs-sig', active && t > 1.8 && t < 10.8);
       setBS(active && t > 2.6 && t < 6.6);
       const green = t > 8.4; cv.classList.toggle('tl-green', green); cv.classList.toggle('tl-red', !green);
-      if (app.classList.contains('v-car')) {
+      const isCar = app.classList.contains('v-car'); app.classList.toggle('dash-car', isCar);
+      if (isCar) {
         const s = sAt(t), [x, y, h] = pose(s);
         w.setAttribute('transform', `translate(${ex} ${Y}) rotate(${-h}) translate(${-x} ${-y})`);
         upr.forEach(g => g.setAttribute('transform', `translate(${g.dataset.x} ${g.dataset.y}) rotate(${h})`));   // signs stay readable
-        w.classList.toggle('fade', t > 11.6 || t < 0.15);
-        if (chipT) chipT.textContent = s < SV - 1 ? `Lane 3 of 3 · turn right in ${Math.max(1, Math.round((SV - s) / 10) + 4)} m` : t < 8.6 ? 'Waiting at the junction' : 'Turning right';
+        w.classList.toggle('fade', t > 14.4 || t < 0.2);
+        const u = s - D - A, toLeft = 170 - Math.max(0, u) * MPX * 4;   // Joseph II is ~170 m after the turn
+        let chip, sub = 'Stay in this lane';
+        if (s < SV - 1) { chip = `Lane 3 of 3 · turn right in ${m(D - s)}`; card('right', m(D - s)); }
+        else if (t < 8.6) { chip = 'Waiting at the junction'; sub = 'Right-turn lane'; card('right', m(D - s)); }
+        else if (s < D + A) { chip = 'Turning right'; sub = 'Onto Avenue Marie-Thérèse'; card('right', 'Now'); }
+        else if (u < U0 + UL * .9) { chip = 'Move to lane 1 of 2'; sub = `Left turn in ${Math.round(toLeft / 10) * 10} m`; card('left', Math.round(toLeft / 10) * 10 + ' m'); }
+        else { chip = `Lane 1 of 2 · turn left in ${Math.round(toLeft / 10) * 10} m`; card('left', Math.round(toLeft / 10) * 10 + ' m'); }
+        if (chipT) chipT.textContent = chip; if (chipS) chipS.textContent = sub;
         if (tlT) tlT.textContent = green ? 'Green · go' : t > 6.4 ? 'Red light · stopping' : 'Traffic light ahead · red';
-      }
+      } else if (wasCar) { phase = ''; if (window.nioNavRefresh) window.nioNavRefresh(app); }
+      wasCar = isCar;
       requestAnimationFrame(frame);
     }
     const rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!rm) requestAnimationFrame(frame); else { cv.classList.add('tl-red'); }
   });
 
+  function logCall(fr, name) {
+    const list = fr.querySelector('.recents'); if (!list) return null;
+    const clock = (fr.querySelector('.status .time') || {}).textContent || '13:48';
+    const row = document.createElement('div'); row.className = 'lrow'; row.dataset.call = name; row.setAttribute('data-tap', '');
+    row.innerHTML = `<span class="ms" style="font-size:24px;color:var(--t2)">call_made</span><div class="col" style="gap:0;flex:1"><span class="b2" style="color:var(--t1)">${name}</span><span class="bs">Outgoing · calling</span></div><span class="bs num">Today ${clock.trim()}</span><span class="callbtn sm"><span class="ms f" style="font-size:20px;color:#fff">call</span></span>`;
+    list.prepend(row); row.animate([{ background: 'var(--sel)' }, { background: 'transparent' }], { duration: 1600, easing: 'ease-out' });
+    return row;
+  }
   function toast(fr, msg) {
     let el = fr.querySelector('.htoast'); if (!el) { el = document.createElement('div'); el.className = 'htoast'; fr.appendChild(el); }
     el.textContent = msg; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2200);
   }
+  /* ---------- Calendar: week / month / year, Emma's plans, add a random event ---------- */
+  const CY = new Date().getFullYear();
+  const CAT = { work: '#cddcf7', art: '#f3dde4', hike: '#d5ead8', ski: '#d6e8f2', life: '#e9dcf3' };
+  const EVENTS = [
+    [11, 22, '14:00', 'Mudam visit', 'Kirchberg', 'art'], [11, 22, '16:00', 'Ville Haute walk', 'Old town', 'life'], [11, 22, '18:00', 'Grand Ducal Palace', 'Tour', 'art'], [11, 22, '20:30', 'Dinner at Aké', 'Booked by Ashish', 'life'],
+    [11, 24, '10:00', 'Client walkthrough', 'Limpertsberg apartment', 'work'], [11, 26, '19:00', 'Gallery opening', 'Casino Luxembourg', 'art'],
+    [11, 28, '08:30', 'Hike · Mullerthal Trail', 'Route 1, Echternach', 'hike'], [12, 2, '11:00', 'Fabric and tile samples', 'Studio', 'work'],
+    [12, 11, 'All day', 'Ski weekend', 'Saas-Fee, until Sunday', 'ski'], [12, 12, 'All day', 'Ski weekend', 'Saas-Fee', 'ski'], [12, 13, 'All day', 'Ski weekend', 'Saas-Fee', 'ski'],
+    [12, 17, '18:30', 'Christmas market sketch walk', "Place d'Armes", 'art']].map(e => ({ d: new Date(CY, e[0] - 1, e[1]), t: e[2], n: e[3], w: e[4], c: e[5] }));
+  const IDEAS = [['Showroom visit', 'Kitchen supplier, Bertrange', 'work'], ['Museum late', 'MNHA', 'art'], ['Hike · Schiessentümpel loop', 'Mullerthal', 'hike'], ['Lunch with Ashish', 'Grund', 'life'],
+    ['Design review', 'Clausen loft', 'work'], ['Life drawing class', 'Studio Bonnevoie', 'art'], ['Ski pass renewal', 'Online', 'ski'], ['Moodboard session', 'Studio', 'work'], ['Hike · Müllerthal sunrise', 'Berdorf', 'hike']];
+  const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  const evOn = d => EVENTS.filter(e => sameDay(e.d, d)).sort((a, b) => a.t.localeCompare(b.t));
+  const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function calInit(cw) { if (!cw) return; const t = new Date(); cw._sel = new Date(t.getFullYear(), t.getMonth(), t.getDate()); cw._view = 'Month'; calDraw(cw); }
+  function calDraw(cw) {
+    const sel = cw._sel, today = new Date(), body = cw.querySelector('.cal-body'), title = cw.querySelector('.cal-title');
+    cw.querySelectorAll('.cal-view div').forEach(d => d.classList.toggle('on', d.textContent === cw._view));
+    let h = '';
+    if (cw._view === 'Month') {
+      title.textContent = `${MON[sel.getMonth()]} ${sel.getFullYear()}`;
+      const first = new Date(sel.getFullYear(), sel.getMonth(), 1), off = (first.getDay() + 6) % 7;
+      h = '<div class="cal-m">' + ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => `<span class="cal-h">${d}</span>`).join('');
+      for (let k = 0; k < 42; k++) {
+        const d = new Date(sel.getFullYear(), sel.getMonth(), 1 - off + k), ev = evOn(d), out = d.getMonth() !== sel.getMonth();
+        h += `<div class="cal-d${out ? ' out' : ''}${sameDay(d, today) ? ' today' : ''}${sameDay(d, sel) ? ' sel' : ''}" data-cal-day="${d.getTime()}" data-tap><b>${d.getDate()}</b>${ev.slice(0, 2).map(e => `<i style="background:${CAT[e.c]}">${e.n}</i>`).join('')}${ev.length > 2 ? `<small>+${ev.length - 2} more</small>` : ''}</div>`;
+      }
+      h += '</div>';
+    } else if (cw._view === 'Week') {
+      const mon = new Date(sel); mon.setDate(sel.getDate() - (sel.getDay() + 6) % 7);
+      const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+      title.textContent = `${mon.getDate()} ${MON[mon.getMonth()].slice(0, 3)} – ${sun.getDate()} ${MON[sun.getMonth()].slice(0, 3)}`;
+      h = '<div class="cal-w">' + Array.from({ length: 7 }, (_, k) => {
+        const d = new Date(mon); d.setDate(mon.getDate() + k);
+        return `<div class="cal-wc${sameDay(d, sel) ? ' sel' : ''}${sameDay(d, today) ? ' today' : ''}" data-cal-day="${d.getTime()}" data-tap><span class="cal-h">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][k]}</span><b>${d.getDate()}</b>` +
+          evOn(d).map(e => `<div class="cal-ev" style="background:${CAT[e.c]}"><span class="num">${e.t}</span>${e.n}</div>`).join('') + '</div>';
+      }).join('') + '</div>';
+    } else {
+      title.textContent = String(sel.getFullYear());
+      h = '<div class="cal-y">' + MON.map((mn, m) => {
+        const first = new Date(sel.getFullYear(), m, 1), off = (first.getDay() + 6) % 7, days = new Date(sel.getFullYear(), m + 1, 0).getDate();
+        let g = '<i></i>'.repeat(off);
+        for (let d = 1; d <= days; d++) { const dt = new Date(sel.getFullYear(), m, d); g += `<i class="${evOn(dt).length ? 'ev' : ''}${sameDay(dt, today) ? ' today' : ''}">${d}</i>`; }
+        return `<div class="cal-ym" data-cal-month="${m}" data-tap><span class="b2" style="color:var(--t1)">${mn}</span><div class="cal-yg">${g}</div></div>`;
+      }).join('') + '</div>';
+    }
+    body.innerHTML = h;
+    const ev = evOn(sel);
+    cw.querySelector('.cal-day').textContent = sameDay(sel, today) ? 'Today' : sel.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    cw.querySelector('.cal-list').innerHTML = ev.length ? ev.map(e => `<div class="cal-li"><i style="background:${CAT[e.c]}"></i><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">${e.n}</span><span class="bs">${e.t} · ${e.w}</span></div></div>`).join('') : '<span class="bs">Nothing planned.</span>';
+  }
+  function calClick(t) {
+    const cw = t.closest('.calw'); if (!cw) return false;
+    const vd = t.closest('.cal-view div'); if (vd) { cw._view = vd.textContent; calDraw(cw); return true; }
+    const st = t.closest('[data-cal-step]');
+    if (st) { const k = +st.dataset.calStep, s = cw._sel;
+      cw._sel = cw._view === 'Month' ? new Date(s.getFullYear(), s.getMonth() + k, 1) : cw._view === 'Week' ? new Date(s.getFullYear(), s.getMonth(), s.getDate() + 7 * k) : new Date(s.getFullYear() + k, s.getMonth(), 1);
+      calDraw(cw); return true; }
+    if (t.closest('[data-cal-today]')) { calInit(cw); return true; }
+    const dd = t.closest('[data-cal-day]'); if (dd) { cw._sel = new Date(+dd.dataset.calDay); calDraw(cw); return true; }
+    const mm = t.closest('[data-cal-month]'); if (mm) { cw._sel = new Date(cw._sel.getFullYear(), +mm.dataset.calMonth, 1); cw._view = 'Month'; calDraw(cw); return true; }
+    if (t.closest('[data-cal-add]')) {
+      const [n, w, c] = IDEAS[Math.floor(Math.random() * IDEAS.length)], base = new Date(), d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + 1 + Math.floor(Math.random() * 30));
+      const tm = `${String(9 + Math.floor(Math.random() * 10)).padStart(2, '0')}:${Math.random() < .5 ? '00' : '30'}`;
+      EVENTS.push({ d, t: tm, n, w, c }); cw._sel = d; calDraw(cw);
+      toast(frameOf(cw), `Added ${n} · ${d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}, ${tm}`); return true;
+    }
+    return false;
+  }
+
+  /* ---------- Weather: Paris and New Delhi below Luxembourg (Open-Meteo, live) ---------- */
+  function weatherCities(root) {
+    root.querySelectorAll('.wcity').forEach(c => {
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.dataset.lat}&longitude=${c.dataset.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=${encodeURIComponent(c.dataset.tz)}`)
+        .then(r => r.json()).then(j => {
+          const codes = window.nioCodes || [], m = codes.filter(x => x[0] <= j.current.weather_code).pop() || [0, 'clear', 'clear_day'];
+          const lt = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: c.dataset.tz });
+          c.querySelector('.wc-c').textContent = Math.round(j.current.temperature_2m) + ' °C';
+          c.querySelector('.wc-t').textContent = `${m[1]} · ${lt} local`; c.querySelector('.wc-i').textContent = m[2];
+          c.querySelector('.wc-h').textContent = `H ${Math.round(j.daily.temperature_2m_max[0])}° · L ${Math.round(j.daily.temperature_2m_min[0])}°`;
+        }).catch(() => { c.querySelector('.wc-t').textContent = 'weather unavailable'; });
+    });
+  }
+
   /* ---------- Parking app: suggest → compare → time → confirm → booked ---------- */
   const GAR = [['Parking Trois Glands', 2.40], ['Kirchberg Shopping', 1.80], ['Parking Coque', 1.20]];
   function pPaint(pf) {
@@ -531,6 +671,8 @@
     if (name === 'Sudoku') suNew(gw);
     if (name === 'Trivia') tvNext(c.querySelector('.trivia'));
     if (name === '2048') g2048New(gw);
+    if (name === 'Calendar') calInit(c.querySelector('.calw'));
+    if (name === 'Weather') weatherCities(c);
     if (name === 'Minesweeper') minesNew(gw);
     if (name === 'YouTube') { const box = c.querySelector('.ytbox'); if (isParked(fr)) { box.classList.add('playing'); loadYT(box, c.querySelector('[data-yt].on').dataset.yt); } }
   }

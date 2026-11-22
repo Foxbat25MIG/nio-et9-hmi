@@ -13,7 +13,7 @@
     L('date', dateText);
     const tm = new Date(d.getTime() + 864e5);
     L('tomorrow', tm.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'}));
-    const codes = [[0,'clear','clear_day'],[1,'mostly clear','partly_cloudy_day'],[2,'partly cloudy','partly_cloudy_day'],[3,'overcast','cloud'],[45,'foggy','foggy'],[48,'foggy','foggy'],[51,'drizzle','rainy'],[61,'rain','rainy'],[63,'rain','rainy'],[65,'heavy rain','rainy'],[71,'snow','weather_snowy'],[73,'snow','weather_snowy'],[75,'heavy snow','weather_snowy'],[80,'showers','rainy'],[81,'showers','rainy'],[82,'heavy showers','rainy'],[85,'snow showers','weather_snowy'],[95,'thunderstorms','thunderstorm']];
+    const codes = window.nioCodes = [[0,'clear','clear_day'],[1,'mostly clear','partly_cloudy_day'],[2,'partly cloudy','partly_cloudy_day'],[3,'overcast','cloud'],[45,'foggy','foggy'],[48,'foggy','foggy'],[51,'drizzle','rainy'],[61,'rain','rainy'],[63,'rain','rainy'],[65,'heavy rain','rainy'],[71,'snow','weather_snowy'],[73,'snow','weather_snowy'],[75,'heavy snow','weather_snowy'],[80,'showers','rainy'],[81,'showers','rainy'],[82,'heavy showers','rainy'],[85,'snow showers','weather_snowy'],[95,'thunderstorms','thunderstorm']];
     fetch('https://api.open-meteo.com/v1/forecast?latitude=49.61&longitude=6.13&current=temperature_2m,weather_code&daily=sunset&forecast_days=1&timezone=Europe%2FLuxembourg')
       .then(r => r.json()).then(j => {
         const t = Math.round(j.current.temperature_2m), c = j.current.weather_code;

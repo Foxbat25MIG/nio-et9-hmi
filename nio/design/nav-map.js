@@ -101,6 +101,7 @@
   const fmtD = m => m >= 1000 ? (m / 1000).toFixed(1) + ' km' : (m >= 100 ? Math.round(m / 10) * 10 : Math.max(10, Math.round(m / 5) * 5)) + ' m';
   let lastStep = null;
   function setTurn(s) {
+    if (pane.classList.contains('dash-car')) { lastStep = null; return; }   // Car view drives the card itself
     const i = steps.findIndex(st => st.s > s + 2);
     const st = steps[i]; if (!st) return;
     const d = (st.s - s) * K;
