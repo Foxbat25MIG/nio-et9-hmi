@@ -721,3 +721,6 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 /* album covers */
 .art.cov,.ph.cov{background-size:cover;background-position:center;color:transparent;border:0}
 .pk-cv{width:40px;height:40px;border-radius:8px;flex:none;background:var(--s2) center/cover}
+/* Media screen: battery card steps aside so the cover art can grow */
+.ctx .carstat{max-height:140px;overflow:hidden;transition:max-height .5s var(--ease),opacity .3s var(--ease),padding .5s var(--ease),margin .5s var(--ease),border-width .5s var(--ease)}
+.frame[data-scr="media"] .ctx .carstat{max-height:0;opacity:0;padding-top:0;padding-bottom:0;margin-top:-16px;border-width:0}

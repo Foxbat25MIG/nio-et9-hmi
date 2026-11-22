@@ -602,6 +602,7 @@
     });
   }, 700);
   document.querySelectorAll('.sf-card').forEach(sfPaint);
+  document.querySelectorAll('.frame').forEach(fr => { const on = fr.querySelector('.scr.on'); if (on) fr.dataset.scr = on.dataset.screen; });
   document.querySelectorAll('.player').forEach(p => { const h = p.querySelector('.h3'), s = h && SONGS.find(x => x[0] === h.textContent); if (s && s[3]) setArt(p, { img: s[3] }); });
   document.querySelectorAll('[data-song] .ph:not(.cov)').forEach(ph => { const s = SONGS.find(x => x[0] === ph.closest('[data-song]').dataset.song.split('|')[0]); if (s && s[3]) { ph.classList.add('cov'); ph.style.backgroundImage = `url(${s[3]})`; ph.textContent = ''; } });
 
@@ -882,6 +883,7 @@
     let scr = fr.querySelector(`[data-screen="${to}"]`);
     if (!scr) return;
     fr.querySelectorAll('.scr').forEach(s => s.classList.toggle('on', s === scr));
+    fr.dataset.scr = to;   // lets the side pane adapt (Media hides the battery card so the cover can grow)
     fr.querySelectorAll('.dock .dk[data-go]').forEach(d => d.classList.toggle('on', d.dataset.go === to));
     const nav = to === 'nav';
     fr.querySelectorAll('[data-ctx="nav"]').forEach(c => c.style.display = nav ? '' : 'none');
