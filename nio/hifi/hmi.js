@@ -543,7 +543,7 @@
           const codes = window.nioCodes || [], m = codes.filter(x => x[0] <= j.current.weather_code).pop() || [0, 'clear', 'clear_day'];
           const lt = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: c.dataset.tz });
           c.querySelector('.wc-c').textContent = Math.round(j.current.temperature_2m) + ' °C';
-          c.querySelector('.wc-t').textContent = `${m[1]} · ${lt} local`; c.querySelector('.wc-i').textContent = m[2];
+          c.querySelector('.wc-t').textContent = `${m[1]} · ${lt} local`; const hr = +lt.slice(0, 2), night = hr < 7 || hr >= 18; c.querySelector('.wc-i').textContent = night ? m[2].replace('clear_day', 'clear_night').replace('partly_cloudy_day', 'partly_cloudy_night') : m[2];
           c.querySelector('.wc-h').textContent = `H ${Math.round(j.daily.temperature_2m_max[0])}° · L ${Math.round(j.daily.temperature_2m_min[0])}°`;
         }).catch(() => { c.querySelector('.wc-t').textContent = 'weather unavailable'; });
     });
