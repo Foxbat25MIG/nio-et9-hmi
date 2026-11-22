@@ -652,3 +652,46 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .drv .av{display:block}
 .drv:hover{opacity:.9}.drv:active{transform:scale(.94)}
 .drv.on{opacity:1}.drv.on .av{box-shadow:0 0 0 3px var(--sel),0 0 0 5px var(--route)}
+/* ---------- Sound field: LYRA cabin map ---------- */
+.sf-mapwrap{width:300px;flex:none;background:var(--s2);border-radius:20px;padding:10px}
+.sf-map{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair;user-select:none}
+.sf-body{fill:#fbfaff;stroke:#cfcbdc;stroke-width:2}
+.sf-glass{fill:#e4e1ee}
+.sf-dash{fill:#e4e1ee}.sf-console{fill:#ece9f4}
+.sf-front{font:600 10px "Red Hat Text";letter-spacing:.14em;fill:#a9a4bb}
+.sf-seat2{fill:#e7e3f2;stroke:#d5d0e3}.sf-head{fill:#dcd7ea}
+.sf-priv{fill:none;stroke:#7a6bf2;stroke-width:2;stroke-dasharray:5 5;opacity:0;transition:opacity .3s}
+.sf-seatg.priv .sf-priv{opacity:1}.sf-seatg.priv .sf-head{fill:#cbc2fa}
+.sf-stage{fill:none;stroke:#7a6bf2;stroke-width:8;stroke-linecap:round;opacity:0;transition:opacity .4s}
+.sf-area{transition:rx .3s var(--ease),ry .3s var(--ease),cx .25s var(--ease),cy .25s var(--ease)}
+.sf-rays line{stroke:#7a6bf2;stroke-width:1.2}
+.spk{--o:.5;--r:1}
+.spk>circle:first-child,.spk>rect{fill:#7a6bf2;opacity:var(--o);transition:opacity .25s}
+.spk-ring{fill:none;stroke:#7a6bf2;stroke-width:1.5;opacity:calc(var(--o) * .45);transform:scale(var(--r));transition:transform .25s,opacity .25s}
+.spk-roof>circle:first-child{fill:#4f8fd8}.spk-roof .spk-ring{stroke:#4f8fd8}
+.spk-head>circle:first-child{fill:#c26ab3;r:5}.spk-head .spk-ring{stroke:#c26ab3;r:9}
+.spk-sub>rect{fill:#2d2840}.spk-sub .spk-ring{stroke:#2d2840;r:16}
+.sf-spot{transition:transform .25s var(--ease);cursor:grab}
+.sf-map:active .sf-spot,.sf-map:active .sf-area{transition:none}
+.sf-spot-o{fill:rgba(122,107,242,.18);stroke:#7a6bf2;stroke-width:2}.sf-spot-i{fill:#7a6bf2}
+.sf-zones{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.sf-zones>div{height:56px;border-radius:14px;background:var(--s2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:400 13px "Red Hat Text";color:var(--t2);cursor:pointer;transition:background-color var(--dur-hover) var(--ease)}
+.sf-zones>div:hover{background:var(--s3)}.sf-zones>div.on{background:var(--sel);color:var(--on-sel)}
+.sf-sys{margin-top:auto}
+.sf-legend{gap:12px;flex-wrap:wrap;font:400 12px "Red Hat Text";color:var(--t2)}
+.sf-legend span{display:flex;align-items:center;gap:6px}
+.lg{width:10px;height:10px;border-radius:50%;display:inline-block}
+.lg-sur{background:#7a6bf2}.lg-roof{background:#4f8fd8}.lg-head{background:#c26ab3}.lg-sub{background:#2d2840;border-radius:3px}
+.atmos-badge{display:flex;align-items:center;gap:8px;border-radius:999px;padding:6px 12px;background:#2d2840;color:#fff;font:400 12px "Red Hat Text"}
+.atmos-badge b{font:600 13px "Red Hat Text";letter-spacing:.02em}
+.atmos-badge .ab-s{opacity:.7}
+.atmos-badge[data-mode="dirac"]{background:var(--sel);color:var(--on-sel)}
+.atmos-badge[data-mode="stereo"]{background:var(--s2);color:var(--t2)}
+.privgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.privc{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--s2);cursor:pointer;transition:background-color var(--dur-hover) var(--ease)}
+.privc.on{background:#efeafe}
+.privc .tog{pointer-events:none}
+.anc{display:flex;align-items:flex-end;gap:16px;padding:12px 14px;background:var(--s2);border-radius:14px}
+.anc-bars{flex:1;height:48px;display:flex;align-items:flex-end;gap:3px}
+.anc-bars i{flex:1;background:linear-gradient(#b3a2f4,#7a6bf2);border-radius:3px;height:30%;transition:height .6s var(--ease)}
+.anc-db{font:500 20px "Red Hat Display";color:var(--t1)}

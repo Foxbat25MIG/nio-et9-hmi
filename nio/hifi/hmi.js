@@ -508,19 +508,82 @@
     card.querySelectorAll('[data-eq]').forEach((s, i) => { s.style.setProperty('--v', ((p[i] + 6) / 12 * 100) + '%'); s.parentElement.querySelector('.val').textContent = (p[i] > 0 ? '+' : '') + p[i] + ' dB'; });
     eqPaint(card);
   }
-  const SF = { 'All seats': [50, 50], Driver: [30, 36], Front: [50, 34], Rear: [50, 68] };
-  function sfSet(pad, x, y, label) {
-    const dot = pad.querySelector('.sf-dot'); dot.style.left = x + '%'; dot.style.top = y + '%';
-    const bal = Math.round((x - 50) / 5), fade = Math.round((50 - y) / 5);
-    const rd = pad.closest('.scard').querySelector('.sf-read');
-    rd.textContent = `${label || (bal === 0 && fade === 0 ? 'Centred' : 'Custom')} · balance ${bal > 0 ? 'R' + bal : bal < 0 ? 'L' + (-bal) : 0} · fade ${fade > 0 ? 'F' + fade : fade < 0 ? 'R' + (-fade) : 0}`;
-    if (!label) pad.closest('.scard').querySelectorAll('.sf-focus div').forEach(d => d.classList.remove('on'));
+  /* Sound field (LYRA 8.2.4.8): sweet spot, zones, group levels, stage, privacy, Atmos, noise cancellation */
+  const ZONES = { 'All seats': [150, 255], Driver: [95, 196], Front: [150, 196], Rear: [150, 314], Chauffeur: [205, 314] };
+  function sfState(card) { return card._sf || (card._sf = { x: 150, y: 255, zone: 'All seats', g: { sur: 0, roof: 1, head: 0, sub: 1 }, w: 60, h: 70, pos: 'All around you', priv: {} }); }
+  function sfPaint(card) {
+    const S = sfState(card), svg = card.querySelector('.sf-map'); if (!svg) return;
+    svg.querySelector('.sf-spot').setAttribute('transform', `translate(${S.x} ${S.y})`);
+    const rx = 40 + S.w * 1.1, ry = 30 + S.w * .8, ar = svg.querySelector('.sf-area');
+    ar.setAttribute('cx', S.pos === 'On the dashboard' ? 150 : S.x); ar.setAttribute('cy', S.pos === 'On the dashboard' ? 150 : S.y);
+    ar.setAttribute('rx', S.pos === 'On the dashboard' ? 70 + S.w : rx); ar.setAttribute('ry', S.pos === 'On the dashboard' ? 34 : ry);
+    svg.querySelector('.sf-stage').style.opacity = S.pos === 'On the dashboard' ? 1 : 0;
+    let rays = '';
+    svg.querySelectorAll('.spk').forEach(sp => {
+      const g = sp.dataset.g, m = sp.getAttribute('transform').match(/translate\(([\d.]+) ([\d.]+)\)/), x = +m[1], y = +m[2];
+      let lvl = (S.g[g] + 6) / 12;                                       // 0..1 from −6..+6 dB
+      if (g === 'roof') lvl *= .35 + .65 * S.h / 100;
+      if (g === 'head') { const seatPriv = Object.keys(S.priv).some(k => S.priv[k]); lvl = Math.max(lvl, seatPriv ? .5 : 0); }
+      const d = Math.hypot(x - S.x, y - S.y), near = Math.max(.25, 1 - d / 330);
+      const o = Math.max(.12, Math.min(1, lvl * near * 1.25));
+      sp.style.setProperty('--o', o.toFixed(2)); sp.style.setProperty('--r', (1 + lvl * .7).toFixed(2));
+      if (g !== 'head') rays += `<line x1="${x}" y1="${y}" x2="${S.x}" y2="${S.y}" style="opacity:${(o * .35).toFixed(2)}"/>`;
+    });
+    svg.querySelector('.sf-rays').innerHTML = rays;
+    svg.querySelectorAll('.sf-seatg').forEach(s => s.classList.toggle('priv', !!S.priv[s.dataset.seat]));
+    const bal = Math.round((S.x - 150) / 11), fade = Math.round((255 - S.y) / 12);
+    card.querySelector('.sf-read').textContent = `${S.zone || 'Custom spot'} · balance ${bal > 0 ? 'R' + bal : bal < 0 ? 'L' + (-bal) : 0} · fade ${fade > 0 ? 'F' + fade : fade < 0 ? 'R' + (-fade) : 0}`;
+    card.querySelectorAll('[data-zone]').forEach(z => z.classList.toggle('on', z.dataset.zone === S.zone));
   }
+  const sfCard = el => el.closest('.snd-sec[data-sec="sf"]') && el.closest('.snd-sec[data-sec="sf"]').querySelector('.sf-card');
   let sfDrag = null;
-  document.addEventListener('pointerdown', e => { const pad = e.target.closest('.sf-pad'); if (!pad) return; sfDrag = pad; sfMove(e); });
+  document.addEventListener('pointerdown', e => { const m = e.target.closest('.sf-map'); if (!m) return; sfDrag = m; sfMove(e); });
   document.addEventListener('pointermove', e => { if (sfDrag) sfMove(e); });
   document.addEventListener('pointerup', () => { sfDrag = null; });
-  function sfMove(e) { const r = sfDrag.getBoundingClientRect(); sfSet(sfDrag, Math.max(12, Math.min(88, (e.clientX - r.left) / r.width * 100)), Math.max(14, Math.min(86, (e.clientY - r.top) / r.height * 100))); }
+  function sfMove(e) {
+    const r = sfDrag.getBoundingClientRect(), card = sfDrag.closest('.sf-card'), S = sfState(card);
+    S.x = Math.max(50, Math.min(250, (e.clientX - r.left) / r.width * 300)); S.y = Math.max(140, Math.min(370, (e.clientY - r.top) / r.height * 440));
+    S.zone = null; sfPaint(card);
+  }
+  function sfSlider(s) {   // speaker group / stage sliders call this while dragging
+    const card = sfCard(s); if (!card) return; const S = sfState(card), pct = parseFloat(s.style.getPropertyValue('--v'));
+    if (s.dataset.spk) S.g[s.dataset.spk] = Math.round(pct / 100 * 12 - 6);
+    if (s.dataset.stage === 'w') S.w = pct; if (s.dataset.stage === 'h') S.h = pct;
+    sfPaint(card);
+  }
+  function sfClick(t) {
+    const z = t.closest('[data-zone]'); if (z) { const card = z.closest('.sf-card'), S = sfState(card); [S.x, S.y] = ZONES[z.dataset.zone]; S.zone = z.dataset.zone; sfPaint(card); return true; }
+    const pos = t.closest('.sf-pos div'); if (pos) { pos.parentElement.querySelectorAll('div').forEach(d => d.classList.toggle('on', d === pos)); const card = sfCard(pos); sfState(card).pos = pos.textContent; sfPaint(card); return true; }
+    const pv = t.closest('[data-privseat]');
+    if (pv) { const card = sfCard(pv), S = sfState(card), n = pv.dataset.privseat; S.priv[n] = !S.priv[n];
+      pv.querySelector('.tog').classList.toggle('on', S.priv[n]); pv.classList.toggle('on', S.priv[n]);
+      pv.querySelector('.pv-s').textContent = S.priv[n] ? 'Headrest only · private' : n === 'Rear right' ? 'Rear screen · film' : n === 'Driver' ? 'Calls and NOMI' : 'Shares cabin sound';
+      sfPaint(card); toast(frameOf(pv), S.priv[n] ? `${n}: sound now only in the headrest` : `${n}: back to cabin sound`); return true; }
+    return false;
+  }
+  // Atmos badge follows what is playing; ANC meter breathes
+  setInterval(() => {
+    document.querySelectorAll('.frame').forEach(fr => {
+      const p = fr.querySelector('.player'); if (!p) return;
+      const title = (p.querySelector('.h3') || {}).textContent || '', s = SONGS.find(x => x[0] === title);
+      const atmosOn = !fr.querySelector('[data-atmos]') || fr.querySelector('[data-atmos]').classList.contains('on');
+      const upmix = !fr.querySelector('[data-upmix]') || fr.querySelector('[data-upmix]').classList.contains('on');
+      const isMusic = s && !s[3] && !p.classList.contains('radio');
+      fr.querySelectorAll('.atmos-badge').forEach(b => {
+        const mode = isMusic && atmosOn ? 'atmos' : upmix ? 'dirac' : 'stereo'; b.dataset.mode = mode;
+        b.querySelector('b').textContent = mode === 'atmos' ? 'Dolby Atmos' : mode === 'dirac' ? 'Dirac upmix' : 'Stereo';
+        b.querySelector('.ab-s').textContent = mode === 'atmos' ? 'playing' : mode === 'dirac' ? 'from stereo' : 'two channels';
+      });
+      fr.querySelectorAll('.anc').forEach(a => {
+        const on = fr.querySelector('[data-anc]').classList.contains('on'), base = on ? 56 : 62;
+        a.querySelectorAll('.anc-bars i').forEach((b, k) => b.style.height = Math.round((on ? 18 : 34) + Math.random() * (on ? 22 : 40) * Math.exp(-k / 10)) + '%');
+        a.querySelector('.anc-db').textContent = (base + Math.round(Math.random() * 2)) + ' dB';
+        a.querySelector('.anc-s').textContent = on ? 'cabin · 6 dB quieter' : 'cabin · cancellation off';
+      });
+    });
+  }, 700);
+  document.querySelectorAll('.sf-card').forEach(sfPaint);
+
   // previews: short tones at the row's own level
   function tone(seq, vol) {
     try {
@@ -558,8 +621,7 @@
       if (ch === 'Off') { toast(frameOf(pl), 'This sound is off'); return true; }
       tone(pl.dataset.sndPlay === 'lock' ? (ch === 'Classic' ? TONES.lockClassic : TONES.lock) : (ch === 'Breeze' ? TONES.welcomeB : TONES.welcome), 0.7); return true; }
     const eq = t.closest('.eq-pre div'); if (eq) { eqPreset(eq); return true; }
-    const sf = t.closest('.sf-focus div'); if (sf) { sf.parentElement.querySelectorAll('div').forEach(d => d.classList.toggle('on', d === sf)); sfSet(sf.closest('.scard').querySelector('.sf-pad'), ...SF[sf.textContent], sf.textContent); return true; }
-    if (t.closest('[data-sf-reset]')) { const c = t.closest('.scard'); c.querySelectorAll('.sf-focus div').forEach((d, i) => d.classList.toggle('on', i === 0)); sfSet(c.querySelector('.sf-pad'), 50, 50, 'Centred'); return true; }
+    if (sfClick(t)) return true;
     return false;
   }
   // long-press the dock volume to open Settings › Sound
@@ -853,6 +915,7 @@
       if (pct2 !== pct) { drag.s.style.setProperty('--v', pct2 + '%'); const o = drag.s.parentElement.querySelector('.val'); if (o) o.textContent = pct2 + ' %'; return; }
       if (drag.s.hasAttribute('data-touchvol')) { tapK = pct / 40; muted = pct === 0; paintSound(); }
       if (drag.s.dataset.eq) setTimeout(() => eqChanged(drag && drag.s), 0);
+      if (drag.s.dataset.spk || drag.s.dataset.stage) { const sl = drag.s; setTimeout(() => sfSlider(sl), 0); }
       drag.s.style.setProperty('--v', pct + '%');
       const lo = +drag.s.dataset.min, hi = +drag.s.dataset.max, st = +(drag.s.dataset.step || 1);
       const v = Math.round((lo + (hi - lo) * pct / 100) / st) * st;
