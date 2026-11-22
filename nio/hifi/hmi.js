@@ -134,6 +134,7 @@
       const ov = fr0.querySelector('.callov'); let n = call.dataset.call;
       if (n === 'keypad') { n = fr0.querySelector('.kp-num').textContent.trim(); if (n.length < 6) return; }
       ov.querySelector('.call-n').textContent = n; ov.querySelector('.call-s').textContent = 'Calling…';
+      const ca = ov.querySelector('.call-av'); if (ca) ca.innerHTML = avHTML(n, 120);
       ov.querySelectorAll('[data-ctog]').forEach(b => b.classList.remove('on'));
       ov.classList.add('on'); clearInterval(ov._t);
       if (!ov._held) { ov._held = [...fr0.querySelectorAll('.player.playing')]; ov._held.forEach(p => setPlaying(p, false)); }
@@ -144,7 +145,7 @@
     }
     const cbt = t.closest('.cbtn');
     if (cbt) { if (cbt.classList.contains('end')) { const ov = cbt.closest('.callov'); clearInterval(ov._t); ov.classList.remove('on'); (ov._held || []).forEach(p => setPlaying(p, true)); ov._held = null;
-        if (ov._log) { const m = Math.max(1, Math.round((Date.now() - ov._t0) / 60000)); ov._log.querySelector('.bs').textContent = Date.now() < ov._t0 ? 'Outgoing · cancelled' : `Outgoing · ${m} min`; ov._log = null; } } else cbt.classList.toggle('on'); return; }
+        if (ov._log) { const m = Math.max(1, Math.round((Date.now() - ov._t0) / 60000)); ov._log.querySelector('.lc-s').textContent = Date.now() < ov._t0 ? 'Outgoing · cancelled' : `Outgoing · ${m} min`; ov._log = null; } } else cbt.classList.toggle('on'); return; }
     const key = t.closest('.key'); if (key) { const d = fr0.querySelector('.kp-num'); if (d.textContent.length < 18) d.textContent += key.dataset.key; return; }
     if (t.closest('[data-kpdel]')) { const d = fr0.querySelector('.kp-num'); d.textContent = d.textContent.trimEnd().slice(0, -1); return; }
     const rd = t.closest('[data-read]'); if (rd) { say(fr0, rd.dataset.read); return; }
@@ -473,11 +474,17 @@
     if (!rm) requestAnimationFrame(frame); else { cv.classList.add('tl-red'); }
   });
 
+  const PEOPLE = ['bora', 'charles', 'emma', 'mamma', 'mar', 'pierre', 'ashish'];
+  function avHTML(name, s) {
+    const k = String(name).toLowerCase();
+    return PEOPLE.includes(k) ? `<img class="av" src="img/people/${k}.jpg" alt="${name}" style="width:${s}px;height:${s}px">`
+      : `<span class="av av-i" style="width:${s}px;height:${s}px;font-size:${Math.round(s * .4)}px">${k === 'keypad' || /^\+?\d/.test(name) ? '<span class="ms" style="font-size:inherit">dialpad</span>' : String(name).slice(0, 1)}</span>`;
+  }
   function logCall(fr, name) {
     const list = fr.querySelector('.recents'); if (!list) return null;
     const clock = (fr.querySelector('.status .time') || {}).textContent || '13:48';
     const row = document.createElement('div'); row.className = 'lrow'; row.dataset.call = name; row.setAttribute('data-tap', '');
-    row.innerHTML = `<span class="ms" style="font-size:24px;color:var(--t2)">call_made</span><div class="col" style="gap:0;flex:1"><span class="b2" style="color:var(--t1)">${name}</span><span class="bs">Outgoing · calling</span></div><span class="bs num">Today ${clock.trim()}</span><span class="callbtn sm"><span class="ms f" style="font-size:20px;color:#fff">call</span></span>`;
+    row.innerHTML = `${avHTML(name, 44)}<div class="col" style="gap:0;flex:1"><span class="b2" style="color:var(--t1)">${name}</span><span class="bs row" style="gap:4px"><span class="ms" style="font-size:16px;color:var(--t3)">call_made</span><span class="lc-s">Outgoing · calling</span></span></div><span class="bs num">Today ${clock.trim()}</span><span class="callbtn sm"><span class="ms f" style="font-size:20px;color:#fff">call</span></span>`;
     list.prepend(row); row.animate([{ background: 'var(--sel)' }, { background: 'transparent' }], { duration: 1600, easing: 'ease-out' });
     return row;
   }

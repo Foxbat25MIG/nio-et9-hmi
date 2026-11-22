@@ -643,3 +643,8 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .snd-wrap .snd-blur{position:absolute;left:0;right:0;top:56px;height:26px;z-index:2;pointer-events:none;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);-webkit-mask:linear-gradient(#000,transparent);mask:linear-gradient(#000,transparent);opacity:0;transition:opacity .3s var(--ease)}
 .snd-wrap.scrolled .snd-blur{opacity:1}
 .snd-wrap.scrolled .snd-tabs{box-shadow:0 8px 22px rgba(36,30,72,.10)}
+/* people photos */
+.av{border-radius:50%;object-fit:cover;flex:none;display:inline-flex;align-items:center;justify-content:center;background:var(--s3);box-shadow:0 0 0 1px rgba(36,30,72,.06)}
+.av-i{background:linear-gradient(135deg,#e7e3fd,#cddcf7);color:#22304f;font-family:"Red Hat Display";font-weight:500}
+.call-av{display:flex}.call-av .av{box-shadow:0 0 0 6px rgba(255,255,255,.5),0 10px 30px rgba(36,30,72,.15)}
+.prof .av{margin-bottom:2px}.prof.on .av{box-shadow:0 0 0 3px var(--route)}
