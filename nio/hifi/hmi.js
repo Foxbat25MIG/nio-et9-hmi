@@ -200,7 +200,7 @@
       if (k === 'park') a = 'Parking Trois Glands is a 5 minute walk from Mudam and fits the ET9. Reserve a space from 13:55?<div class="acts" style="margin-top:10px"><div class="btn pri sm" data-ask="reserve">Reserve</div><div class="btn sec sm nomi-x">Not now</div></div>';
       if (k === 'reserve') a = 'Done. Level −2, bay 14, from 13:55 until 15:55. I’ve added it to your trip.';
       if (k === 'seat') { a = 'Driver seat heat set to 2.'; fr.querySelectorAll('.dk.short .lv b').forEach((b, i) => b.classList.toggle('off', i >= 2)); }
-      if (k === 'calm') { a = 'Playing Space Oddity by David Bowie.'; fr.querySelectorAll('.player').forEach(p => { p.querySelectorAll('.h3').forEach(h => h.textContent = 'Space Oddity'); p.querySelectorAll('.b2').forEach(b => b.textContent = 'David Bowie'); p._pos = 0; setPlaying(p, true); paintTime(p); }); }
+      if (k === 'calm') { a = 'Playing Memory Box by Peter Cat Recording Co.'; setSong(fr, songIndex('Memory Box', 'Peter Cat Recording Co.'), true); }
       if (k === 'air') { const q = document.querySelector('[data-live="aqi"]'), x = document.querySelector('[data-live="aqitext"]'); a = q && q.textContent.trim() && q.textContent !== 'AQI –' ? `Outside air is ${q.textContent}${x ? ', ' + x.textContent : ''}. Cabin filtering is on.` : 'Outside air quality is good today. Cabin filtering is on.'; }
       bubble(log, 'ai', a); say(null, a.replace(/<[^>]+>/g, ''));
     }, 700);
@@ -210,11 +210,11 @@
   const BASE = (document.currentScript && document.currentScript.src || '').replace(/hmi\.js.*$/, '');
   const CV = k => BASE + 'img/covers/' + k + '.jpg';
   const SONGS = [   // [title, artist, seconds, cover, kind]
-    ['Starman', 'David Bowie', 254], ['Heroes', 'David Bowie', 367, CV('heroes')], ['Life on Mars?', 'David Bowie', 228], ['Space Oddity', 'David Bowie', 315],
-    ['Dancing Queen', 'ABBA', 231, CV('arrival')], ['Mamma Mia', 'ABBA', 212, CV('abba')], ['Waterloo', 'ABBA', 166], ['The Winner Takes It All', 'ABBA', 294],
+    ['Heroes', 'David Bowie', 367, CV('heroes')], 
+    ['Dancing Queen', 'ABBA', 231, CV('arrival')], ['Mamma Mia', 'ABBA', 212, CV('abba')], 
     ['Get Lucky', 'Daft Punk', 369, CV('ram')], ['One More Time', 'Daft Punk', 320, CV('discovery')], ['Instant Crush', 'Daft Punk', 337, CV('ram')], ['Digital Love', 'Daft Punk', 298, CV('discovery')],
-    ['Memory Box', 'Peter Cat Recording Co.', 312, CV('bismillah')], ['Floated By', 'Peter Cat Recording Co.', 305, CV('bismillah')], ['Soulless Friends', 'Peter Cat Recording Co.', 268], ['People Never Change', 'Peter Cat Recording Co.', 241],
-    ['Last Nite', 'The Strokes', 193, CV('lastnite')], ['Reptilia', 'The Strokes', 221, CV('roomonfire')], ['Someday', 'The Strokes', 187], ['The Adults Are Talking', 'The Strokes', 309],
+    ['Memory Box', 'Peter Cat Recording Co.', 312, CV('bismillah')], ['Floated By', 'Peter Cat Recording Co.', 305, CV('bismillah')], ['Soulless Friends', 'Peter Cat Recording Co.', 268, CV('bismillah')], ['People Never Change', 'Peter Cat Recording Co.', 241, CV('bismillah')],
+    ['Last Nite', 'The Strokes', 193, CV('lastnite')], ['Reptilia', 'The Strokes', 221, CV('roomonfire')], 
     ['60. Danny DeVito, Everybody', 'The Always Sunny Podcast', 4620, 'https://i.ytimg.com/vi/52c7vu7jfR8/hqdefault.jpg', 'pod'],
     ["The AI Tsunami is Here & Society Isn't Ready", 'People by WTF · Nikhil Kamath', 5640, 'https://i.ytimg.com/vi/68ylaeBbdsg/hqdefault.jpg', 'pod']];
   function songIndex(ti, ar) {
@@ -269,7 +269,7 @@
     let ov = fr.querySelector('.pickerov');
     if (!ov) {
       ov = document.createElement('div'); ov.className = 'pickerov';
-      const by = {}; SONGS.slice(0, 20).forEach(s => (by[s[1]] = by[s[1]] || []).push(s));
+      const by = {}; SONGS.filter(s => s[4] !== 'pod' && s[2] < 1200).forEach(s => (by[s[1]] = by[s[1]] || []).push(s));
       ov.innerHTML = `<div class="picker"><div class="row" style="justify-content:space-between;align-items:center"><span class="h2">Choose a song</span><div class="icb picker-x" style="background:var(--s2)"><span class="ms" style="color:var(--t1)">close</span></div></div><div class="pk-list">` +
         Object.entries(by).map(([a, l]) => `<div class="pk-art"><span class="lbl">${a}</span>` + l.map(s => `<div class="pk-row" data-song="${s[0]}|${s[1]}" data-tap><span class="pk-cv"${s[3] ? ` style="background-image:url(${s[3]})"` : ''}></span><span class="b2" style="color:var(--t1);flex:1">${s[0]}</span><span class="bs num">${fmt(s[2])}</span></div>`).join('') + '</div>').join('') + '</div></div>';
       fr.appendChild(ov);
