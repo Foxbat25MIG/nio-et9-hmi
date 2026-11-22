@@ -166,7 +166,7 @@
 
   const SPEED = 13.3 / K;               // 48 km/h in px per simulated second
   const PLAY = 2.5;                      // play back at 2.5× real time
-  let s = S0, sim = 0, last = null, hold = 1.2;
+  let s = S0, sim = 0, last = null, hold = 1.2, shown = 48;
   function speedFactor(s) {               // slow down through the two turns
     let f = 1;
     for (const st of steps) { const d = Math.abs(st.s - s); if (d < 22) f = Math.min(f, 0.45 + 0.55 * d / 22); }
@@ -181,10 +181,11 @@
     let d = ((target - rot + 540) % 360) - 180;
     rot += d * Math.min(1, dt * 2.2);
     draw(s, rot); setTurn(s); setTrip(s, sim);
-    if (ui.speed) ui.speed.textContent = Math.round(48 * (0.5 + 0.5 * f));
+    shown += (48 * (0.5 + 0.5 * f) - shown) * Math.min(1, dt * 1.5);   // speedometer eases, no jumps
+    if (ui.speed && !pane.classList.contains('dash-car')) ui.speed.textContent = Math.round(shown);
     if (s - S0 > RUN) {                   // loop: fade, reset, fade back
       vp.classList.add('fade');
-      setTimeout(() => { s = S0; sim = 0; rot = bearing(S0); lastStep = null; draw(s, rot); setTurn(s); setTrip(s, 0); if (ui.speed) ui.speed.textContent = 48; vp.classList.remove('fade'); hold = 1.6; }, 700);
+      setTimeout(() => { s = S0; sim = 0; rot = bearing(S0); lastStep = null; draw(s, rot); setTurn(s); setTrip(s, 0); shown = 48; if (ui.speed && !pane.classList.contains('dash-car')) ui.speed.textContent = 48; vp.classList.remove('fade'); hold = 1.6; }, 700);
       last = null; setTimeout(() => requestAnimationFrame(tick), 720); return;
     }
     requestAnimationFrame(tick);

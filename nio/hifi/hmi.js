@@ -233,6 +233,12 @@
       el.style.backgroundImage = a && a.img ? `url(${a.img})` : '';
       el.innerHTML = !a ? el._ph : a.img ? '' : `<span class="ra-l">DAB+ · Luxembourg</span><span class="ra-f">${a.f}</span><span class="ra-n">${a.radio}</span>`;
     });
+    p.querySelectorAll('.cart').forEach(el => {
+      if (el._ph == null) el._ph = el.innerHTML;
+      el.classList.toggle('cov', !!(a && a.img)); el.classList.toggle('radioart', !!(a && a.radio));
+      el.style.backgroundImage = a && a.img ? `url(${a.img})` : '';
+      el.innerHTML = !a ? el._ph : a.img ? '' : `<span class="ra-f">${a.f}</span>`;
+    });
   }
   function stepSong(fr, dir) {
     const p = fr.querySelector('.player');
@@ -385,14 +391,23 @@
     const app = w.closest('.app'), cv = w.closest('.carview'), chipT = cv.querySelector('.cv-chip-t'), chipS = cv.querySelector('.cv-chip .bs'), tlT = cv.querySelector('.tl-t');
     const ex = +w.dataset.ex, y0 = +w.dataset.y0, R = +w.dataset.r, LC = +w.dataset.lc || 140, Y = 440, D = Y - y0, A = Math.PI / 2 * R;
     const cam = fr.querySelector('.ctx .bscam'), pl = fr.querySelector('.ctx .player'), upr = [...w.querySelectorAll('.upr')];
-    const T = 15, SV = +w.dataset.sv || 392, MPX = 0.039;           // 136 px car ≈ 5.3 m
+    // one scale for everything: 120 px/s = 45 km/h, so 1 px ≈ 0.104 m
+    const T = 25, SV = +w.dataset.sv || 392, MPX = 0.104, KMH = 0.375;
     const sm = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
-    const V0 = 120, VT = 140, VE = 230;                            // cruise, through the turn, after the turn (px/s)
-    const vel = t => t < 5 ? V0 : t < 7 ? V0 * (1 - sm((t - 5) / 2)) : t < 8.6 ? 0 : t < 11.2 ? VT * sm((t - 8.6) / 2.6) : VT + (VE - VT) * sm((t - 11.2) / 2.8);
-    const DT = 0.005, ST = [0]; for (let k = 1; k <= T / DT; k++) ST.push(ST[k - 1] + (vel((k - .5) * DT)) * DT);
+    const V0 = 120, VT = 59, VE = 107;                             // 45 km/h approach, 22 km/h through the corner, 40 km/h after
+    const GO = 9.6;                                                // light turns green at 9.4 s, car moves at 9.6 s
+    let tArcEnd = 99;
+    const vel = t => t < 4.5 ? V0 : t < 7 ? V0 * (1 - sm((t - 4.5) / 2.5)) : t < GO ? 0 : t < GO + 2.4 ? VT * sm((t - GO) / 2.4) : t < tArcEnd ? VT : VT + (VE - VT) * sm((t - tArcEnd) / 4);
+    const DT = 0.005, N = Math.round(T / DT), ST = new Float64Array(N + 1);
+    const build = () => { for (let k = 1; k <= N; k++) ST[k] = ST[k - 1] + vel((k - .5) * DT) * DT; };
+    build();
     const SOFF = SV - ST[Math.round(7 / DT)];                      // stop exactly at SV
-    const sAt = t => SOFF + ST[Math.min(ST.length - 1, Math.round(t / DT))];
-    const U0 = 140, UL = 420;                                       // lane change starts 140 px after the turn, lasts 420 px
+    // find when the corner ends, then rebuild so the car only speeds up once it is straight again
+    for (let k = 0; k <= N; k++) if (SOFF + ST[k] >= D + A) { tArcEnd = k * DT; break; }
+    build();
+    const sAt = t => SOFF + ST[Math.min(N, Math.round(t / DT))];
+    const vAt = t => vel(t);
+    const U0 = 60, UL = 480;                                        // gentle lane change: starts 6 m after the corner, takes ~50 m
     const pose = s => {
       if (s < D) return [ex, Y - s, 0];
       if (s < D + A) { const f = (s - D) / R; return [ex + R - R * Math.cos(f), y0 - R * Math.sin(f), f * 180 / Math.PI]; }
@@ -423,25 +438,30 @@
       }
     }
     const m = px => Math.max(5, Math.round(px * MPX / 5) * 5) + ' m';
+    const spd = fr.querySelector('[data-nav="speed"]') || fr.querySelector('.status .speed b'), ind = fr.querySelector('.bs-ind .ms');
     function frame(ts) {
       if (t0 === null) t0 = ts;
       const t = ((ts - t0) / 1000) % T;
       const active = navOn();
-      fr.classList.toggle('bs-sig', active && t > 1.8 && t < 10.8);
+      if (!app.classList.contains('v-car')) { fr.classList.toggle('bs-sig', active && t > 1.8 && t < 10.8); if (ind) ind.textContent = 'turn_right'; }
       setBS(active && t > 2.6 && t < 6.6);
-      const green = t > 8.4; cv.classList.toggle('tl-green', green); cv.classList.toggle('tl-red', !green);
-      const isCar = app.classList.contains('v-car'); app.classList.toggle('dash-car', isCar);
+      const green = t > 9.4; cv.classList.toggle('tl-green', green); cv.classList.toggle('tl-red', !green);
+      const isCar = app.classList.contains('v-car') && active; app.classList.toggle('dash-car', isCar);
       if (isCar) {
         const s = sAt(t), [x, y, h] = pose(s);
         w.setAttribute('transform', `translate(${ex} ${Y}) rotate(${-h}) translate(${-x} ${-y})`);
         upr.forEach(g => g.setAttribute('transform', `translate(${g.dataset.x} ${g.dataset.y}) rotate(${h})`));   // signs stay readable
-        w.classList.toggle('fade', t > 14.4 || t < 0.2);
-        const u = s - D - A, toLeft = 170 - Math.max(0, u) * MPX * 4;   // Joseph II is ~170 m after the turn
+        w.classList.toggle('fade', t > T - 0.6 || t < 0.2);
+        const u = s - D - A, toLeft = 170 - Math.max(0, u) * MPX;      // Joseph II is ~170 m after the turn
+        if (spd) spd.textContent = Math.round(vAt(t) * KMH);
+        const lc = u > U0 - 40 && u < U0 + UL, rightInd = t > 1.8 && s < D + A;
+        if (ind) { ind.textContent = lc ? 'turn_left' : 'turn_right'; }
+        fr.classList.toggle('bs-sig', rightInd || lc);
         let chip, sub = 'Stay in this lane';
         if (s < SV - 1) { chip = `Lane 3 of 3 · turn right in ${m(D - s)}`; card('right', m(D - s)); }
-        else if (t < 8.6) { chip = 'Waiting at the junction'; sub = 'Right-turn lane'; card('right', m(D - s)); }
+        else if (t < GO) { chip = 'Waiting at the junction'; sub = 'Right-turn lane'; card('right', m(D - s)); }
         else if (s < D + A) { chip = 'Turning right'; sub = 'Onto Avenue Marie-Thérèse'; card('right', 'Now'); }
-        else if (u < U0 + UL * .9) { chip = 'Move to lane 1 of 2'; sub = `Left turn in ${Math.round(toLeft / 10) * 10} m`; card('left', Math.round(toLeft / 10) * 10 + ' m'); }
+        else if (u < U0 + UL) { chip = 'Move to lane 1 of 2'; sub = `Left turn in ${Math.round(toLeft / 10) * 10} m`; card('left', Math.round(toLeft / 10) * 10 + ' m'); }
         else { chip = `Lane 1 of 2 · turn left in ${Math.round(toLeft / 10) * 10} m`; card('left', Math.round(toLeft / 10) * 10 + ' m'); }
         if (chipT) chipT.textContent = chip; if (chipS) chipS.textContent = sub;
         if (tlT) tlT.textContent = green ? 'Green · go' : t > 6.4 ? 'Red light · stopping' : 'Traffic light ahead · red';
@@ -479,12 +499,21 @@
   const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   const evOn = d => EVENTS.filter(e => sameDay(e.d, d)).sort((a, b) => a.t.localeCompare(b.t));
   const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  function calInit(cw) { if (!cw) return; const t = new Date(); cw._sel = new Date(t.getFullYear(), t.getMonth(), t.getDate()); cw._view = 'Month'; calDraw(cw); }
+  function calInit(cw) { if (!cw) return; const t = new Date(); cw._sel = new Date(t.getFullYear(), t.getMonth(), t.getDate()); cw._view = 'Today'; calDraw(cw); }
   function calDraw(cw) {
     const sel = cw._sel, today = new Date(), body = cw.querySelector('.cal-body'), title = cw.querySelector('.cal-title');
     cw.querySelectorAll('.cal-view div').forEach(d => d.classList.toggle('on', d.textContent === cw._view));
     let h = '';
-    if (cw._view === 'Month') {
+    if (cw._view === 'Today') {
+      title.textContent = sameDay(sel, today) ? 'Today' : sel.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+      const ev = evOn(sel), allDay = ev.filter(e => !/^\d/.test(e.t)), H0 = 8, H1 = 22, PX = 44;
+      h = `<div class="cal-dv">${allDay.map(e => `<div class="cal-ad" style="background:${CAT[e.c]}">All day · ${e.n}</div>`).join('')}<div class="cal-tl" style="height:${(H1 - H0) * PX}px">`;
+      for (let hh = H0; hh <= H1; hh++) h += `<div class="cal-hr" style="top:${(hh - H0) * PX}px"><span class="num">${String(hh).padStart(2, '0')}:00</span></div>`;
+      ev.filter(e => /^\d/.test(e.t)).forEach(e => { const [a, b] = e.t.split(':').map(Number), y = (a + b / 60 - H0) * PX;
+        h += `<div class="cal-blk" style="top:${y + 2}px;height:${(e.len || 1) * PX - 4}px;background:${CAT[e.c]}"><b>${e.n}</b><span>${e.t} · ${e.w}</span></div>`; });
+      if (sameDay(sel, today)) { const nowH = today.getHours() + today.getMinutes() / 60; if (nowH >= H0 && nowH <= H1) h += `<div class="cal-now" style="top:${(nowH - H0) * PX}px"></div>`; }
+      h += '</div></div>';
+    } else if (cw._view === 'Month') {
       title.textContent = `${MON[sel.getMonth()]} ${sel.getFullYear()}`;
       const first = new Date(sel.getFullYear(), sel.getMonth(), 1), off = (first.getDay() + 6) % 7;
       h = '<div class="cal-m">' + ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => `<span class="cal-h">${d}</span>`).join('');
@@ -518,22 +547,53 @@
   }
   function calClick(t) {
     const cw = t.closest('.calw'); if (!cw) return false;
+    if (t.closest('.cal-sheetov')) { ceClick(cw, t); return true; }
     const vd = t.closest('.cal-view div'); if (vd) { cw._view = vd.textContent; calDraw(cw); return true; }
     const st = t.closest('[data-cal-step]');
     if (st) { const k = +st.dataset.calStep, s = cw._sel;
-      cw._sel = cw._view === 'Month' ? new Date(s.getFullYear(), s.getMonth() + k, 1) : cw._view === 'Week' ? new Date(s.getFullYear(), s.getMonth(), s.getDate() + 7 * k) : new Date(s.getFullYear() + k, s.getMonth(), 1);
+      cw._sel = cw._view === 'Today' ? new Date(s.getFullYear(), s.getMonth(), s.getDate() + k) : cw._view === 'Month' ? new Date(s.getFullYear(), s.getMonth() + k, 1) : cw._view === 'Week' ? new Date(s.getFullYear(), s.getMonth(), s.getDate() + 7 * k) : new Date(s.getFullYear() + k, s.getMonth(), 1);
       calDraw(cw); return true; }
-    if (t.closest('[data-cal-today]')) { calInit(cw); return true; }
     const dd = t.closest('[data-cal-day]'); if (dd) { cw._sel = new Date(+dd.dataset.calDay); calDraw(cw); return true; }
     const mm = t.closest('[data-cal-month]'); if (mm) { cw._sel = new Date(cw._sel.getFullYear(), +mm.dataset.calMonth, 1); cw._view = 'Month'; calDraw(cw); return true; }
-    if (t.closest('[data-cal-add]')) {
-      const [n, w, c] = IDEAS[Math.floor(Math.random() * IDEAS.length)], base = new Date(), d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + 1 + Math.floor(Math.random() * 30));
-      const tm = `${String(9 + Math.floor(Math.random() * 10)).padStart(2, '0')}:${Math.random() < .5 ? '00' : '30'}`;
-      EVENTS.push({ d, t: tm, n, w, c }); cw._sel = d; calDraw(cw);
-      toast(frameOf(cw), `Added ${n} · ${d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}, ${tm}`); return true;
-    }
+    if (t.closest('[data-cal-add]')) { ceOpen(cw); return true; }
     return false;
   }
+
+  /* ---------- New event sheet ---------- */
+  function ceOpen(cw) {
+    const ov = cw.querySelector('.cal-sheetov'); cw._ce = { d: new Date(cw._sel), m: 10 * 60, cat: 'work' };
+    ov.querySelector('.ce-title').value = ''; ov.querySelector('.ce-where').value = '';
+    ov.querySelectorAll('.ce-cat .chip2').forEach(c => c.classList.toggle('on', c.dataset.ceCat === 'work'));
+    cePaint(cw); ov.classList.add('on'); setTimeout(() => ov.querySelector('.ce-title').focus({ preventScroll: true }), 350);
+  }
+  function cePaint(cw) {
+    const ov = cw.querySelector('.cal-sheetov'), e = cw._ce, today = new Date();
+    ov.querySelector('.ce-date').textContent = sameDay(e.d, today) ? 'Today' : e.d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    ov.querySelector('.ce-time').textContent = `${String(Math.floor(e.m / 60)).padStart(2, '0')}:${String(e.m % 60).padStart(2, '0')}`;
+    ov.querySelector('[data-ce-save]').classList.toggle('off', !ov.querySelector('.ce-title').value.trim());
+  }
+  function ceClick(cw, t) {
+    const ov = cw.querySelector('.cal-sheetov'), e = cw._ce;
+    if (t === ov || t.closest('[data-ce-cancel]')) { ov.classList.remove('on'); return; }
+    const st = t.closest('[data-ce]'); if (st) { const [k, v] = st.dataset.ce.split('|'); if (k === 'd') e.d = new Date(e.d.getFullYear(), e.d.getMonth(), e.d.getDate() + +v); else e.m = Math.max(6 * 60, Math.min(22 * 60, e.m + +v)); cePaint(cw); return; }
+    const sg = t.closest('[data-ce-sugg]'); if (sg) { const [n, c] = sg.dataset.ceSugg.split('|'); ov.querySelector('.ce-title').value = n; e.cat = c; ov.querySelectorAll('.ce-cat .chip2').forEach(x => x.classList.toggle('on', x.dataset.ceCat === c)); cePaint(cw); return; }
+    const ct = t.closest('[data-ce-cat]'); if (ct) { e.cat = ct.dataset.ceCat; ov.querySelectorAll('.ce-cat .chip2').forEach(x => x.classList.toggle('on', x === ct)); return; }
+    const sx = t.closest('.ce-len div, .ce-alert div'); if (sx) { [...sx.parentElement.children].forEach(x => x.classList.toggle('on', x === sx)); return; }
+    if (t.closest('[data-cal-nomi]')) {
+      const [n, w, c] = IDEAS[Math.floor(Math.random() * IDEAS.length)];
+      ov.querySelector('.ce-title').value = n; ov.querySelector('.ce-where').value = w; e.cat = c; e.m = (9 + Math.floor(Math.random() * 9)) * 60 + (Math.random() < .5 ? 0 : 30);
+      ov.querySelectorAll('.ce-cat .chip2').forEach(x => x.classList.toggle('on', x.dataset.ceCat === c)); cePaint(cw); toast(frameOf(cw), 'NOMI filled in a suggestion'); return;
+    }
+    const sv = t.closest('[data-ce-save]');
+    if (sv && !sv.classList.contains('off')) {
+      const len = ov.querySelector('.ce-len .on').textContent, n = ov.querySelector('.ce-title').value.trim();
+      const tm = len === 'All day' ? 'All day' : ov.querySelector('.ce-time').textContent;
+      EVENTS.push({ d: e.d, t: tm, n, w: ov.querySelector('.ce-where').value.trim() || 'No place', c: e.cat, len: len === '2 h' ? 2 : len === '30 min' ? .5 : 1 });
+      ov.classList.remove('on'); cw._sel = e.d; calDraw(cw);
+      toast(frameOf(cw), `Saved · ${n}, ${ov.querySelector('.ce-date').textContent} ${tm === 'All day' ? '(all day)' : tm}`);
+    }
+  }
+  document.addEventListener('input', ev => { const cw = ev.target.closest && ev.target.closest('.calw'); if (cw && cw._ce) cePaint(cw); });
 
   /* ---------- Weather: Paris and New Delhi below Luxembourg (Open-Meteo, live) ---------- */
   function weatherCities(root) {
