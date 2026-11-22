@@ -487,7 +487,7 @@
   }
   /* ---------- Calendar: week / month / year, Emma's plans, add a random event ---------- */
   const CY = new Date().getFullYear();
-  const CAT = { work: '#cddcf7', art: '#f3dde4', hike: '#d5ead8', ski: '#d6e8f2', life: '#e9dcf3' };
+  const CAT = { work: '#cddcf7', art: '#f3dde4', hike: '#d5ead8', ski: '#d5ead8', life: '#e9dcf3' };
   const EVENTS = [
     [11, 22, '14:00', 'Mudam visit', 'Kirchberg', 'art'], [11, 22, '16:00', 'Ville Haute walk', 'Old town', 'life'], [11, 22, '18:00', 'Grand Ducal Palace', 'Tour', 'art'], [11, 22, '20:30', 'Dinner at Aké', 'Booked by Ashish', 'life'],
     [11, 24, '10:00', 'Client walkthrough', 'Limpertsberg apartment', 'work'], [11, 26, '19:00', 'Gallery opening', 'Casino Luxembourg', 'art'],
@@ -495,7 +495,7 @@
     [12, 11, 'All day', 'Ski weekend', 'Saas-Fee, until Sunday', 'ski'], [12, 12, 'All day', 'Ski weekend', 'Saas-Fee', 'ski'], [12, 13, 'All day', 'Ski weekend', 'Saas-Fee', 'ski'],
     [12, 17, '18:30', 'Christmas market sketch walk', "Place d'Armes", 'art']].map(e => ({ d: new Date(CY, e[0] - 1, e[1]), t: e[2], n: e[3], w: e[4], c: e[5] }));
   const IDEAS = [['Showroom visit', 'Kitchen supplier, Bertrange', 'work'], ['Museum late', 'MNHA', 'art'], ['Hike · Schiessentümpel loop', 'Mullerthal', 'hike'], ['Lunch with Ashish', 'Grund', 'life'],
-    ['Design review', 'Clausen loft', 'work'], ['Life drawing class', 'Studio Bonnevoie', 'art'], ['Ski pass renewal', 'Online', 'ski'], ['Moodboard session', 'Studio', 'work'], ['Hike · Müllerthal sunrise', 'Berdorf', 'hike']];
+    ['Design review', 'Clausen loft', 'work'], ['Life drawing class', 'Studio Bonnevoie', 'art'], ['Ski pass renewal', 'Online', 'life'], ['Moodboard session', 'Studio', 'work'], ['Hike · Müllerthal sunrise', 'Berdorf', 'hike']];
   const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   const evOn = d => EVENTS.filter(e => sameDay(e.d, d)).sort((a, b) => a.t.localeCompare(b.t));
   const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

@@ -583,3 +583,22 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .ce-step .icb{width:40px;height:40px;background:var(--s2)}
 .ce-cat .chip2 i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 .btn.off{opacity:.4;pointer-events:none}
+/* new-event sheet v2: everything on a 4-column grid, nothing shrinks, fits the panel */
+.cal-sheetov{inset:0;padding:12px}
+.cal-sheet{width:min(860px,100%);max-height:none;gap:16px;padding:24px 28px}
+.cal-sheet>*{flex-shrink:0}
+.cal-sheet .cal-in{height:48px}
+.ce-sugg{display:flex;gap:8px;flex-wrap:nowrap}
+.ce-sugg .chip2{height:38px;padding:0 14px;font-size:14px}
+.ce-grid{display:grid;grid-template-columns:64px minmax(0,1fr) 64px minmax(0,1fr);gap:12px 16px;align-items:center}
+.ce-grid>.b2{color:var(--t2)}
+.ce-wide{grid-column:span 3}
+.ce-step{display:flex;align-items:center;justify-content:space-between;height:48px;background:var(--s2);border-radius:14px;padding:0 4px}
+.ce-step b{font:500 16px "Red Hat Text";color:var(--t1);min-width:0;text-align:center;flex:1}
+.ce-step .icb{width:40px;height:40px;background:var(--s1)}
+.ce-grid .segx{padding:4px;height:48px;box-sizing:border-box}
+.ce-grid .segx div{height:40px;font-size:14px}
+.ce-cat{display:flex;gap:8px}
+.ce-cat .chip2{height:44px;flex:1;justify-content:center}
+.ce-actions{display:grid;grid-template-columns:1fr 2fr;gap:12px}
+.ce-actions .btn{height:52px}

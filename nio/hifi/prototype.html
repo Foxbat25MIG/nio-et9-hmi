@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" rel="stylesheet">
-<link rel="stylesheet" href="hifi.css?v=17">
+<link rel="stylesheet" href="hifi.css?v=18">
 </head><body><div class="wrap">
 <div class="sitebar"><p class="cap">NIO ET9 CENTRE SCREEN · CLICKABLE PROTOTYPE · LAVENDER LIGHT · tap the bottom bar, the side menus and the gear</p><button class="sound" type="button"></button></div>
 <div class="scaler"><div class="frame proto" data-dash>
@@ -228,16 +228,16 @@
   <div class="cal-sheetov"><div class="cal-sheet card">
     <div class="row" style="justify-content:space-between;align-items:center"><span class="h2">New event</span><div class="btn sec sm" data-cal-nomi><span class="ms " style="font-size:20px">mic</span><span>Ask NOMI</span></div></div>
     <input class="cal-in ce-title" placeholder="Event title" maxlength="40">
-    <div class="row ce-sugg" style="gap:8px;flex-wrap:wrap"><span class="chip2" data-ce-sugg="Client meeting|work" data-tap>Client meeting</span><span class="chip2" data-ce-sugg="Site visit|work" data-tap>Site visit</span><span class="chip2" data-ce-sugg="Gallery visit|art" data-tap>Gallery visit</span><span class="chip2" data-ce-sugg="Hike|hike" data-tap>Hike</span><span class="chip2" data-ce-sugg="Ski day|ski" data-tap>Ski day</span><span class="chip2" data-ce-sugg="Dinner|life" data-tap>Dinner</span></div>
+    <div class="ce-sugg"><span class="chip2" data-ce-sugg="Client meeting|work" data-tap>Client meeting</span><span class="chip2" data-ce-sugg="Site visit|work" data-tap>Site visit</span><span class="chip2" data-ce-sugg="Gallery visit|art" data-tap>Gallery visit</span><span class="chip2" data-ce-sugg="Hike|hike" data-tap>Hike</span><span class="chip2" data-ce-sugg="Dinner|life" data-tap>Dinner</span></div>
     <div class="ce-grid">
-      <span class="b2">Date</span><div class="row ce-step"><div class="icb" data-ce="d|-1" data-tap><span class="ms " style="color:var(--t1)">chevron_left</span></div><b class="ce-date">Today</b><div class="icb" data-ce="d|1" data-tap><span class="ms " style="color:var(--t1)">chevron_right</span></div></div>
-      <span class="b2">Starts</span><div class="row ce-step"><div class="icb" data-ce="t|-30" data-tap><span class="ms " style="color:var(--t1)">remove</span></div><b class="ce-time num">10:00</b><div class="icb" data-ce="t|30" data-tap><span class="ms " style="color:var(--t1)">add</span></div></div>
-      <span class="b2">Length</span><div class="segx ce-len" style="padding:4px"><div style="height:40px">30 min</div><div class="on" style="height:40px">1 h</div><div style="height:40px">2 h</div><div style="height:40px">All day</div></div>
-      <span class="b2">Where</span><input class="cal-in ce-where" placeholder="Add a place" maxlength="40">
-      <span class="b2">Type</span><div class="row ce-cat" style="gap:8px"><span class="chip2 on" data-ce-cat="work" data-tap><i style="background:#cddcf7"></i>Work</span><span class="chip2" data-ce-cat="art" data-tap><i style="background:#f3dde4"></i>Art</span><span class="chip2" data-ce-cat="hike" data-tap><i style="background:#d5ead8"></i>Outdoors</span><span class="chip2" data-ce-cat="ski" data-tap><i style="background:#d6e8f2"></i>Ski</span><span class="chip2" data-ce-cat="life" data-tap><i style="background:#e9dcf3"></i>Personal</span></div>
-      <span class="b2">Alert</span><div class="segx ce-alert" style="padding:4px"><div style="height:40px">None</div><div class="on" style="height:40px">15 min before</div><div style="height:40px">1 h before</div></div>
+      <span class="b2">Date</span><div class="ce-step"><div class="icb" data-ce="d|-1" data-tap><span class="ms " style="color:var(--t1)">chevron_left</span></div><b class="ce-date">Today</b><div class="icb" data-ce="d|1" data-tap><span class="ms " style="color:var(--t1)">chevron_right</span></div></div>
+      <span class="b2">Starts</span><div class="ce-step"><div class="icb" data-ce="t|-30" data-tap><span class="ms " style="color:var(--t1)">remove</span></div><b class="ce-time num">10:00</b><div class="icb" data-ce="t|30" data-tap><span class="ms " style="color:var(--t1)">add</span></div></div>
+      <span class="b2">Length</span><div class="segx ce-len"><div>30 min</div><div class="on">1 h</div><div>2 h</div><div>All day</div></div>
+      <span class="b2">Alert</span><div class="segx ce-alert"><div>None</div><div class="on">15 min</div><div>1 h</div></div>
+      <span class="b2">Where</span><input class="cal-in ce-where ce-wide" placeholder="Add a place" maxlength="40">
+      <span class="b2">Type</span><div class="ce-cat ce-wide"><span class="chip2 on" data-ce-cat="work" data-tap><i style="background:#cddcf7"></i>Work</span><span class="chip2" data-ce-cat="art" data-tap><i style="background:#f3dde4"></i>Art</span><span class="chip2" data-ce-cat="hike" data-tap><i style="background:#d5ead8"></i>Outdoors</span><span class="chip2" data-ce-cat="life" data-tap><i style="background:#e9dcf3"></i>Personal</span></div>
     </div>
-    <div class="row" style="gap:10px;margin-top:auto"><div class="btn sec" style="flex:1" data-ce-cancel>Cancel</div><div class="btn pri off" style="flex:2" data-ce-save><span class="ms " style="font-size:22px">check</span>Save event</div></div>
+    <div class="ce-actions"><div class="btn sec" data-ce-cancel>Cancel</div><div class="btn pri off" data-ce-save><span class="ms " style="font-size:22px">check</span>Save event</div></div>
   </div></div></div></template><template data-appc="Weather"><div class="col" style="gap:14px;height:100%"><div class="card scard" style="flex-direction:row;align-items:center;gap:24px;padding:22px 26px">
   <span class="ms" data-live="wicon" style="font-size:76px;color:var(--t1)">partly_cloudy_day</span>
   <div class="col" style="gap:2px;flex:1"><span class="lbl">Luxembourg · now</span><span class="num" data-live="temp" style="font:400 60px/1 Red Hat Display">8 °C</span><span class="b2" data-live="wtext">cloudy</span></div>
@@ -280,7 +280,7 @@
 </div>
 <script src="hifi.js?v=9"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-<script src="hmi.js?v=15"></script>
+<script src="hmi.js?v=16"></script>
 <script src="../map/lux-map.js?v=2"></script>
 <script src="../design/nav-map.js?v=5"></script>
 </body></html>
