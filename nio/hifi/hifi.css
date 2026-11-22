@@ -776,3 +776,10 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .utoast{position:absolute;left:50%;bottom:150px;z-index:70;display:flex;align-items:center;gap:18px;transform:translate(-50%,12px);background:var(--ink);color:#fff;font:400 16px "Red Hat Text";border-radius:999px;padding:10px 12px 10px 22px;opacity:0;pointer-events:none;transition:opacity .3s var(--ease),transform .3s var(--ease)}
 .utoast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .utoast b{background:var(--sel);color:var(--on-sel);font-weight:500;border-radius:999px;padding:8px 16px;cursor:pointer}
+/* left column stacks with even 16 px gaps (positions set by hmi.js) */
+.app .seg[data-views],.app .carview .cv-chip,.app .carview .tl-chip{transition:top .4s var(--ease),opacity .3s var(--ease)}
+.app.wt-cover .seg[data-views],.app.wt-cover .carview .cv-chip,.app.wt-cover .carview .tl-chip{opacity:0;pointer-events:none}
+.wt{top:20px}
+.wt-card{padding:12px}
+.wt-bar{height:52px}
+.wt-quick{gap:8px}.wt-quick .chip2{height:42px}

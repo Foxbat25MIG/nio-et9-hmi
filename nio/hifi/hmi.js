@@ -883,6 +883,18 @@
     if (t.closest('.wt-bar')) { wtOpen(app, true); return true; }
     return true;
   }
+  // left column: top card, view switch and car-view chips always stack with the same 16 px gap
+  function stackLeft(app) {
+    if (!app.offsetParent) return;
+    const G = 16, noroute = app.classList.contains('noroute'), open = app.classList.contains('wt-open'), car = app.classList.contains('v-car');
+    const top = noroute ? app.querySelector('.wt .wt-card') : app.querySelector('.tcard');
+    const seg = app.querySelector('.seg[data-views]');
+    const chips = car ? [noroute ? null : app.querySelector('.carview .cv-chip'), app.querySelector('.carview .tl-chip')].filter(Boolean) : [];
+    let y = 20 + (top ? top.offsetHeight : 0) + G;
+    [seg, ...chips].forEach(el => { if (!el) return; const v = y + 'px'; if (el.style.top !== v) el.style.top = v; y += el.offsetHeight + G; });
+    app.classList.toggle('wt-cover', open);
+  }
+  setInterval(() => document.querySelectorAll('.app[data-navmap]:not([data-static])').forEach(stackLeft), 120);
   // wire up every live navigation pane (hero + prototype), not the static gallery frames
   document.querySelectorAll('.app[data-navmap]:not([data-static])').forEach(app => {
     const icon = app.querySelector('[data-nav="icon"]'), eta = app.querySelector('[data-nav="eta"]');
