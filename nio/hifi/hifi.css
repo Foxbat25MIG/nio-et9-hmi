@@ -695,3 +695,23 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .anc-bars{flex:1;height:48px;display:flex;align-items:flex-end;gap:3px}
 .anc-bars i{flex:1;background:linear-gradient(#b3a2f4,#7a6bf2);border-radius:3px;height:30%;transition:height .6s var(--ease)}
 .anc-db{font:500 20px "Red Hat Display";color:var(--t1)}
+/* ---------- 6-band equaliser ---------- */
+.eq-pre{display:flex;flex-wrap:wrap;gap:8px}
+.eq-pre>div{height:40px;padding:0 16px;border-radius:999px;background:var(--s2);display:flex;align-items:center;font:400 14px "Red Hat Text";color:var(--t2);cursor:pointer;transition:background-color var(--dur-hover) var(--ease),color var(--dur-hover) var(--ease)}
+.eq-pre>div:hover{background:var(--s3)}
+.eq-pre>div.on{background:var(--sel);color:var(--on-sel);font-weight:500}
+.eq6{position:relative;height:270px;background:var(--s2);border-radius:18px;padding:14px 16px 10px 56px}
+.eq-curve6{position:absolute;left:56px;right:16px;top:40px;height:180px;width:calc(100% - 72px);pointer-events:none}
+.eq-line{fill:none;stroke:var(--route);stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke;transition:d .35s var(--ease)}
+.eq-fill{fill:rgba(122,107,242,.12);transition:d .35s var(--ease)}
+.eq-grid{position:absolute;left:0;right:16px;top:40px;height:180px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.eq-grid span{font:400 11px "Red Hat Text";color:var(--t3);border-bottom:1px dashed var(--line);padding-left:12px;line-height:0;height:0;display:block}
+.eq-grid span:nth-child(3){color:var(--t2)}
+.eq-bands{position:relative;display:grid;grid-template-columns:repeat(6,1fr);height:100%}
+.eqb{--p:50%;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:ns-resize;touch-action:none;user-select:none}
+.eqv{height:20px;font:500 13px "Red Hat Text";color:var(--t2)}
+.eqb.up .eqv,.eqb.dn .eqv{color:var(--route)}
+.eqt{position:relative;width:6px;height:180px;border-radius:3px;background:rgba(45,40,64,.12)}
+.eqk{position:absolute;left:50%;top:var(--p);width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--route),0 4px 12px rgba(36,30,72,.2);transition:top .35s var(--ease),transform var(--dur-press) var(--ease)}
+.eqb.drag .eqk{transition:none;transform:scale(1.12)}
+.eqf{font:500 13px "Red Hat Text";color:var(--t1);margin-top:auto}

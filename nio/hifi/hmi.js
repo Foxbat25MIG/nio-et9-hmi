@@ -495,19 +495,36 @@
     return row;
   }
   /* ---------- Settings › Sound ---------- */
-  const EQP = { Balanced: [0, 0, 0], Vocal: [-2, 3, 1], Bass: [5, 0, -1], Concert: [2, -1, 3] };
+  /* Equaliser: 6 bands (60 Hz – 8 kHz), ±12 dB, presets, live curve */
+  const EQP = { Balanced: [0, 0, 0, 0, 0, 0], Vocal: [-2, -1, 2, 4, 3, 0], 'Bass boost': [7, 5, 1, 0, 0, 1], Concert: [3, 1, -1, 1, 3, 4],
+    Jazz: [3, 2, -1, 1, 2, 3], Classical: [2, 1, 0, 0, 2, 4], Electronic: [6, 3, 0, -1, 2, 5], Podcast: [-4, -1, 3, 5, 3, -2], 'Night drive': [3, 2, 0, -1, -2, -3] };
+  const eqY = v => 110 - v * 8.2;        // ±12 dB → svg 220 tall
   function eqPaint(card) {
-    const v = [...card.querySelectorAll('[data-eq]')].map(s => Math.round((parseFloat(s.style.getPropertyValue('--v')) / 100) * 12 - 6));
-    const y = x => 45 - x * 6.5;
-    card.querySelector('.eq-p').setAttribute('d', `M0 ${y(v[0])}C60 ${y(v[0])} 110 ${y(v[0])} 150 ${(y(v[0]) + y(v[1])) / 2}S200 ${y(v[1])} 230 ${y(v[1])}S320 ${y(v[2])} 400 ${y(v[2])}`);
+    const v = card._eq || (card._eq = [0, 0, 0, 0, 0, 0]);
+    card.querySelectorAll('.eqb').forEach((b, i) => { b.style.setProperty('--p', ((12 - v[i]) / 24 * 100) + '%'); b.querySelector('.eqv').textContent = (v[i] > 0 ? '+' : '') + v[i]; b.classList.toggle('up', v[i] > 0); b.classList.toggle('dn', v[i] < 0); });
+    const xs = [50, 150, 250, 350, 450, 550], pts = xs.map((x, i) => [x, eqY(v[i])]);
+    let d = `M0 ${pts[0][1]} L${pts[0][0]} ${pts[0][1]}`;
+    for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], mx = (x0 + x1) / 2; d += ` C${mx} ${y0} ${mx} ${y1} ${x1} ${y1}`; }
+    d += ` L600 ${pts[5][1]}`;
+    card.querySelector('.eq-line').setAttribute('d', d); card.querySelector('.eq-fill').setAttribute('d', d + ' L600 110 L0 110 Z');
   }
-  function eqChanged(s) { if (!s) return; const card = s.closest('.scard'); card.querySelectorAll('.eq-pre div').forEach(d => d.classList.toggle('on', d.textContent === 'Custom')); card.querySelector('.eq-name').textContent = 'Custom'; eqPaint(card); }
   function eqPreset(d) {
-    const card = d.closest('.scard'), p = EQP[d.textContent]; card.querySelectorAll('.eq-pre div').forEach(x => x.classList.toggle('on', x === d));
-    card.querySelector('.eq-name').textContent = d.textContent; if (!p) return;
-    card.querySelectorAll('[data-eq]').forEach((s, i) => { s.style.setProperty('--v', ((p[i] + 6) / 12 * 100) + '%'); s.parentElement.querySelector('.val').textContent = (p[i] > 0 ? '+' : '') + p[i] + ' dB'; });
-    eqPaint(card);
+    const card = d.closest('.eq-card'); card.querySelectorAll('.eq-pre div').forEach(x => x.classList.toggle('on', x === d));
+    card.querySelector('.eq-name').textContent = d.textContent;
+    if (EQP[d.textContent]) { card._eq = EQP[d.textContent].slice(); eqPaint(card); }
   }
+  let eqDrag = null;
+  document.addEventListener('pointerdown', e => { const b = e.target.closest('.eqb'); if (!b) return; eqDrag = { b, last: null }; b.classList.add('drag'); eqMove(e); e.preventDefault(); });
+  document.addEventListener('pointermove', e => { if (eqDrag) eqMove(e); });
+  document.addEventListener('pointerup', () => { if (eqDrag) { eqDrag.b.classList.remove('drag'); eqDrag = null; } });
+  function eqMove(e) {
+    const tr = eqDrag.b.querySelector('.eqt').getBoundingClientRect(), card = eqDrag.b.closest('.eq-card');
+    const v = Math.round(12 - Math.max(0, Math.min(1, (e.clientY - tr.top) / tr.height)) * 24);
+    card._eq = card._eq || [0, 0, 0, 0, 0, 0]; const i = +eqDrag.b.dataset.band;
+    if (card._eq[i] !== v) { card._eq[i] = v; if (eqDrag.last !== null) tick('soft'); eqDrag.last = v;
+      card.querySelectorAll('.eq-pre div').forEach(x => x.classList.toggle('on', x.textContent === 'Custom')); card.querySelector('.eq-name').textContent = 'Custom'; eqPaint(card); }
+  }
+  document.querySelectorAll('.eq-card').forEach(eqPaint);
   /* Sound field (LYRA 8.2.4.8): sweet spot, zones, group levels, stage, privacy, Atmos, noise cancellation */
   const ZONES = { 'All seats': [150, 255], Driver: [95, 196], Front: [150, 196], Rear: [150, 314], Chauffeur: [205, 314] };
   function sfState(card) { return card._sf || (card._sf = { x: 150, y: 255, zone: 'All seats', g: { sur: 0, roof: 1, head: 0, sub: 1 }, w: 60, h: 70, pos: 'All around you', priv: {} }); }
@@ -621,6 +638,7 @@
       if (ch === 'Off') { toast(frameOf(pl), 'This sound is off'); return true; }
       tone(pl.dataset.sndPlay === 'lock' ? (ch === 'Classic' ? TONES.lockClassic : TONES.lock) : (ch === 'Breeze' ? TONES.welcomeB : TONES.welcome), 0.7); return true; }
     const eq = t.closest('.eq-pre div'); if (eq) { eqPreset(eq); return true; }
+    const er = t.closest('[data-eq-reset]'); if (er) { const c = er.closest('.eq-card'); eqPreset([...c.querySelectorAll('.eq-pre div')].find(x => x.textContent === 'Balanced')); return true; }
     if (sfClick(t)) return true;
     return false;
   }
@@ -914,7 +932,6 @@
       if (pct2 < fl) { pct2 = fl; if (!drag.s._fl) { drag.s._fl = 1; toast(frameOf(drag.s), `Safety chimes stay at ${fl} % or louder`); setTimeout(() => drag.s && (drag.s._fl = 0), 2500); } }
       if (pct2 !== pct) { drag.s.style.setProperty('--v', pct2 + '%'); const o = drag.s.parentElement.querySelector('.val'); if (o) o.textContent = pct2 + ' %'; return; }
       if (drag.s.hasAttribute('data-touchvol')) { tapK = pct / 40; muted = pct === 0; paintSound(); }
-      if (drag.s.dataset.eq) setTimeout(() => eqChanged(drag && drag.s), 0);
       if (drag.s.dataset.spk || drag.s.dataset.stage) { const sl = drag.s; setTimeout(() => sfSlider(sl), 0); }
       drag.s.style.setProperty('--v', pct + '%');
       const lo = +drag.s.dataset.min, hi = +drag.s.dataset.max, st = +(drag.s.dataset.step || 1);
