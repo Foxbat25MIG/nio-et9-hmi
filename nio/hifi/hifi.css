@@ -718,3 +718,6 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .eqk{width:18px;height:18px;margin:-9px 0 0 -9px;box-shadow:0 0 0 2px var(--route),0 2px 6px rgba(36,30,72,.18)}
 .eqb.drag .eqk{transform:scale(1.2)}
 .eqt{width:4px}
+/* album covers */
+.art.cov,.ph.cov{background-size:cover;background-position:center;color:transparent;border:0}
+.pk-cv{width:40px;height:40px;border-radius:8px;flex:none;background:var(--s2) center/cover}

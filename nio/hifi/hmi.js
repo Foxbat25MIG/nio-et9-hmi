@@ -207,14 +207,16 @@
   }
 
   /* ---------- music library (shared by every player in a frame) ---------- */
-  const SONGS = [
-    ['Starman', 'David Bowie', 254], ['Heroes', 'David Bowie', 367], ['Life on Mars?', 'David Bowie', 228], ['Space Oddity', 'David Bowie', 315],
-    ['Dancing Queen', 'ABBA', 231], ['Mamma Mia', 'ABBA', 212], ['Waterloo', 'ABBA', 166], ['The Winner Takes It All', 'ABBA', 294],
-    ['Get Lucky', 'Daft Punk', 369], ['One More Time', 'Daft Punk', 320], ['Instant Crush', 'Daft Punk', 337], ['Digital Love', 'Daft Punk', 298],
-    ['Memory Box', 'Peter Cat Recording Co.', 312], ['Floated By', 'Peter Cat Recording Co.', 305], ['Soulless Friends', 'Peter Cat Recording Co.', 268], ['People Never Change', 'Peter Cat Recording Co.', 241],
-    ['Last Nite', 'The Strokes', 193], ['Reptilia', 'The Strokes', 221], ['Someday', 'The Strokes', 187], ['The Adults Are Talking', 'The Strokes', 309],
-    ['60. Danny DeVito, Everybody', 'The Always Sunny Podcast', 4620, 'https://i.ytimg.com/vi/52c7vu7jfR8/hqdefault.jpg'],
-    ["The AI Tsunami is Here & Society Isn't Ready", 'People by WTF · Nikhil Kamath', 5640, 'https://i.ytimg.com/vi/68ylaeBbdsg/hqdefault.jpg']];
+  const BASE = (document.currentScript && document.currentScript.src || '').replace(/hmi\.js.*$/, '');
+  const CV = k => BASE + 'img/covers/' + k + '.jpg';
+  const SONGS = [   // [title, artist, seconds, cover, kind]
+    ['Starman', 'David Bowie', 254], ['Heroes', 'David Bowie', 367, CV('heroes')], ['Life on Mars?', 'David Bowie', 228], ['Space Oddity', 'David Bowie', 315],
+    ['Dancing Queen', 'ABBA', 231, CV('arrival')], ['Mamma Mia', 'ABBA', 212, CV('abba')], ['Waterloo', 'ABBA', 166], ['The Winner Takes It All', 'ABBA', 294],
+    ['Get Lucky', 'Daft Punk', 369, CV('ram')], ['One More Time', 'Daft Punk', 320, CV('discovery')], ['Instant Crush', 'Daft Punk', 337, CV('ram')], ['Digital Love', 'Daft Punk', 298, CV('discovery')],
+    ['Memory Box', 'Peter Cat Recording Co.', 312, CV('bismillah')], ['Floated By', 'Peter Cat Recording Co.', 305, CV('bismillah')], ['Soulless Friends', 'Peter Cat Recording Co.', 268], ['People Never Change', 'Peter Cat Recording Co.', 241],
+    ['Last Nite', 'The Strokes', 193, CV('lastnite')], ['Reptilia', 'The Strokes', 221, CV('roomonfire')], ['Someday', 'The Strokes', 187], ['The Adults Are Talking', 'The Strokes', 309],
+    ['60. Danny DeVito, Everybody', 'The Always Sunny Podcast', 4620, 'https://i.ytimg.com/vi/52c7vu7jfR8/hqdefault.jpg', 'pod'],
+    ["The AI Tsunami is Here & Society Isn't Ready", 'People by WTF · Nikhil Kamath', 5640, 'https://i.ytimg.com/vi/68ylaeBbdsg/hqdefault.jpg', 'pod']];
   function songIndex(ti, ar) {
     let i = SONGS.findIndex(s => s[0] === ti);
     if (i < 0) { SONGS.push([ti, ar, 2400]); i = SONGS.length - 1; }   // audiobooks, podcasts
@@ -265,7 +267,7 @@
       ov = document.createElement('div'); ov.className = 'pickerov';
       const by = {}; SONGS.slice(0, 20).forEach(s => (by[s[1]] = by[s[1]] || []).push(s));
       ov.innerHTML = `<div class="picker"><div class="row" style="justify-content:space-between;align-items:center"><span class="h2">Choose a song</span><div class="icb picker-x" style="background:var(--s2)"><span class="ms" style="color:var(--t1)">close</span></div></div><div class="pk-list">` +
-        Object.entries(by).map(([a, l]) => `<div class="pk-art"><span class="lbl">${a}</span>` + l.map(s => `<div class="pk-row" data-song="${s[0]}|${s[1]}" data-tap><span class="b2" style="color:var(--t1);flex:1">${s[0]}</span><span class="bs num">${fmt(s[2])}</span></div>`).join('') + '</div>').join('') + '</div></div>';
+        Object.entries(by).map(([a, l]) => `<div class="pk-art"><span class="lbl">${a}</span>` + l.map(s => `<div class="pk-row" data-song="${s[0]}|${s[1]}" data-tap><span class="pk-cv"${s[3] ? ` style="background-image:url(${s[3]})"` : ''}></span><span class="b2" style="color:var(--t1);flex:1">${s[0]}</span><span class="bs num">${fmt(s[2])}</span></div>`).join('') + '</div>').join('') + '</div></div>';
       fr.appendChild(ov);
     }
     const cur = fr.querySelector('.player .h3'); ov.querySelectorAll('[data-song]').forEach(r => r.classList.toggle('on', cur && r.dataset.song.split('|')[0] === cur.textContent));
@@ -585,7 +587,7 @@
       const title = (p.querySelector('.h3') || {}).textContent || '', s = SONGS.find(x => x[0] === title);
       const atmosOn = !fr.querySelector('[data-atmos]') || fr.querySelector('[data-atmos]').classList.contains('on');
       const upmix = !fr.querySelector('[data-upmix]') || fr.querySelector('[data-upmix]').classList.contains('on');
-      const isMusic = s && !s[3] && !p.classList.contains('radio');
+      const isMusic = s && s[4] !== 'pod' && !p.classList.contains('radio');
       fr.querySelectorAll('.atmos-badge').forEach(b => {
         const mode = isMusic && atmosOn ? 'atmos' : upmix ? 'dirac' : 'stereo'; b.dataset.mode = mode;
         b.querySelector('b').textContent = mode === 'atmos' ? 'Dolby Atmos' : mode === 'dirac' ? 'Dirac upmix' : 'Stereo';
@@ -600,6 +602,8 @@
     });
   }, 700);
   document.querySelectorAll('.sf-card').forEach(sfPaint);
+  document.querySelectorAll('.player').forEach(p => { const h = p.querySelector('.h3'), s = h && SONGS.find(x => x[0] === h.textContent); if (s && s[3]) setArt(p, { img: s[3] }); });
+  document.querySelectorAll('[data-song] .ph:not(.cov)').forEach(ph => { const s = SONGS.find(x => x[0] === ph.closest('[data-song]').dataset.song.split('|')[0]); if (s && s[3]) { ph.classList.add('cov'); ph.style.backgroundImage = `url(${s[3]})`; ph.textContent = ''; } });
 
   // previews: short tones at the row's own level
   function tone(seq, vol) {
@@ -972,7 +976,7 @@
     p.querySelectorAll('.play .ms').forEach(i => i.textContent = on ? 'pause' : 'play_arrow');
   }
   const players = [...document.querySelectorAll('.player')];
-  players.forEach(p => { p._dur = 254; p._pos = 110; paintTime(p); });
+  players.forEach(p => { p._dur = 367; p._pos = 148; paintTime(p); });
   window.addEventListener('load', () => players.forEach(p => { p._tw = 0; paintTime(p); }));
   setInterval(() => players.forEach(p => {
     if (!p.classList.contains('playing') || (drag && p.contains(drag.s))) return;
