@@ -521,7 +521,20 @@
   const TONES = { nav: [[880, .18], [1175, .3]], call: [[440, .25], [480, .25], [440, .25]], nomi: [[660, .12], [990, .12], [1320, .28]], ring: [[1046, .14], [1318, .14], [1568, .3]],
     chime: [[1200, .3, 'triangle']], tap: [[2100, .06, 'triangle']], lock: [[1320, .08], [990, .16]], lockClassic: [[880, .12, 'square'], [880, .12, 'square']],
     welcome: [[523, .25], [659, .25], [784, .25], [1046, .6]], welcomeB: [[784, .3], [659, .3], [880, .7]] };
+  function sndTabs(snd, k) { snd.querySelectorAll('.snd-tabs div').forEach(d => d.classList.toggle('on', d.dataset.sndGo === k)); }
+  // scrolling the page lights up the section you are in
+  document.addEventListener('scroll', e => {
+    const snd = e.target; if (!snd.classList || !snd.classList.contains('snd') || snd._jump) return;
+    const top = snd.getBoundingClientRect().top + snd.querySelector('.snd-tabs').offsetHeight + 24;
+    let cur = 'vol'; snd.querySelectorAll('.snd-sec').forEach(s => { if (s.getBoundingClientRect().top <= top) cur = s.dataset.sec; });
+    if (snd.scrollTop + snd.clientHeight >= snd.scrollHeight - 4) cur = 'car';
+    sndTabs(snd, cur);
+  }, true);
   function sndClick(t) {
+    const go = t.closest('[data-snd-go]');
+    if (go) { const snd = go.closest('.snd'), sec = snd.querySelector(`[data-sec="${go.dataset.sndGo}"]`);
+      sndTabs(snd, go.dataset.sndGo); snd._jump = true; clearTimeout(snd._jt); snd._jt = setTimeout(() => snd._jump = false, 700);
+      snd.scrollTo({ top: sec.offsetTop - snd.querySelector('.snd-tabs').offsetHeight - 12, behavior: 'smooth' }); return true; }
     const pv = t.closest('[data-snd-test]');
     if (pv) { const v = parseFloat(pv.parentElement.querySelector('.sl').style.getPropertyValue('--v')) / 100; tone(TONES[pv.dataset.sndTest], v); return true; }
     const pl = t.closest('[data-snd-play]');

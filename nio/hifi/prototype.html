@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" rel="stylesheet">
-<link rel="stylesheet" href="hifi.css?v=20">
+<link rel="stylesheet" href="hifi.css?v=21">
 </head><body><div class="wrap">
 <div class="sitebar"><p class="cap">NIO ET9 CENTRE SCREEN · CLICKABLE PROTOTYPE · LAVENDER LIGHT · tap the bottom bar, the side menus and the gear</p><button class="sound" type="button"></button></div>
 <div class="scaler"><div class="frame proto" data-dash>
@@ -144,6 +144,8 @@
           <div class="row" style="justify-content:space-between"><span class="b1">Screen off when parked and locked</span><i class="tog on"></i></div>
         </div>
       </div></div><div class="pg" data-page="Sound"><div class="snd">
+  <div class="snd-tabs"><div class="on" data-snd-go="vol" data-tap>Volume</div><div class="" data-snd-go="eq" data-tap>Equaliser</div><div class="" data-snd-go="sf" data-tap>Sound field</div><div class="" data-snd-go="nav" data-tap>Navigation</div><div class="" data-snd-go="car" data-tap>Car sounds</div></div>
+  <section class="snd-sec" data-sec="vol">
   <div class="card scard snd-vol"><div class="row" style="justify-content:space-between"><span class="lbl">Volume</span><span class="bs">Tap ▶ to preview a level</span></div>
     <div class="vrow"><span class="ms " style="font-size:24px;color:var(--t2)">music_note</span><div class="col" style="gap:0;width:170px"><span class="b2" style="color:var(--t1)">Media</span><span class="bs">Music, podcasts, radio</span></div><div class="sl" data-sync="vol" data-min="0" data-max="100" data-step="1" data-unit=" %" style="--v:55%;flex:1"><i></i><b></b></div><span class="val num">55 %</span><span style="width:40px"></span></div>
     <div class="vrow"><span class="ms " style="font-size:24px;color:var(--t2)">navigation</span><div class="col" style="gap:0;width:170px"><span class="b2" style="color:var(--t1)">Navigation voice</span></div><div class="sl"  data-min="0" data-max="100" data-step="1" data-unit=" %" style="--v:70%;flex:1"><i></i><b></b></div><span class="val num">70 %</span><div class="icb snd-pv" data-snd-test="nav" data-tap title="Preview"><span class="ms f" style="font-size:20px;color:var(--t1)">play_arrow</span></div></div>
@@ -153,11 +155,15 @@
     <div class="vrow"><span class="ms " style="font-size:24px;color:var(--t2)">warning</span><div class="col" style="gap:0;width:170px"><span class="b2" style="color:var(--t1)">Chimes & warnings</span><span class="bs">Never below 30 %</span></div><div class="sl" data-floor="30" data-min="0" data-max="100" data-step="1" data-unit=" %" style="--v:60%;flex:1"><i></i><b></b></div><span class="val num">60 %</span><div class="icb snd-pv" data-snd-test="chime" data-tap title="Preview"><span class="ms f" style="font-size:20px;color:var(--t1)">play_arrow</span></div></div>
     <div class="vrow"><span class="ms " style="font-size:24px;color:var(--t2)">touch_app</span><div class="col" style="gap:0;width:170px"><span class="b2" style="color:var(--t1)">Touch sounds</span><span class="bs">Off at 0 %</span></div><div class="sl" data-touchvol data-min="0" data-max="100" data-step="1" data-unit=" %" style="--v:40%;flex:1"><i></i><b></b></div><span class="val num">40 %</span><div class="icb snd-pv" data-snd-test="tap" data-tap title="Preview"><span class="ms f" style="font-size:20px;color:var(--t1)">play_arrow</span></div></div>
   </div>
+  </section>
+  <section class="snd-sec" data-sec="eq">
   <div class="card scard"><div class="row" style="justify-content:space-between"><span class="lbl">Equaliser</span><span class="bs eq-name">Balanced</span></div>
     <div class="segx eq-pre" style="padding:4px"><div class="on" style="height:44px;font-size:15px">Balanced</div><div class="" style="height:44px;font-size:15px">Vocal</div><div class="" style="height:44px;font-size:15px">Bass</div><div class="" style="height:44px;font-size:15px">Concert</div><div class="" style="height:44px;font-size:15px">Custom</div></div>
     <svg class="eq-curve" viewBox="0 0 400 90" preserveAspectRatio="none"><path d="M0 45H400" stroke="var(--line)" stroke-dasharray="4 6"/><path class="eq-p" d="M0 45C100 45 300 45 400 45" fill="none" stroke="var(--route)" stroke-width="3" stroke-linecap="round"/></svg>
     <div class="setsl"><span>Bass</span><div class="sl" data-eq="b" data-min="-6" data-max="6" data-step="1" data-unit=" dB" style="--v:50%"><i></i><b></b></div><span class="val num">0 dB</span></div><div class="setsl"><span>Mid</span><div class="sl" data-eq="m" data-min="-6" data-max="6" data-step="1" data-unit=" dB" style="--v:50%"><i></i><b></b></div><span class="val num">0 dB</span></div><div class="setsl"><span>Treble</span><div class="sl" data-eq="t" data-min="-6" data-max="6" data-step="1" data-unit=" dB" style="--v:50%"><i></i><b></b></div><span class="val num">0 dB</span></div>
   </div>
+  </section>
+  <section class="snd-sec" data-sec="sf">
   <div class="card scard"><span class="lbl">Sound field</span>
     <div class="row" style="gap:18px;align-items:stretch"><div class="sf-pad" data-tap><div class="sf-car"></div><i class="sf-seat" style="left:30%;top:36%"></i><i class="sf-seat" style="left:70%;top:36%"></i><i class="sf-seat" style="left:30%;top:66%"></i><i class="sf-seat" style="left:70%;top:66%"></i><b class="sf-dot" style="left:50%;top:50%"></b></div>
     <div class="col" style="gap:12px;flex:1"><span class="b2" style="color:var(--t1)">Focus on</span><div class="segx sf-focus" style="padding:4px;flex-wrap:wrap" style="padding:4px"><div class="on" style="height:40px;font-size:15px">All seats</div><div class="" style="height:40px;font-size:15px">Driver</div><div class="" style="height:40px;font-size:15px">Front</div><div class="" style="height:40px;font-size:15px">Rear</div></div>
@@ -167,21 +173,26 @@
     <div class="srow"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Immersive surround</span><span class="bs" style="font-size:14px">Sound all around the cabin</span></div><i class="tog on" data-snd-flip="Immersive surround"></i></div>
     <div class="srow"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Driver private mode</span><span class="bs" style="font-size:14px">Calls and NOMI only through the driver headrest</span></div><i class="tog" data-snd-flip="Driver private mode"></i></div>
   </div>
+  </section>
+  <section class="snd-sec" data-sec="nav">
   <div class="card scard"><span class="lbl">Navigation voice</span>
     <div class="col" style="gap:8px"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Guidance</span></div><div class="segx nv-g" style="padding:4px"><div class="on" style="height:44px;font-size:15px">Full</div><div class="" style="height:44px;font-size:15px">Alerts only</div><div class="" style="height:44px;font-size:15px">Off</div></div></div>
     <div class="col" style="gap:8px"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Music during prompts</span></div><div class="segx nv-m" style="padding:4px"><div class="on" style="height:44px;font-size:15px">Dips</div><div class="" style="height:44px;font-size:15px">Pauses</div><div class="" style="height:44px;font-size:15px">Keeps playing</div></div></div>
   </div>
-  <div class="card scard"><span class="lbl">Speed and limits</span>
-    <div class="col" style="gap:8px"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Louder with speed</span><span class="bs">Adds volume as road noise rises</span></div><div class="segx spd-v" style="padding:4px"><div class="" style="height:44px;font-size:15px">Off</div><div class="on" style="height:44px;font-size:15px">Low</div><div class="" style="height:44px;font-size:15px">High</div></div></div>
-    <div class="setsl"><span>Start-up limit</span><div class="sl" data-min="10" data-max="60" data-step="5" data-unit=" %" style="--v:50%"><i></i><b></b></div><span class="val num">35 %</span></div>
-    <span class="bs">Media never starts louder than this when you get in.</span>
-  </div>
+  </section>
+  <section class="snd-sec" data-sec="car">
   <div class="card scard snd-wide"><span class="lbl">Car sounds</span>
     <div class="col" style="gap:14px">
       <div class="col" style="gap:8px;flex:1"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Lock and unlock</span></div><div class="row" style="gap:10px"><div class="segx ch-lock" style="padding:4px;flex:1" style="padding:4px"><div class="on" style="height:44px;font-size:15px">Soft</div><div class="" style="height:44px;font-size:15px">Classic</div><div class="" style="height:44px;font-size:15px">Off</div></div><div class="btn sec sm" data-snd-play="lock"><span class="ms f" style="font-size:20px">play_arrow</span><span>Play</span></div></div></div>
       <div class="col" style="gap:8px;flex:1"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Welcome sound</span></div><div class="row" style="gap:10px"><div class="segx ch-wel" style="padding:4px;flex:1" style="padding:4px"><div class="on" style="height:44px;font-size:15px">Aurora</div><div class="" style="height:44px;font-size:15px">Breeze</div><div class="" style="height:44px;font-size:15px">Off</div></div><div class="btn sec sm" data-snd-play="welcome"><span class="ms f" style="font-size:20px">play_arrow</span><span>Play</span></div></div></div>
     </div>
   </div>
+  <div class="card scard"><span class="lbl">Speed and limits</span>
+    <div class="col" style="gap:8px"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Louder with speed</span><span class="bs">Adds volume as road noise rises</span></div><div class="segx spd-v" style="padding:4px"><div class="" style="height:44px;font-size:15px">Off</div><div class="on" style="height:44px;font-size:15px">Low</div><div class="" style="height:44px;font-size:15px">High</div></div></div>
+    <div class="setsl"><span>Start-up limit</span><div class="sl" data-min="10" data-max="60" data-step="5" data-unit=" %" style="--v:50%"><i></i><b></b></div><span class="val num">35 %</span></div>
+    <span class="bs">Media never starts louder than this when you get in.</span>
+  </div>
+  </section>
 </div></div><div class="pg" data-page="Connections"><div class="col pgc">
   <div class="card scard" style=""><span class="lbl">Bluetooth</span><div class="kv"><div><span class="row" style="gap:10px"><span class="ms " style="font-size:22px">smartphone</span>Emma’s iPhone</span><b style="color:#4f6fb8">Connected</b></div><div><span class="row" style="gap:10px"><span class="ms " style="font-size:22px">smartphone</span>Pierre’s phone</span><b>Paired</b></div></div><div class="btn sec sm" style="align-self:flex-start"><span class="ms " style="font-size:20px">add</span>Add device</div></div>
   <div class="card scard" style=""><span class="lbl">Wi-Fi</span><div class="srow"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Wi-Fi</span><span class="bs" style="font-size:14px">Home network · connected</span></div><i class="tog on"></i></div><div class="srow"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Hotspot</span><span class="bs" style="font-size:14px">Share the car’s connection</span></div><i class="tog"></i></div></div>
@@ -315,7 +326,7 @@
 </div>
 <script src="hifi.js?v=9"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-<script src="hmi.js?v=19"></script>
+<script src="hmi.js?v=20"></script>
 <script src="../map/lux-map.js?v=2"></script>
 <script src="../design/nav-map.js?v=5"></script>
 </body></html>

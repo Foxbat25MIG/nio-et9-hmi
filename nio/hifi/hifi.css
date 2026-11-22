@@ -622,3 +622,10 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .snd{grid-template-columns:minmax(0,1fr)}
 .snd-vol{grid-row:auto}.snd-wide{grid-column:auto}
 .snd .segx>div{flex:1}
+/* Sound: category bar that jumps to each section */
+.snd{position:relative;gap:0}
+.snd-tabs{position:sticky;top:0;z-index:3;display:flex;gap:6px;padding:6px;margin-bottom:16px;background:var(--s1);border-radius:999px;box-shadow:0 6px 18px rgba(36,30,72,.06)}
+.snd-tabs div{flex:1;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;font:400 15px "Red Hat Text";color:var(--t2);cursor:pointer;transition:background-color var(--dur-hover) var(--ease),color var(--dur-hover) var(--ease)}
+.snd-tabs div:hover{background:var(--s2)}
+.snd-tabs div.on{background:var(--sel);color:var(--on-sel);font-weight:500}
+.snd-sec{display:flex;flex-direction:column;gap:16px;margin-bottom:16px}
