@@ -894,7 +894,9 @@
     [seg, ...chips].forEach(el => { if (!el) return; const v = y + 'px'; if (el.style.top !== v) el.style.top = v; y += el.offsetHeight + G; });
     app.classList.toggle('wt-cover', open);
   }
-  setInterval(() => document.querySelectorAll('.app[data-navmap]:not([data-static])').forEach(stackLeft), 120);
+  const stackAll = () => document.querySelectorAll('.app[data-navmap]:not([data-static])').forEach(stackLeft);
+  setInterval(stackAll, 120);
+  document.addEventListener('click', () => requestAnimationFrame(stackAll));   // move at once on a tap, not on the next tick
   // wire up every live navigation pane (hero + prototype), not the static gallery frames
   document.querySelectorAll('.app[data-navmap]:not([data-static])').forEach(app => {
     const icon = app.querySelector('[data-nav="icon"]'), eta = app.querySelector('[data-nav="eta"]');

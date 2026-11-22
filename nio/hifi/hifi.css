@@ -783,3 +783,10 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .wt-card{padding:12px}
 .wt-bar{height:52px}
 .wt-quick{gap:8px}.wt-quick .chip2{height:42px}
+/* smoother left-column motion: one panel curve for every box (600 ms, standard ease) */
+.app .seg[data-views],.app .carview .cv-chip,.app .carview .tl-chip{transition:top .6s cubic-bezier(.2,.8,.2,1),opacity .45s cubic-bezier(.2,.8,.2,1),transform .6s cubic-bezier(.2,.8,.2,1);will-change:top}
+.tcard,.tripbar,.wt{transition:opacity .45s cubic-bezier(.2,.8,.2,1),transform .6s cubic-bezier(.2,.8,.2,1)}
+.app.noroute .tcard{transform:translateY(-6px) scale(.98);transform-origin:top left}
+.wt{transform:translateY(-6px) scale(.98);transform-origin:top left}
+.app.noroute .wt,.app.wt-open .wt{transform:none}
+.app.noroute .carview .cv-chip{transform:translateX(-10px)}
