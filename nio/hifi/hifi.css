@@ -369,3 +369,56 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .prof.on{box-shadow:0 0 0 3px var(--sel)}
 .mem .btn.on{background:var(--sel);color:var(--on-sel);border-color:var(--sel)}
 .proto .status .r .ms[data-go]{font-size:24px;color:var(--t1)}
+/* ---------- bottom-bar screens: Media, Phone, Apps, NOMI ---------- */
+.tabpanes{flex:1;min-height:0;position:relative}
+.tp{display:none;height:100%;overflow:auto;scrollbar-width:none}
+.tp::-webkit-scrollbar{display:none}
+.tp.on{display:block;animation:scrin .4s var(--ease)}
+.lrow{display:flex;align-items:center;gap:16px;min-height:64px;padding:6px 0;border-top:1px solid var(--line);cursor:pointer}
+.scard .lbl+.lrow{border-top:0}
+.radio-f{font:400 72px/1 "Red Hat Display";color:var(--t1);letter-spacing:-.02em}
+.dial{width:100%;height:28px;margin-top:10px;background:repeating-linear-gradient(90deg,var(--t3) 0 1px,transparent 1px 12px);opacity:.5;position:relative;border-radius:4px}
+.dial i{position:absolute;top:-4px;bottom:-4px;left:42%;width:3px;border-radius:2px;background:var(--ink);transition:left .5s var(--ease)}
+.fav{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px;cursor:pointer;text-align:center}
+.callbtn{width:52px;height:52px;border-radius:50%;background:#2fae6a;display:flex;align-items:center;justify-content:center;margin-top:8px;cursor:pointer;transition:transform var(--dur-press) var(--ease)}
+.callbtn.big{width:72px;height:72px}
+.callbtn:active{transform:scale(.94)}
+.kp{display:grid;grid-template-columns:repeat(3,92px);gap:10px}
+.key{height:64px;border-radius:16px;background:var(--s1);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.key:hover{background:var(--s2)}.key:active{transform:scale(.95)}
+.key b{font:400 26px "Red Hat Display";color:var(--t1)}.key small{font:500 10px "Red Hat Text";letter-spacing:.12em;color:var(--t3);min-height:12px}
+.kp-num{font:400 34px "Red Hat Display";color:var(--t1);min-width:260px;text-align:center}
+.callov{position:absolute;left:24px;top:64px;width:912px;height:708px;border-radius:var(--r-pane);background:rgba(243,242,248,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:56px;z-index:30;opacity:0;pointer-events:none;transform:scale(.98);transition:opacity .35s var(--ease),transform .35s var(--ease)}
+.callov.on{opacity:1;pointer-events:auto;transform:none}
+.cbtn{width:84px;height:84px;border-radius:50%;background:var(--s1);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.cbtn small{font:500 12px "Red Hat Text";color:var(--t2)}
+.cbtn.on{background:var(--sel);border-color:var(--sel)}
+.cbtn.end{background:#d94a4a;border-color:#d94a4a}.cbtn.end small{color:#fff}
+.cbtn:active{transform:scale(.95)}
+.agrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px 10px;flex:1;align-content:start}
+.atile{display:flex;flex-direction:column;align-items:center;gap:8px;font:400 14px "Red Hat Text";color:var(--t1);cursor:pointer;padding:6px;border-radius:16px;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.atile:hover{background:var(--s3)}.atile:active{transform:scale(.95)}
+.aico{width:68px;height:68px;border-radius:20px;display:flex;align-items:center;justify-content:center}
+.camgrid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;height:100%}
+.chess{display:grid;grid-template-columns:repeat(8,52px);grid-template-rows:repeat(8,52px);border-radius:12px;overflow:hidden}
+.chess i{display:flex;align-items:center;justify-content:center;font:400 34px/1 serif;font-style:normal;color:var(--t1);cursor:pointer}
+.chess .lt1{background:#eceaf3}.chess .dk1{background:#c9c4dc}
+.chess i.sel{box-shadow:inset 0 0 0 4px var(--route)}
+.sudoku{display:grid;grid-template-columns:repeat(9,46px);grid-template-rows:repeat(9,46px);background:var(--s1);border:2px solid var(--t2);border-radius:8px;overflow:hidden}
+.sudoku i{display:flex;align-items:center;justify-content:center;font:400 22px "Red Hat Display";font-style:normal;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sudoku .giv{color:var(--t1);font-weight:500}.sudoku .emp{color:#4f6fb8;cursor:pointer}.sudoku .emp:hover{background:var(--s2)}
+.sudoku .bx{border-right:2px solid var(--t2)}.sudoku .by{border-bottom:2px solid var(--t2)}
+.trivia .ans.ok{background:#d5ead8;border-color:#9ccfa6}.trivia .ans.no{background:#f6d9d9;border-color:#e8a9a9}
+.nomiov{position:absolute;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;padding-bottom:132px;background:rgba(31,28,41,.12);opacity:0;pointer-events:none;transition:opacity .35s var(--ease)}
+.nomiov.on{opacity:1;pointer-events:auto}
+.nomi-card{width:760px;background:var(--s1);border-radius:28px;box-shadow:0 20px 60px rgba(36,30,72,.18);padding:22px 24px;display:flex;flex-direction:column;gap:16px;transform:translateY(16px);transition:transform .4s var(--ease)}
+.nomiov.on .nomi-card{transform:none}
+.orb{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e7e3fd,#9b8ffa 55%,#6f8fd0);animation:orb 1.6s ease-in-out infinite}
+@keyframes orb{50%{transform:scale(1.08);filter:brightness(1.08)}}
+@media (prefers-reduced-motion:reduce){.orb{animation:none}}
+.nomi-log{display:flex;flex-direction:column;gap:10px}
+.nomi-log .me{align-self:flex-end;background:var(--sel);color:var(--on-sel);border-radius:18px 18px 4px 18px;padding:10px 16px;font:400 17px "Red Hat Text"}
+.nomi-log .ai{align-self:flex-start;background:var(--s2);color:var(--t1);border-radius:18px 18px 18px 4px;padding:12px 16px;font:400 17px "Red Hat Text";max-width:80%}
+.nomi-log .acts{display:flex;gap:10px}
+.chip2{height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--s1);display:flex;align-items:center;font:400 15px "Red Hat Text";color:var(--t1);cursor:pointer;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.chip2:hover{background:var(--s2)}.chip2:active{transform:scale(.96)}

@@ -160,6 +160,10 @@ No brand logos, mascots or emoji.
 | Volume | Two sliders, one in the player and one in the dock; always in sync. Speaker icon mutes and restores. |
 | Tap sound | Short soft click on every control, softer tick while dragging sliders. **On by default**; page-level “Tap sounds on/off” switch, remembered per browser. |
 | Drive modes | Tap a mode: values change and briefly highlight. Only **Custom** is editable (segmented options per setting) with **Save as Custom** → toast “Saved to Emma’s profile”. Custom is stored **per driver**. |
+| Prototype routing | Bottom bar and the status-bar gear switch screens; side menus switch pages; the right-hand pane (player + context card) stays put. Settings opens from the gear and from Apps. |
+| Phone | Favourites, Recents, Keypad, Messages. Call = green (`#2fae6a`), End = warning red; this is the one deliberate exception to the colour roles, matching platform convention. Call screen: Mute, Keypad, Speaker, End, live timer. |
+| Apps | CarPlay / Android Auto-style grid; app views open inside the app pane with a back button. Games (Chess, Sudoku, Trivia) are labelled “playable when parked”. |
+| NOMI | Bottom sheet with a breathing orb (generic, not NOMI’s face), suggestion chips and a scripted conversation whose actions change the car (seat heat, music, parking booking). |
 | Blind spot | Indicator → cyclist detected: red map edge + one red icon, camera opens in the side pane and the player compacts; after 4 s it reverses. |
 
 ## 7. States

@@ -38,7 +38,7 @@
   });
   paintSound();
 
-  const TAP = '.icb,.dk,.seg div,.segx div,.play,.btn,.qbtn,.snav div,.tog,.mode,.opt span,.chip,[data-tap]'; // mute icons stay silent
+  const TAP = '.icb,.dk,.seg div,.segx div,.play,.btn,.qbtn,.snav div,.tog,.mode,.opt span,.chip,.chip2,.key,.cbtn,.atile,[data-tap]'; // mute icons stay silent
   // no tap sounds while the frame's volume is muted
   const frameVol = fr => { const s = fr && fr.querySelector && fr.querySelector('[data-sync="vol"]'); return s ? (parseFloat(getComputedStyle(s).getPropertyValue('--v')) || 0) : 50; };
   document.addEventListener('pointerdown', e => {
@@ -58,6 +58,12 @@
     const segItem = t.closest('.seg div, .segx div, .opt span');
     if (segItem) {
       [...segItem.parentElement.children].forEach(c => c.classList.toggle('on', c === segItem));
+      if (segItem.parentElement.hasAttribute('data-tabs')) {
+        const i = [...segItem.parentElement.children].indexOf(segItem);
+        const tp = segItem.parentElement.parentElement.querySelector('.tabpanes');
+        if (tp) [...tp.children].forEach((c, k) => c.classList.toggle('on', k === i));
+        return;
+      }
       const views = segItem.parentElement.closest('[data-views]');
       if (views) {
         const app = frameOf(segItem).querySelector('.app');
@@ -72,6 +78,7 @@
       bars.forEach((b, i) => b.classList.toggle('off', i >= lvl)); return;
     }
     if (dk && dk.hasAttribute('data-go')) { route(dk.closest('.frame'), dk.dataset.go); return; }
+    if (dk && dk.hasAttribute('data-nomi')) { openNomi(dk.closest('.frame')); return; }
     if (dk && !dk.classList.contains('short') && !dk.closest('.dim')) {
       dk.parentElement.querySelectorAll('.dk').forEach(d => d.classList.toggle('on', d === dk)); return;
     }
@@ -84,6 +91,41 @@
       }
       return;
     }
+    const fr0 = t.closest('.frame');
+    const app = t.closest('[data-app]'); if (app) { openApp(fr0, app.dataset.app); return; }
+    const song = t.closest('[data-song]');
+    if (song) {
+      const [ti, ar] = song.dataset.song.split('|');
+      fr0.querySelectorAll('.player').forEach(p => { p.querySelectorAll('.h3').forEach(h => h.textContent = ti); p.querySelectorAll('.b2').forEach(b => b.textContent = ar); p._pos = 0; setPlaying(p, true); paintTime(p); });
+      if (song.dataset.station) { const sc = song.closest('.tp'); sc.querySelector('.radio-f').textContent = song.dataset.station; sc.querySelector('.radio-n').textContent = ti; sc.querySelector('.dial i').style.left = (((+song.dataset.station) - 87.5) / 20.5 * 100).toFixed(1) + '%'; }
+      return;
+    }
+    const call = t.closest('[data-call]');
+    if (call) {
+      const ov = fr0.querySelector('.callov'); let n = call.dataset.call;
+      if (n === 'keypad') { n = fr0.querySelector('.kp-num').textContent.trim(); if (n.length < 6) return; }
+      ov.querySelector('.call-n').textContent = n; ov.querySelector('.call-s').textContent = 'Calling…';
+      ov.querySelectorAll('[data-ctog]').forEach(b => b.classList.remove('on'));
+      ov.classList.add('on'); clearInterval(ov._t);
+      const start = Date.now() + 2000;
+      ov._t = setInterval(() => { const s = Math.floor((Date.now() - start) / 1000); if (s >= 0) ov.querySelector('.call-s').textContent = fmt(s); }, 250);
+      return;
+    }
+    const cbt = t.closest('.cbtn');
+    if (cbt) { if (cbt.classList.contains('end')) { const ov = cbt.closest('.callov'); clearInterval(ov._t); ov.classList.remove('on'); } else cbt.classList.toggle('on'); return; }
+    const key = t.closest('.key'); if (key) { const d = fr0.querySelector('.kp-num'); if (d.textContent.length < 18) d.textContent += key.dataset.key; return; }
+    if (t.closest('.kp-num') || (t.textContent === 'backspace' && t.closest('.tp'))) { const d = fr0.querySelector('.kp-num'); if (d.textContent.length > 5) d.textContent = d.textContent.slice(0, -1); return; }
+    const rd = t.closest('[data-read]'); if (rd) { say(fr0, rd.dataset.read); return; }
+    const sq = t.closest('.chess i');
+    if (sq) { const b = sq.parentElement, sel = b.querySelector('.sel');
+      if (sel && sel !== sq) { sq.textContent = sel.textContent; sel.textContent = ''; sel.classList.remove('sel'); const st = b.closest('.row').querySelector('.chess-s'); st.textContent = st.textContent === 'White to move' ? 'Black to move' : 'White to move'; }
+      else if (sq.textContent.trim()) sq.classList.toggle('sel'); return; }
+    const su = t.closest('.sudoku .emp'); if (su) { su.textContent = ((+su.textContent || 0) % 9) + 1; return; }
+    const an = t.closest('.trivia .ans');
+    if (an) { const ok = an.dataset.ok === '1'; an.classList.add(ok ? 'ok' : 'no'); an.closest('.trivia').querySelector('.tv-r').textContent = ok ? 'Correct. The Alzette runs through the Grund.' : 'Not quite. Try another answer.'; return; }
+    if (t.closest('[data-nomi]')) { openNomi(fr0); return; }
+    if (t.closest('.nomi-x') || t.classList.contains('nomiov')) { fr0.querySelector('.nomiov').classList.remove('on'); return; }
+    const ask = t.closest('[data-ask]'); if (ask) { nomiAsk(fr0, ask.dataset.ask, ask.textContent); return; }
     const go = t.closest('[data-go]');
     if (go) { route(go.closest('.frame'), go.dataset.go); return; }
     const sw = t.closest('.sw'); if (sw) { sw.parentElement.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === sw)); return; }
@@ -106,10 +148,38 @@
     }
   });
 
+  /* ---------- NOMI (scripted demo; actions really change the car) ---------- */
+  function say(fr, text) {
+    try { if (!muted && window.speechSynthesis) { const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; speechSynthesis.cancel(); speechSynthesis.speak(u); } } catch (e) {}
+    const ov = fr && fr.querySelector('.nomiov'); if (!ov) return;
+  }
+  function openNomi(fr) {
+    const ov = fr.querySelector('.nomiov'); ov.querySelector('.nomi-log').innerHTML = ''; ov.querySelector('.nomi-state').textContent = 'Listening…'; ov.classList.add('on');
+  }
+  function bubble(log, cls, html) { const d = document.createElement('div'); d.className = cls; d.innerHTML = html; log.appendChild(d); return d; }
+  function nomiAsk(fr, k, text) {
+    const ov = fr.querySelector('.nomiov'), log = ov.querySelector('.nomi-log'), st = ov.querySelector('.nomi-state');
+    if (k === 'reserve') { log.innerHTML = ''; bubble(log, 'me', 'Reserve it'); }
+    else { log.innerHTML = ''; bubble(log, 'me', text); }
+    st.textContent = 'Thinking…';
+    setTimeout(() => {
+      st.textContent = 'NOMI';
+      let a = '';
+      if (k === 'park') a = 'Parking Trois Glands is a 5 minute walk from Mudam and fits the ET9. Reserve a space from 13:55?<div class="acts" style="margin-top:10px"><div class="btn pri sm" data-ask="reserve">Reserve</div><div class="btn sec sm nomi-x">Not now</div></div>';
+      if (k === 'reserve') a = 'Done. Level −2, bay 14, from 13:55 until 15:55. I’ve added it to your trip.';
+      if (k === 'seat') { a = 'Driver seat heat set to 2.'; fr.querySelectorAll('.dk.short .lv b').forEach((b, i) => b.classList.toggle('off', i >= 2)); }
+      if (k === 'calm') { a = 'Playing Space Oddity by David Bowie.'; fr.querySelectorAll('.player').forEach(p => { p.querySelectorAll('.h3').forEach(h => h.textContent = 'Space Oddity'); p.querySelectorAll('.b2').forEach(b => b.textContent = 'David Bowie'); p._pos = 0; setPlaying(p, true); paintTime(p); }); }
+      if (k === 'air') { const q = document.querySelector('[data-live="aqi"]'), x = document.querySelector('[data-live="aqitext"]'); a = q && q.textContent.trim() && q.textContent !== 'AQI –' ? `Outside air is ${q.textContent}${x ? ', ' + x.textContent : ''}. Cabin filtering is on.` : 'Outside air quality is good today. Cabin filtering is on.'; }
+      bubble(log, 'ai', a); say(null, a.replace(/<[^>]+>/g, ''));
+    }, 700);
+  }
+
   /* ---------- router (prototype): bottom bar + gear switch screens ---------- */
   const NAMES = { media: 'Media', phone: 'Phone', apps: 'Apps' };
   function route(fr, to) {
     if (!fr) return;
+    let arg = null;
+    if (to.includes(':')) { [to, arg] = to.split(':'); }
     let scr = fr.querySelector(`[data-screen="${to}"]`);
     if (!scr) { scr = fr.querySelector('[data-screen="soon"]'); if (scr) scr.querySelector('.soon-t').textContent = NAMES[to] || to; }
     fr.querySelectorAll('.scr').forEach(s => s.classList.toggle('on', s === scr));
@@ -117,6 +187,19 @@
     const nav = to === 'nav';
     fr.querySelectorAll('[data-ctx="nav"]').forEach(c => c.style.display = nav ? '' : 'none');
     fr.querySelectorAll('[data-ctx="other"]').forEach(c => c.style.display = nav ? 'none' : '');
+    if (arg !== null && scr) {
+      if (/^\d+$/.test(arg)) { const seg = scr.querySelector('[data-tabs]'); if (seg) seg.children[+arg].click(); }
+      else { const it = [...scr.querySelectorAll('.snav div')].find(d => d.textContent.includes(arg)); if (it) it.click(); }
+    }
+  }
+  const TABDOCK = { appview: 'apps' };
+  function openApp(fr, name) {
+    const scr = fr.querySelector('[data-screen="appview"]'), tpl = fr.querySelector(`template[data-appc="${name}"]`);
+    scr.querySelector('.av-t').textContent = name;
+    const c = scr.querySelector('.av-c'); c.innerHTML = ''; if (tpl) c.appendChild(tpl.content.cloneNode(true));
+    route(fr, 'appview');
+    fr.querySelectorAll('.dock .dk[data-go]').forEach(d => d.classList.toggle('on', d.dataset.go === 'apps'));
+    if (window.nioLive) window.nioLive();
   }
 
   /* ---------- sliders (progress + volume, volume synced per frame) ---------- */
