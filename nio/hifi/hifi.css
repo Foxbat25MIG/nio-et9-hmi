@@ -634,3 +634,12 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .snd-tabs::after{content:"";position:absolute;left:12px;right:12px;top:100%;height:18px;pointer-events:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);-webkit-mask:linear-gradient(#000,transparent);mask:linear-gradient(#000,transparent);opacity:0;transition:opacity .3s var(--ease)}
 .snd.scrolled .snd-tabs{box-shadow:0 10px 28px rgba(36,30,72,.12)}
 .snd.scrolled .snd-tabs::after{opacity:1}
+/* Sound v3: the bar sits above the scroll area (no overlap); cards blur and fade as they slide up beneath it */
+.snd-wrap{flex:1;min-width:0;display:flex;flex-direction:column;gap:0;max-height:100%;min-height:0;position:relative}
+.snd-wrap .snd-tabs{position:relative;top:auto;margin:0;flex:none;background:var(--s1);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid var(--line);box-shadow:none;z-index:3}
+.snd-wrap .snd-tabs::after{display:none}
+.snd-wrap .snd{flex:1;min-height:0;max-height:none;padding-top:14px;
+  -webkit-mask:linear-gradient(to bottom,transparent 0,rgba(0,0,0,.25) 10px,#000 30px);mask:linear-gradient(to bottom,transparent 0,rgba(0,0,0,.25) 10px,#000 30px)}
+.snd-wrap .snd-blur{position:absolute;left:0;right:0;top:56px;height:26px;z-index:2;pointer-events:none;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);-webkit-mask:linear-gradient(#000,transparent);mask:linear-gradient(#000,transparent);opacity:0;transition:opacity .3s var(--ease)}
+.snd-wrap.scrolled .snd-blur{opacity:1}
+.snd-wrap.scrolled .snd-tabs{box-shadow:0 8px 22px rgba(36,30,72,.10)}
