@@ -1034,3 +1034,13 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .sv-ann .ann-v{stroke:#b9b2cf;stroke-dasharray:none;stroke-width:.8}
 .sv-ann .ann-r{stroke:#7a6bf2;stroke-width:.8}
 .ann-lb{font:500 11px "Red Hat Text";fill:#5a4fc8}
+/* seat card: lavender box spans the full width; lumbar/bolster outlines */
+.st-sidewrap{max-width:none!important;width:100%;margin:0;background:#f6f5fa!important;border-radius:20px;padding:10px 0}
+.st-side{display:block;width:auto!important;height:300px;max-width:100%;margin:0 auto}
+.bk-ov{opacity:0;transition:opacity .35s var(--ease);pointer-events:none}
+.bk-zone .bk-ov{opacity:1}
+.bk-ov>g{opacity:.45;transition:opacity .3s var(--ease)}.bk-ov>g.on{opacity:1}
+.ov-l{fill:none;stroke:#7a6bf2;stroke-width:1.1;stroke-dasharray:3 3;transition:transform .4s var(--ease)}
+.ov-a{fill:none;stroke:#7a6bf2;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.ov-t{font:500 9px "Red Hat Text";fill:#5a4fc8}
+.ov-bol .ov-l{transform:scaleX(calc(1 - var(--b,2px) / 40px))}

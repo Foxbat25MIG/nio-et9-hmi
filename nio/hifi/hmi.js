@@ -945,14 +945,21 @@
     q('.ss-back').style.transform = `rotate(${-(v.recline - 16)}deg)`;   // the render's backrest leans 16°
     q('.ss-cush').style.transform = `rotate(${-v.tilt}deg)`;
     q('.ss-head').style.transform = `translate(${-(v.headh - 30) * .035 + (v.headt - 10) * .2}px, ${-(v.headh - 30) * .12}px)`;   // slides along the backrest
-    // protractor on the ring: a node at upright and a node at the backrest angle, the arc between them, the angle next to the node
+    // ring shows the control in focus: recline and tilt/angle as real degrees, distances as a share of their range
     { const C = [150, 110], R = 112, at = deg => { const r = (-90 - deg) * Math.PI / 180; return [C[0] + R * Math.cos(r), C[1] + R * Math.sin(r)]; };
-      const up = at(0), bk = at(v.recline), set = (s, o) => { const e = q(s); Object.entries(o).forEach(([k, x]) => e.setAttribute(k, typeof x === 'number' ? x.toFixed(1) : x)); };
+      const md = ADJ[S.mode || 'cush'], n = md.nodes.find(x => x.k === S.last) || md.nodes[0], [lo, hi] = limOf(S.sel, n.k), val = v[n.k];
+      const sweep = n.k === 'recline' ? val : n.unit.trim() === '°' ? Math.max(0, val) * 2 : (val - lo) / (hi - lo) * 90;
+      const up = at(0), bk = at(sweep), set = (s, o) => { const e = q(s); Object.entries(o).forEach(([k, x]) => e.setAttribute(k, typeof x === 'number' ? x.toFixed(1) : x)); };
       set('.ann-nv', { cx: up[0], cy: up[1] }); set('.ann-nr', { cx: bk[0], cy: bk[1] });
       set('.ann-v', { x1: up[0], y1: up[1] - 4, x2: up[0], y2: up[1] - 16 });
-      const lr = (-90 - v.recline) * Math.PI / 180; set('.ann-r', { x1: bk[0] + 4 * Math.cos(lr), y1: bk[1] + 4 * Math.sin(lr), x2: bk[0] + 16 * Math.cos(lr), y2: bk[1] + 16 * Math.sin(lr) });
+      const lr = (-90 - sweep) * Math.PI / 180; set('.ann-r', { x1: bk[0] + 4 * Math.cos(lr), y1: bk[1] + 4 * Math.sin(lr), x2: bk[0] + 16 * Math.cos(lr), y2: bk[1] + 16 * Math.sin(lr) });
       q('.ann-arc').setAttribute('d', `M${up[0].toFixed(1)} ${up[1].toFixed(1)}A${R} ${R} 0 0 0 ${bk[0].toFixed(1)} ${bk[1].toFixed(1)}`);
-      const lb = q('.ann-lb'); lb.textContent = v.recline + '°'; set('.ann-lb', { x: bk[0] - 22 * Math.cos(lr + Math.PI / 2) - 6, y: bk[1] - 22 * Math.sin(lr + Math.PI / 2) + 4 }); }
+      q('.ann-lb').textContent = Math.round(val) + n.unit; set('.ann-lb', { x: bk[0] - 22 * Math.cos(lr + Math.PI / 2) - 10, y: bk[1] - 22 * Math.sin(lr + Math.PI / 2) + 4 });
+      // lumbar and side-bolster outlines on the backrest
+      w.classList.toggle('bk-zone', (S.mode || 'cush') === 'back');
+      w.querySelector('.ov-lum').classList.toggle('on', S.last === 'lumbar'); w.querySelector('.ov-bol').classList.toggle('on', S.last === 'bolster');
+      w.querySelector('.ov-lum .ov-l').style.transform = `translateX(${(v.lumbar - 50) * .08}px)`;
+      w.querySelector('.ov-bol').style.setProperty('--b', (v.bolster / 100 * 4).toFixed(1) + 'px'); }
         q('.ss-leg').style.transform = `translateX(${(v.ext || 0) * .25}px) rotate(${-(v.leg || 0)}deg)`;
     
     
@@ -967,7 +974,7 @@
     }
     q('.st-read').querySelectorAll('[data-stp]').forEach(d => { const n = M.nodes.find(x => x.k === d.dataset.stp); d.querySelector('.stp-v').textContent = Math.round(v[n.k]) + n.unit; d.classList.toggle('on', S.last === n.k); });
     // the big readout shows the control you touched last (backrest angle by default)
-    { const n = Object.values(ADJ).flatMap(m => m.nodes).find(x => x.k === (S.last || 'recline'));
+    { const md0 = ADJ[S.mode || 'cush'], n = md0.nodes.find(x => x.k === S.last) || md0.nodes[0];
       q('.ann-t').textContent = Math.round(v[n.k]) + (n.unit.trim() === '°' ? '°' : n.unit);
       const ZN = { head: 'Headrest', back: 'Backrest', cush: 'Seat', leg: 'Thigh support' }, zk = Object.keys(ADJ).find(z => ADJ[z].nodes.includes(n));
       q('.ann-s').textContent = /^(Height|Tilt|Recline|Length|Angle)$/.test(n.label) ? ZN[zk] + ' ' + n.label.toLowerCase() : n.label; }
