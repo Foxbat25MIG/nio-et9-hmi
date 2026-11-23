@@ -1002,3 +1002,9 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .st-side .sv-part>path.sv-dk,.st-side path.sv-dk{fill:#3A3647!important;stroke:none!important}
 .st-side .sv-part.act>path.sv-lt{fill:#c3cff4!important;stroke:#7a6bf2!important;stroke-width:1.2!important}
 .st-side .sv-part.act>path.sv-dk{fill:#5a4fc8!important}
+/* Seats v10: Adi's four-part seat render */
+.st-side image{transition:filter .35s var(--ease)}
+.st-side .sv-part.act>image{filter:drop-shadow(0 0 1.5px rgba(122,107,242,1)) drop-shadow(0 0 7px rgba(122,107,242,.45))}
+.st-side .ss-back.act .ss-head:not(.act) image{filter:none}
+.ss-back{transform-origin:110px 180px}.ss-cush{transform-origin:95px 225px}.ss-leg{transform-origin:209px 222px}.ss-head{transform-origin:60px 40px}
+.ss-back,.ss-cush,.ss-leg,.ss-head{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
