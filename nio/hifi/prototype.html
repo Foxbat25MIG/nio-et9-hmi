@@ -4,9 +4,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&family=Red+Hat+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" rel="stylesheet">
-<link rel="stylesheet" href="hifi.css?v=88">
+<link rel="stylesheet" href="hifi.css?v=89">
+<link rel="stylesheet" href="hifi-dark.css?v=89">
+<script>(function(){var d=document.documentElement,q=new URLSearchParams(location.search),t='auto';try{t=localStorage.getItem('nio-theme')||'auto'}catch(e){}t=q.get('theme')||t;
+var dk=t==='dark'||(t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);d.dataset.pref=t;d.dataset.theme=dk?'dark':'light';d.dataset.night=q.get('night')||'plum';})();</script>
 </head><body><div class="wrap">
-<div class="sitebar"><p class="cap">NIO ET9 CENTRE SCREEN · CLICKABLE PROTOTYPE · LAVENDER LIGHT · tap the bottom bar, the side menus and the gear</p><button class="sound" type="button"></button></div>
+<div class="sitebar"><p class="cap">NIO ET9 CENTRE SCREEN · CLICKABLE PROTOTYPE · LAVENDER LIGHT · tap the bottom bar, the side menus and the gear</p><div class="row" style="gap:8px"><button class="theme-tg" type="button" data-theme-tg><span class="ms">dark_mode</span><span class="tt">Dark</span></button><button class="sound" type="button"></button></div></div>
 <div class="scaler"><div class="frame proto" data-dash>
 <div class="status">
       <div class="l"><div class="gear"><span>P</span><span>R</span><span>N</span><span class="on">D</span></div>
@@ -236,7 +239,7 @@
   <div class="card scard" style=""><span class="lbl">Screen</span><div class="srow"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Cleaning mode</span><span class="bs" style="font-size:14px">Wipe the screen without pressing anything</span></div><div class="btn sec sm" data-clean><span class="ms " style="font-size:20px">cleaning_services</span><span>Lock touch for 30 s</span></div></div></div>
   <div class="card scard" style=""><span class="lbl">Storage and legal</span><div class="kv"><div>Storage used<b>38 of 128 GB</b></div><div>Dashcam recordings<b>6.2 GB</b></div><div data-tap>Legal information<span class="ms" style="font-size:22px">chevron_right</span></div></div><div class="srow"><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">Factory reset</span><span class="bs" style="font-size:14px">Removes all drivers and settings</span></div><div class="btn sec sm" data-flip="Hold for 5 s to confirm"><span class="ms " style="font-size:20px">restart_alt</span><span>Reset car</span></div></div></div>
   <div class="card scard" style=""><span class="lbl">Manual</span><div class="kv"><div data-tap><span class="row" style="gap:10px"><span class="ms " style="font-size:22px">menu_book</span>Getting started</span><span class="ms " style="font-size:22px">chevron_right</span></div><div data-tap><span class="row" style="gap:10px"><span class="ms " style="font-size:22px">ev_station</span>Charging and Power Swap</span><span class="ms " style="font-size:22px">chevron_right</span></div><div data-tap><span class="row" style="gap:10px"><span class="ms " style="font-size:22px">shield</span>Driver assists</span><span class="ms " style="font-size:22px">chevron_right</span></div></div></div>
-</div></div></div></div></section><section class="scr" data-screen="settings"><div class="pane"><div class="snav" data-pages><div class="on"><span class="ms " style="">light_mode</span>Display</div><div class=""><span class="ms " style="">volume_up</span>Sound</div><div class=""><span class="ms " style="">graphic_eq</span>NOMI</div><div class=""><span class="ms " style="">bluetooth</span>Connections</div><div class=""><span class="ms " style="">account_circle</span>Profiles</div><div class=""><span class="ms " style="">lock</span>Privacy</div><div class=""><span class="ms " style="">info</span>System</div></div><div class="pages"><div class="pg on" data-page="Display"><div class="col" style="flex:1;gap:20px">
+</div></div></div></div></section><section class="scr" data-screen="settings"><div class="pane"><div class="snav" data-pages><div class="on"><span class="ms " style="">light_mode</span>Display</div><div class=""><span class="ms " style="">volume_up</span>Sound</div><div class=""><span class="ms " style="">graphic_eq</span>NOMI</div><div class=""><span class="ms " style="">bluetooth</span>Connections</div><div class=""><span class="ms " style="">account_circle</span>Profiles</div><div class=""><span class="ms " style="">lock</span>Privacy</div><div class=""><span class="ms " style="">info</span>System</div></div><div class="pages"><div class="pg on" data-page="Display"><div class="col" style="flex:1;gap:20px"><div class="card scard" style=""><span class="lbl">Appearance</span><div class="segx" data-themeseg style="padding:4px"><div data-theme-set="auto" style="height:48px;font-size:15px"><span class="ms " style="font-size:20px">brightness_auto</span>Auto</div><div data-theme-set="light" style="height:48px;font-size:15px"><span class="ms " style="font-size:20px">light_mode</span>Light</div><div data-theme-set="dark" style="height:48px;font-size:15px"><span class="ms " style="font-size:20px">dark_mode</span>Dark</div></div><span class="bs" style="font-size:13px">Auto follows your device’s light or dark setting.</span></div>
         <div class="card" style="display:flex;flex-direction:column;gap:16px">
           <span class="lbl">Appearance</span>
           <div class="segx"><div class="on"><span class="ms f" style="font-size:22px">brightness_auto</span>Auto</div><div><span class="ms " style="font-size:22px">light_mode</span>Light</div><div><span class="ms " style="font-size:22px">dark_mode</span>Dark</div></div>
@@ -541,9 +544,9 @@
 </div></div>
 <p class="disc">Map data © OpenStreetMap contributors. Vehicle figures follow published NIO ET9 specifications where available; some values are adjusted for the design study.</p>
 </div>
-<script src="hifi.js?v=88"></script>
+<script src="hifi.js?v=89"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-<script src="hmi.js?v=88"></script>
+<script src="hmi.js?v=89"></script>
 <script src="../map/lux-map.js?v=2"></script>
-<script src="../design/nav-map.js?v=88"></script>
+<script src="../design/nav-map.js?v=89"></script>
 </body></html>

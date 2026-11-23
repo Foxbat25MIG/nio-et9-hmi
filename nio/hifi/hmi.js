@@ -1707,4 +1707,20 @@
 
   document.addEventListener('input', e => { const sl = e.target.closest('.wi-sl'); if (!sl) return; const fr = frameOf(sl), Q = qcOf(fr), k = sl.closest('[data-wi]').dataset.wi, v = +sl.value / 100;
     (k === 'all' ? Object.keys(Q.wins) : [k]).forEach(n => Q.wins[n] = v); sl.style.setProperty('--p', sl.value + '%'); qcPaint(fr); });
+
+  /* ---------- Appearance: Auto (device setting) · Light · Dark; portfolio toggle above the frame ---------- */
+  const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+  function themeApply(pref, save) {
+    const d = document.documentElement, dark = pref === 'dark' || (pref === 'auto' && mq && mq.matches);
+    d.dataset.pref = pref; d.dataset.theme = dark ? 'dark' : 'light';
+    if (save) { try { localStorage.setItem('nio-theme', pref); } catch (e) {} }
+    document.querySelectorAll('[data-theme-set]').forEach(x => x.classList.toggle('on', x.dataset.themeSet === pref));
+    document.querySelectorAll('[data-theme-tg]').forEach(b => { b.querySelector('.ms').textContent = dark ? 'light_mode' : 'dark_mode'; b.querySelector('.tt').textContent = dark ? 'Light' : 'Dark'; });
+  }
+  if (mq) mq.addEventListener('change', () => { if (document.documentElement.dataset.pref === 'auto') themeApply('auto'); });
+  document.addEventListener('click', e => {
+    const s = e.target.closest('[data-theme-set]'); if (s) { themeApply(s.dataset.themeSet, true); return; }
+    if (e.target.closest('[data-theme-tg]')) themeApply(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
+  });
+  themeApply(document.documentElement.dataset.pref || 'auto');
 })();

@@ -1722,3 +1722,8 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .st-pickwrap{overflow:hidden}
 .cz-pill rect{fill:rgba(255,255,255,.95)}
 .cz-pill text{font-size:14px}
+
+/* ---------- v89: theme switch ---------- */
+.theme-tg{display:flex;align-items:center;gap:6px;font:500 14px "Red Hat Text";color:#2a2833;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 10px;cursor:pointer;transition:background-color var(--dur-hover) var(--ease)}
+.theme-tg .ms{font-size:20px}
+html,body,.frame,.card,.dock,.pane{transition:background-color var(--dur-panel) var(--ease),color var(--dur-panel) var(--ease),border-color var(--dur-panel) var(--ease)}
