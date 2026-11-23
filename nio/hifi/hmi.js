@@ -926,7 +926,7 @@
   });
 
   /* ---------- Seats: four seats, position, comfort, massage, one-touch modes ---------- */
-  const SEATDEF = { height: 45, fore: 55, recline: 12, tilt: 2, lumbar: 40, bolster: 50, headh: 50, headt: 30, leg: 0, heat: '2', vent: 'Off', arm: false, mass: false, mint: 3, mspd: 2 };
+  const SEATDEF = { ext: 0, height: 45, fore: 55, recline: 12, tilt: 2, lumbar: 40, bolster: 50, headh: 50, headt: 30, leg: 0, heat: '2', vent: 'Off', arm: false, mass: false, mint: 3, mspd: 2 };
   const SEATS0 = { Driver: { ...SEATDEF }, Passenger: { ...SEATDEF, heat: 'Off', fore: 50 }, 'Rear left': { ...SEATDEF, heat: 'Off', recline: 18, fore: 50 }, 'Rear right': { ...SEATDEF, heat: '1', recline: 22, fore: 50, leg: 30 } };
   const stOf = w => w._st || (w._st = { sel: 'Driver', s: JSON.parse(JSON.stringify(SEATS0)), mem: {} });
   const parked = w => { const fr = frameOf(w), g = fr.querySelector('.gear .on'); return !g || g.textContent.trim() === 'P'; };
@@ -942,31 +942,32 @@
     // side view (adjustment view): parts follow the values, active parts and arrow nodes follow the chosen mode
     const q = s => w.querySelector(s);
     q('.ss-all').style.transform = `translate(${(v.fore - 50) * .6}px, ${-(v.height - 50) * .25}px)`;
-    q('.ss-back').style.transform = `rotate(${-(v.recline - 12) * 1.1}deg)`;
+    q('.ss-back').style.transform = `rotate(${-(v.recline - 12) * .7}deg)`;
     q('.ss-cush').style.transform = `rotate(${-(v.tilt - 2)}deg)`;
     q('.ss-head').style.transform = `translate(${-(v.headt - 50) * .12}px, ${-(v.headh - 50) * .2}px)`;
     // live recline readout: arc from upright to the backrest line, label in degrees
-    { const rot = (v.recline - 12) * 1.1 + 9, rad = (-90 - rot) * Math.PI / 180, R = 64, cx = 116, cy = 160;
+    { const rot = (v.recline - 12) * .7 + 14, rad = (-90 - rot) * Math.PI / 180, R = 64, cx = 96, cy = 180;
       const ex = cx + R * Math.cos(rad), ey = cy + R * Math.sin(rad);
       q('.ann-arc').setAttribute('d', `M${cx} ${cy - R}A${R} ${R} 0 0 0 ${ex.toFixed(1)} ${ey.toFixed(1)}`);
       q('.ann-r').setAttribute('x2', (cx + 128 * Math.cos(rad)).toFixed(1)); q('.ann-r').setAttribute('y2', (cy + 128 * Math.sin(rad)).toFixed(1));
     }
     q('.ss-lum').style.strokeWidth = (2 + v.lumbar / 12).toFixed(1);
-    q('.ss-leg').style.transform = `rotate(${(1 - v.leg / 100) * 64}deg)`;   // folds down under the cushion, swings up to extend
-    q('.ss-leg').style.opacity = rear ? 1 : 0;
-    if (!rear && S.mode === 'leg') S.mode = 'basic';
-    const M = ADJ[S.mode || 'basic'];
-    w.querySelectorAll('[data-adjmode]').forEach(x => x.classList.toggle('on', x.dataset.adjmode === (S.mode || 'basic')));
+    q('.ss-leg').style.transform = `rotate(${(1 - v.leg / 100) * 38}deg)`;
+    q('.ss-ext').style.transform = `translateX(${(v.ext || 0) * .25}px)`;
+    q('.ss-leg').style.opacity = S.sel === 'Driver' ? 0 : 1;
+    if (S.sel === 'Driver' && S.mode === 'leg') S.mode = 'cush'; w.classList.toggle('st-isdriver', S.sel === 'Driver');
+    const M = ADJ[S.mode || 'cush'];
+    w.querySelectorAll('[data-adjmode]').forEach(x => x.classList.toggle('on', x.dataset.adjmode === (S.mode || 'cush')));
     w.querySelectorAll('.sv-part').forEach(p => p.classList.toggle('act', M.parts.includes(p.dataset.part)));
     // arrows are drawn once per mode (so a press never loses its target); each pair carries its live value
-    const mode = S.mode || 'basic';
+    const mode = S.mode || 'cush';
     if (w._ndMode !== mode) {
       w._ndMode = mode;
       q('.sv-nodes').innerHTML = M.nodes.map(n => {
         const g = n.gap || 22, h = n.ax === 'h';
         const arrow = (sgn, rot) => `<g class="nd-a" data-adj="${n.k}|${sgn}" data-tap transform="translate(${n.x + (h ? g * sgn : 0)} ${n.y + (h ? 0 : g * sgn)})"><g class="nd-ai"><circle r="14"/><path d="M-4.5 2.5L0 -2.5L4.5 2.5" transform="rotate(${rot})"/></g></g>`;
-        const lx = h ? n.x : n.x - 22, ly = n.y + 4;
-        return `<g class="nd" data-node="${n.k}">${arrow(-1, h ? -90 : 0)}${arrow(1, h ? 90 : 180)}<text class="nd-v num" data-ndv="${n.k}" x="${lx}" y="${ly}" text-anchor="${h ? 'middle' : 'end'}"></text></g>`;
+        const lx = h ? n.x : n.lab === 'r' ? n.x + 22 : n.x - 22, ly = n.y + 4;
+        return `<g class="nd" data-node="${n.k}">${arrow(-1, h ? -90 : 0)}${arrow(1, h ? 90 : 180)}<text class="nd-v num" data-ndv="${n.k}" x="${lx}" y="${ly}" text-anchor="${h ? 'middle' : n.lab === 'r' ? 'start' : 'end'}"></text></g>`;
       }).join('');
     }
     q('.sv-nodes').querySelectorAll('[data-ndv]').forEach(tx => { const n = M.nodes.find(x => x.k === tx.dataset.ndv); tx.textContent = Math.round(v[n.k]) + n.unit; });
@@ -979,12 +980,12 @@
     const m = q('.st-mass'); m.classList.toggle('on', !!v.mass); m.style.setProperty('--dur', (2.6 - v.mspd * .6) + 's'); m.style.setProperty('--amp', (.35 + v.mint * .13).toFixed(2));
     q('.st-mass-s').textContent = v.mass ? `16-point hot stone · intensity ${v.mint} · speed ${v.mspd}` : '16-point hot stone · off';
   }
+  // four zones (industry naming): seat cushion, backrest, headrest, leg rest
   const ADJ = {
-    basic: { parts: ['cush', 'back'], nodes: [{ k: 'fore', label: 'Fore and aft', unit: ' %', ax: 'h', x: 190, y: 224, gap: 26, lo: 0, hi: 100, st: 5 }, { k: 'height', label: 'Height', unit: ' %', ax: 'v', x: 296, y: 184, gap: 22, lo: 0, hi: 100, st: 5, flip: true }, { k: 'recline', label: 'Backrest recline', unit: '°', ax: 'h', x: 52, y: 96, gap: 20, lo: 0, hi: 45, st: 1, flip: true }] },
-    tilt: { parts: ['cush', 'back'], nodes: [{ k: 'tilt', label: 'Cushion tilt', unit: '°', ax: 'v', x: 296, y: 148, gap: 20, lo: -5, hi: 10, st: 1, flip: true }, { k: 'lumbar', label: 'Lumbar support', unit: ' %', ax: 'h', x: 188, y: 104, gap: 22, lo: 0, hi: 100, st: 5 }] },
-    side: { parts: ['cush', 'back'], nodes: [{ k: 'bolster', label: 'Side bolsters', unit: ' %', ax: 'h', x: 200, y: 100, gap: 24, lo: 0, hi: 100, st: 5 }] },
-    head: { parts: ['head'], nodes: [{ k: 'headh', label: 'Headrest height', unit: ' %', ax: 'v', x: 192, y: 22, gap: 18, lo: 0, hi: 100, st: 5, flip: true }, { k: 'headt', label: 'Headrest tilt', unit: ' %', ax: 'h', x: 70, y: 22, gap: 20, lo: 0, hi: 100, st: 5 }] },
-    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 278, y: 224, gap: 32, lo: 0, hi: 100, st: 5 }] } };
+    cush: { parts: ['cush'], nodes: [{ k: 'fore', label: 'Fore and aft', unit: ' %', ax: 'h', x: 170, y: 228, gap: 26, lo: 0, hi: 100, st: 5 }, { k: 'height', label: 'Seat height', unit: ' %', ax: 'v', x: 34, y: 190, gap: 20, lo: 0, hi: 100, st: 5, flip: true, lab: 'r' }, { k: 'tilt', label: 'Cushion tilt', unit: '°', ax: 'v', x: 300, y: 128, gap: 20, lo: -5, hi: 10, st: 1, flip: true }, { k: 'ext', label: 'Thigh support', unit: ' mm', ax: 'h', x: 196, y: 126, gap: 28, lo: 0, hi: 60, st: 5 }] },
+    back: { parts: ['back'], nodes: [{ k: 'recline', label: 'Backrest recline', unit: '°', ax: 'h', x: 30, y: 96, gap: 20, lo: 0, hi: 45, st: 1, flip: true }, { k: 'lumbar', label: 'Lumbar support', unit: ' %', ax: 'h', x: 160, y: 104, gap: 24, lo: 0, hi: 100, st: 5 }, { k: 'bolster', label: 'Side bolsters', unit: ' %', ax: 'h', x: 160, y: 58, gap: 24, lo: 0, hi: 100, st: 5 }] },
+    head: { parts: ['head'], nodes: [{ k: 'headh', label: 'Headrest height', unit: ' %', ax: 'v', x: 40, y: 26, gap: 18, lo: 0, hi: 100, st: 5, flip: true }, { k: 'headt', label: 'Headrest tilt', unit: ' %', ax: 'h', x: 124, y: 22, gap: 22, lo: 0, hi: 100, st: 5 }] },
+    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 272, y: 228, gap: 30, lo: 0, hi: 100, st: 5 }] } };
   function stAdjust(w, k, sgn) {
     const S = stOf(w);
     const n = Object.values(ADJ).flatMap(m => m.nodes).find(x => x.k === k); if (!n) return;

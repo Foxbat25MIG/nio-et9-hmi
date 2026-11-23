@@ -959,3 +959,13 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .ann-t{font:300 26px "Red Hat Display"}
 .ss-back{transform-origin:116px 162px}.ss-cush{transform-origin:118px 166px}.ss-leg{transform-origin:256px 158px}
 .ann-s{letter-spacing:.1em}
+/* Seats v7: from Adi's sketch */
+.ss-cush>path:first-child{fill:url(#svBase)!important}
+.ss-cush.act>path:first-child{fill:url(#svAct)!important}
+.sv-slot{fill:#ffffff;stroke:#c9c0f2;stroke-width:1.2}
+.sv-part.act .sv-slot{stroke:#7a6bf2;fill:#eef1fd}
+.ss-lum{stroke-width:1.2!important}
+.ss-ext{stroke:#7a6bf2;stroke-width:3;stroke-linecap:round;opacity:.8}
+.st-nodriver{display:flex}.st-isdriver .st-nodriver{display:none!important}
+.ss-back{transform-origin:96px 180px}.ss-cush{transform-origin:103px 193px}.ss-leg{transform-origin:232px 173px}
+.ss-head{transform-origin:75px 40px}
