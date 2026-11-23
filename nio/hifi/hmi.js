@@ -1520,7 +1520,7 @@
 
   /* ---------- Quick controls: doors, frunk, boot, windows, mirrors, charge port, sunshades, lights ---------- */
   const DOORN = { dfl: 'driver door', dfr: 'passenger door', drl: 'rear left door', drr: 'rear right door', frunk: 'frunk', boot: 'boot' };
-  const qcOf = fr => fr._qc || (fr._qc = { lock: true, open: {}, port: false, win: 'closed', wins: { fl: 0, rl: 0, fr: 0, rr: 0 }, wside: 'l', mir: 'out', shade: { l: false, r: false }, lights: 'auto' });
+  const qcOf = fr => fr._qc || (fr._qc = { doors: true, lock: true, open: {}, port: false, win: 'closed', wins: { fl: 0, rl: 0, fr: 0, rr: 0 }, wside: 'l', mir: 'out', shade: { l: false, r: false }, lights: 'auto' });
   const WV = { closed: 0, vent: .18, open: 1 };
   function qcPaint(fr) {
     const Q = qcOf(fr), qc = fr.querySelector('[data-screen="car"] .qc:not(.ty)'); if (!qc) return;
@@ -1655,17 +1655,18 @@
     Snow: { Steering: 'Light', Suspension: 'Soft', Power: 'Gentle', Regeneration: 'Low', Traction: 'Snow' } };
   const DMD = { Eco: 'Gentle power and strong regeneration for the most range.', Comfort: 'Quiet and balanced. The default for city driving.',
     Sport: 'Quicker response and a tighter, lower body.', Snow: 'Soft power and low regeneration for grip. The car rises for clearance.', Custom: 'Your own mix, saved to Emma’s profile.' };
-  const DMR = { Eco: ['−10 mm', '+18 km', 3, 1.2], Comfort: ['Standard', '±0 km', 0, 2.2], Sport: ['−15 mm', '−22 km', 4, .6], Snow: ['+20 mm', '−10 km', -6, 1.8], Custom: ['Standard', '±0 km', 0, 1.6] };
+  const DMR = { Eco: [-10, '+18 km'], Comfort: [0, '±0 km'], Sport: [-15, '−22 km'], Snow: [30, '−10 km'], Custom: [0, '±0 km'] };   // body height in mm; SkyRide allows +40 / −50
   function dmPaint(root) {
     const D = root._dm || (root._dm = { m: 'Comfort', c: { Steering: 'Standard', Suspension: 'Soft', Power: 'Smooth', Regeneration: 'High', Traction: 'Normal' } });
-    const i = DM.indexOf(D.m), col = DMC[D.m], set = D.m === 'Custom' ? D.c : DMSET[D.m], [h, r, dy, amp] = DMR[D.m];
+    const i = DM.indexOf(D.m), col = DMC[D.m], set = D.m === 'Custom' ? D.c : DMSET[D.m], [mm0, r] = DMR[D.m], mm = D.rh === undefined || D.rh === 'auto' ? mm0 : +D.rh, h = mm === 0 ? 'Standard' : (mm > 0 ? '+' : '−') + Math.abs(mm) + ' mm';
     root.style.setProperty('--mc', col);
     { const TH = [195, 232.5, 270, 307.5, 345], th = TH[i], P = a => [160 + 96 * Math.cos(a * Math.PI / 180), 138 + 96 * Math.sin(a * Math.PI / 180)];
       const [x1, y1] = P(195), [x2, y2] = P(th + 0.01); root.querySelector('.dm-v').setAttribute('d', `M${x1.toFixed(1)} ${y1.toFixed(1)}A96 96 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`);
       root.querySelector('.dm-capg').style.transform = `rotate(${th - 270}deg)`; }
     root.querySelectorAll('.dm-stop').forEach(s => s.classList.toggle('on', s.dataset.dm === D.m));
     root.querySelector('.dm-n').textContent = D.m; root.querySelector('.dm-d').textContent = DMD[D.m];
-    const car = root.querySelector('.dm-car'); car.style.setProperty('--dy', (dy * 1.8) + 'px');
+    const car = root.querySelector('.dm-car'); car.style.setProperty('--dy', (-mm * .3) + 'px');
+    root.querySelectorAll('[data-rhv]').forEach(d => d.classList.toggle('on', d.dataset.rhv === String(D.rh === undefined ? 'auto' : D.rh)));
     root.querySelector('.dm-h').textContent = h; root.querySelector('.dm-k').textContent = set.Suspension; root.querySelector('.dm-r').textContent = r;
     root.querySelector('.dm-st').textContent = D.m === 'Custom' ? 'Custom · tap to change' : D.m + ' settings';
     root.querySelector('.dm-set').classList.toggle('locked', D.m !== 'Custom');
@@ -1676,6 +1677,7 @@
   document.addEventListener('click', e => {
     const root = e.target.closest('[data-drv2]'); if (!root) return; const D = root._dm || (dmPaint(root), root._dm);
     const st = e.target.closest('[data-dm]'); if (st) { D.m = st.dataset.dm; dmPaint(root); return; }
+    const rh = e.target.closest('[data-rhv]'); if (rh) { D.rh = rh.dataset.rhv; setTimeout(() => dmPaint(root), 0); toast(frameOf(root), rh.dataset.rhv === 'auto' ? 'Ride height follows the drive mode' : 'Ride height ' + rh.textContent.toLowerCase() + ' · takes about 2 seconds'); return; }
     const sg = e.target.closest('.dm-seg div'); if (sg && D.m === 'Custom') { D.c[sg.parentElement.dataset.dk] = sg.dataset.v; setTimeout(() => dmPaint(root), 0); return; }
     if (e.target.closest('[data-dmsave]')) { toast(frameOf(root), 'Custom mode saved to Emma’s profile'); }
   });

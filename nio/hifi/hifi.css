@@ -1696,3 +1696,11 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .dm-ccard{overflow:hidden}
 .dm-body .dm-panel{stroke:none!important;fill:url(#dmPanel)!important}
 .dm-body .dm-liner{fill:none!important;stroke:#d6d1e4!important;stroke-width:12!important}
+
+/* ---------- v86: three columns · ride height control ---------- */
+.qc{gap:20px}
+.qc-left{width:280px;flex:none;align-self:center;display:flex;flex-direction:column;gap:12px}
+.qc-car{flex:1 1 340px}
+.qc-side{width:320px}
+.dm-rh{padding:3px!important;border-radius:14px}.dm-rh>div{height:36px!important;font-size:13px!important;border-radius:11px}
+.dm-body{transition:transform 2s var(--ease)}
