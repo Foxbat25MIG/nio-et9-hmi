@@ -957,9 +957,9 @@
       q('.ann-lb').textContent = Math.round(val) + n.unit; set('.ann-lb', { x: bk[0] - 22 * Math.cos(lr + Math.PI / 2) - 10, y: bk[1] - 22 * Math.sin(lr + Math.PI / 2) + 4 });
       // lumbar and side-bolster outlines on the backrest
       w.classList.toggle('bk-zone', (S.mode || 'cush') === 'back');
-      w.querySelector('.ov-lum').classList.toggle('on', S.last === 'lumbar'); w.querySelector('.ov-bol').classList.toggle('on', S.last === 'bolster');
+      w.querySelector('.ov-lum').classList.toggle('on', S.last === 'lumbar'); w.classList.toggle('bol-focus', (S.mode || 'cush') === 'back' && S.last === 'bolster');
       w.querySelector('.ov-lum .ov-l').style.transform = `translateX(${(v.lumbar - 50) * .08}px)`;
-      w.querySelector('.ov-bol').style.setProperty('--b', (v.bolster / 100 * 4).toFixed(1) + 'px'); }
+      const bx = (v.bolster / 100 * 6).toFixed(1); w.querySelector('.bi-l').style.transform = `translateX(${bx}px)`; w.querySelector('.bi-r').style.transform = `translateX(${-bx}px)`; }
         q('.ss-leg').style.transform = `translateX(${(v.ext || 0) * .25}px) rotate(${-(v.leg || 0)}deg)`;
     
     
@@ -978,9 +978,31 @@
       q('.ann-t').textContent = Math.round(v[n.k]) + (n.unit.trim() === '°' ? '°' : n.unit);
       const ZN = { head: 'Headrest', back: 'Backrest', cush: 'Seat', leg: 'Thigh support' }, zk = Object.keys(ADJ).find(z => ADJ[z].nodes.includes(n));
       q('.ann-s').textContent = /^(Height|Tilt|Recline|Length|Angle)$/.test(n.label) ? ZN[zk] + ' ' + n.label.toLowerCase() : n.label; }
-    // massage dots
-    const m = q('.st-mass'); m.classList.toggle('on', !!v.mass); m.style.setProperty('--dur', (2.6 - v.mspd * .6) + 's'); m.style.setProperty('--amp', (.35 + v.mint * .13).toFixed(2));
-    q('.st-mass-s').textContent = v.mass ? `16-point hot stone · intensity ${v.mint} · speed ${v.mspd}` : '16-point hot stone · off';
+    // one-touch cards differ for front and rear seats
+    { const front = [['drive', 'directions_car', 'Drive', 'Upright and supported'], ['relax', 'weekend', 'Relax', S.sel === 'Driver' ? 'Reclines to 36° · when parked' : 'Reclines to 36°'], ['entry', 'sensor_door', 'Easy entry', S.easy === false ? 'Off' : 'Slides back when a door opens']];
+      const rearM = [['work', 'laptop_mac', 'Work', 'Upright for a laptop'], ['lounge', 'chair', 'Lounge', '32°, thigh support out'], ['sleep', 'bedtime', 'Sleep', '45°, fully extended']];
+      if (S.sel === 'Rear right') rearM.push(['exec', 'airline_seat_flat', 'Executive', 'Passenger seat moves forward']);
+      if (S.easy === undefined) S.easy = true;
+      const list = rear ? rearM : front, key = S.sel + list.length;
+      if (w._modesKey !== key) { w._modesKey = key; q('.st-modes').innerHTML = list.map(([k, i, n, s]) => `<div class="st-mode" data-seatmode="${k}" data-tap><span class="ms">${i}</span><b>${n}</b><span class="bs">${s}</span></div>`).join(''); }
+      q('.st-modes').querySelectorAll('.st-mode').forEach(c => { if (c.dataset.seatmode === 'entry') { c.classList.toggle('on', !!S.easy); c.querySelector('.bs').textContent = S.easy ? 'Slides back when a door opens' : 'Off'; } }); }
+    // massage: programme, areas, intensity and speed all show in the live preview
+    { const on = !!v.mass, prog = v.mprog || 'wave', zones = v.mzones || 'uml', mi = v.mint > 3 ? 2 : (v.mint || 2), sp = v.mspd > 3 ? 2 : (v.mspd || 2);
+      const mc = q('.ms-card'); mc.classList.toggle('off', !on);
+      mc.querySelectorAll('[data-mprog]').forEach(c => c.classList.toggle('on', c.dataset.mprog === prog));
+      mc.querySelectorAll('[data-mint]').forEach(c => c.classList.toggle('on', +c.dataset.mint === mi));
+      mc.querySelectorAll('[data-mspd]').forEach(c => c.classList.toggle('on', +c.dataset.mspd === sp));
+      mc.querySelectorAll('[data-mzone]').forEach(z => z.classList.toggle('sel', zones.includes(z.dataset.mzone)));
+      mc.style.setProperty('--mdur', [0, 3.2, 2, 1.1][sp] + 's'); mc.style.setProperty('--mamp', [0, .7, 1, 1.35][mi]); mc.style.setProperty('--mop', [0, .45, .7, .95][mi]);
+      const an = q('.ms-anim');
+      if (an.dataset.p !== prog) { an.dataset.p = prog; an.innerHTML = {
+          wave: '<ellipse class="ma ma-wave" cx="60" cy="40" rx="40" ry="16"/>',
+          shoulder: '<circle class="ma ma-sh1" cx="40" cy="42" r="15"/><circle class="ma ma-sh2" cx="80" cy="42" r="15"/>',
+          lower: '<circle class="ma ma-lo1" cx="42" cy="178" r="15"/><circle class="ma ma-lo2" cx="78" cy="178" r="15"/>',
+          stone: [[40, 36], [80, 36], [40, 80], [80, 80], [40, 124], [80, 124], [40, 168], [80, 168]].map(([x, y], i) => `<circle class="ma ma-st" style="--i:${i}" cx="${x}" cy="${y}" r="8"/>`).join(''),
+          stretch: '<rect class="ma ma-str" x="20" y="14" width="80" height="16" rx="8"/>' }[prog]; }
+      const nm = { wave: 'Wave', shoulder: 'Shoulders', lower: 'Lower back', stone: 'Hot stone', stretch: 'Stretch' }[prog], zn = { u: 'upper', m: 'middle', l: 'lower' };
+      q('.ms-s').textContent = on ? `${nm} · ${['', 'gentle', 'medium', 'strong'][mi]} · ${[...zones].map(z => zn[z]).join(', ')}` : 'Off'; }
   }
   // four zones (industry naming): seat cushion, backrest, headrest, leg rest
   // four parts of Adi's seat: headrest, backrest, seat cushion, thigh support
@@ -1012,6 +1034,10 @@
     const w = t.closest('.st-wrap'); if (!w) return false; const S = stOf(w);
     const pk = t.closest('[data-seatpick]'); if (pk) { S.sel = pk.dataset.seatpick; S.node = null; S.last = null; w._ndMode = null; stPaint(w); return true; }
     if (t.closest('[data-adj]')) { suppressAdjClick = false; return true; }
+    const mp = t.closest('[data-mprog]'); if (mp) { S.s[S.sel].mprog = mp.dataset.mprog; if (!S.s[S.sel].mass) S.s[S.sel].mass = true; stPaint(w); return true; }
+    const mi = t.closest('[data-mint]'); if (mi) { S.s[S.sel].mint = +mi.dataset.mint; stPaint(w); return true; }
+    const msp = t.closest('[data-mspd]'); if (msp) { S.s[S.sel].mspd = +msp.dataset.mspd; stPaint(w); return true; }
+    const mz = t.closest('[data-mzone]'); if (mz) { let z = S.s[S.sel].mzones || 'uml'; z = z.includes(mz.dataset.mzone) ? z.replace(mz.dataset.mzone, '') : z + mz.dataset.mzone; S.s[S.sel].mzones = z || mz.dataset.mzone; stPaint(w); return true; }
     const lk = t.closest('[data-seatlook]'); if (lk) { w.classList.toggle('sv-sil', lk.dataset.seatlook === 'sil'); lk.parentElement.querySelectorAll('div').forEach(x => x.classList.toggle('on', x === lk)); return true; }
     const am = t.closest('[data-adjmode]'); if (am) { S.mode = am.dataset.adjmode; S.node = null; stPaint(w); return true; }
     const nd = t.closest('[data-node]'); if (nd) { S.node = S.node === nd.dataset.node ? null : nd.dataset.node; stPaint(w); return true; }
@@ -1019,14 +1045,19 @@
     const tg = t.closest('[data-seattog]'); if (tg) { const k = tg.dataset.seattog; S.s[S.sel][k] = !S.s[S.sel][k]; stPaint(w); return true; }
     const md = t.closest('[data-seatmode]');
     if (md) {
-      S.last = md.dataset.seatmode === 'vip' || md.dataset.seatmode === 'zero' || md.dataset.seatmode === 'nap' || md.dataset.seatmode === 'reset' ? 'recline' : S.last;
-      const k = md.dataset.seatmode, driverMoving = S.sel === 'Driver' && !parked(w);
-      if (k === 'vip') { S.sel = 'Rear right'; stSet(w, { 'Rear right': { recline: 45, leg: 40, ext: 100, tilt: 8, headt: 14, heat: '1' }, Passenger: { fore: 260, recline: 19, headh: 0 } }, 'VIP Position · passenger seat forward, rear right reclined to 135°'); }
-      else if (driverMoving && (k === 'zero' || k === 'nap')) toast(frameOf(w), 'Available for the driver seat when parked');
-      else if (k === 'zero') stSet(w, { [S.sel]: S.sel.startsWith('Rear') ? { recline: 40, tilt: 8, leg: 32, ext: 80, headt: 12 } : { recline: 36, tilt: 5, leg: 12, ext: 60, headt: 12 } }, `Zero-gravity · ${S.sel}`);
-      else if (k === 'nap') stSet(w, { [S.sel]: Object.assign(S.sel.startsWith('Rear') ? { recline: 43, tilt: 6, leg: 36, ext: 90 } : { recline: 38, tilt: 4, leg: 10, ext: 50 }, { heat: '1', mass: true, mint: 2, mspd: 1 }) }, `Nap · ${S.sel} · wakes you gently in 20 min`);
-      else if (k === 'reset') stSet(w, { [S.sel]: { recline: 25, tilt: 0, leg: 0, ext: 0, headt: 10, headh: 30, mass: false, fore: S.sel === 'Passenger' ? 120 : S.s[S.sel].fore } }, `${S.sel} back upright`);
-      w.querySelectorAll('.st-mode').forEach(x => x.classList.toggle('on', x === md)); setTimeout(() => md.classList.remove('on'), 1200);
+      const k = md.dataset.seatmode, n = S.sel, rear = n.startsWith('Rear'), f = frameOf(w);
+      S.last = 'recline';
+      if (k === 'entry') { S.easy = !S.easy; stPaint(w); toast(f, S.easy ? 'Easy entry on · seat slides back when the door opens' : 'Easy entry off'); return true; }
+      if (k === 'relax' && n === 'Driver' && !parked(w)) { toast(f, 'Relax is available for the driver seat when parked'); return true; }
+      const P = { drive: [{ recline: 25, tilt: 0, ext: 0, leg: 0, headh: 30, headt: 10 }, 'Drive · upright and supported'],
+        relax: [{ recline: 36, tilt: 4, ext: 40, leg: 8, headt: 14 }, `Relax · ${n.toLowerCase()} reclined to 36°`],
+        work: [{ recline: 19, tilt: 0, ext: 0, leg: 0, headh: 30, headt: 10 }, 'Work · upright for a laptop'],
+        lounge: [{ recline: 32, tilt: 4, ext: 50, leg: 18, headt: 12 }, 'Lounge · 32°, thigh support out'],
+        sleep: [{ recline: 45, tilt: 8, ext: 100, leg: 40, headt: 14, heat: '1', mass: true, mprog: 'wave', mint: 1, mspd: 1 }, 'Sleep · 45°, gentle massage, wakes you on arrival'],
+        exec: [{ recline: 45, tilt: 8, ext: 100, leg: 40, headt: 14 }, 'Executive · passenger seat forward, rear right reclined to 135°'] };
+      const [ch, msg] = P[k]; const changes = { [n]: ch };
+      if (k === 'exec') changes.Passenger = { fore: 260, recline: 19, headh: 0 };
+      stSet(w, changes, msg); w._modeOn = k; stPaint(w);
       return true;
     }
     const mem = t.closest('[data-seatmem]'); if (mem) { const key = (w.querySelector('.drv-n') || {}).textContent + mem.dataset.seatmem; w.querySelectorAll('[data-seatmem]').forEach(x => x.classList.toggle('on', x === mem));

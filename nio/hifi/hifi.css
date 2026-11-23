@@ -1044,3 +1044,59 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .ov-a{fill:none;stroke:#7a6bf2;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
 .ov-t{font:500 9px "Red Hat Text";fill:#5a4fc8}
 .ov-bol .ov-l{transform:scaleX(calc(1 - var(--b,2px) / 40px))}
+/* bolsters: small front-view inset, wings close in */
+.bol-inset{opacity:0;transition:opacity .35s var(--ease);pointer-events:none}
+.bol-focus .bol-inset{opacity:1}
+.bi-bg{fill:#fff;stroke:#e2deeb}
+.bi-back{fill:#ece9f4;stroke:#c9c3da;stroke-width:1}
+.bi-w{fill:none;stroke:#7a6bf2;stroke-width:3;stroke-linecap:round}
+.bi-a{fill:none;stroke:#7a6bf2;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.bi-l,.bi-r{transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.bi-t{font:400 8px "Red Hat Text";fill:var(--t3)}
+/* one-touch cards */
+.st-mode{grid-template-columns:28px 1fr}
+.st-mode>.ms{grid-row:span 2;color:var(--route);font-size:24px}
+.st-mode.on{background:var(--sel)}.st-mode.on b,.st-mode.on .ms{color:var(--on-sel)}
+/* top view, matched to the new seat */
+.tv2-body{fill:#fbfaff;stroke:#cfc9de;stroke-width:1.2}
+.tv2-line{fill:none;stroke:#e1ddea;stroke-width:1}
+.tv2-mir{fill:#efedf5;stroke:#cfc9de;stroke-width:1}
+.tv2-con{fill:#efedf5;stroke:#e1ddea}
+.tv2-th,.tv2-cu,.tv2-bki{fill:#f3f1f7;stroke:#d6d1e4;stroke-width:.8;transition:fill .3s var(--ease),stroke .3s var(--ease)}
+.tv2-thl,.tv2-bk,.tv2-hr{fill:#3A3647;transition:fill .3s var(--ease)}
+.tv2-in{fill:#cfc8f2}
+.tv-wheel path,.tv-wheel line{fill:none;stroke:#b8b2cc;stroke-width:2.4;stroke-linecap:round}
+.st-seat.on>g{filter:drop-shadow(0 0 1.5px rgba(122,107,242,1)) drop-shadow(0 0 7px rgba(122,107,242,.4))}
+.st-seat.on .tv2-th,.st-seat.on .tv2-cu,.st-seat.on .tv2-bki{fill:#e3e9fb}
+.st-seat:hover:not(.on) .tv2-cu{stroke:#a99fd0}
+/* massage */
+.ms-progs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.mp{border-radius:14px;background:var(--s2);padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font:400 13px "Red Hat Text";color:var(--t2);transition:background-color var(--dur-hover) var(--ease)}
+.mp:hover{background:var(--s3)}.mp.on{background:var(--sel);color:var(--on-sel)}
+.mp-ic{width:34px;height:36px}.mp-bk{fill:#fff;stroke:#cfc9de}
+.mb{fill:#7a6bf2;opacity:.7}
+.mp.on .mb-wave,.mp:hover .mb-wave{animation:mbWave 2s ease-in-out infinite}
+.mp.on .mb-sh1,.mp:hover .mb-sh1,.mp.on .mb-sh2,.mp:hover .mb-sh2,.mp.on .mb-lo1,.mp:hover .mb-lo1,.mp.on .mb-lo2,.mp:hover .mb-lo2{animation:mbPulse 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.mb-sh2,.mb-lo2{animation-delay:.6s!important}
+.mb-st{fill:#e08a4a}.mp.on .mb-st,.mp:hover .mb-st{animation:mbPulse 1.8s ease-in-out infinite;animation-delay:calc(var(--i) * .3s);transform-box:fill-box;transform-origin:center}
+.mp.on .mb-str,.mp:hover .mb-str{animation:mbStr 2s ease-in-out infinite}
+@keyframes mbWave{50%{transform:translateY(22px)}}
+@keyframes mbPulse{50%{transform:scale(1.5);opacity:1}}
+@keyframes mbStr{50%{transform:translateY(26px)}}
+.ms-body{display:flex;gap:22px;align-items:center}
+.ms-prev{width:150px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px}
+.ms-svg{width:120px;height:220px}
+.ms-back{fill:#f3f1f7;stroke:#cfc9de;stroke-width:1.2}
+.ms-z{fill:transparent;cursor:pointer}
+.ms-z:not(.sel){fill:rgba(243,241,247,.86)}
+.ms-div{stroke:#d6d1e4;stroke-dasharray:3 4}
+.ms-zt{font:500 10px "Red Hat Text";fill:var(--t3);text-anchor:middle;pointer-events:none}
+.ma{fill:#7a6bf2;opacity:var(--mop,.7);transform-box:fill-box;transform-origin:center}
+.ma-wave{animation:maWave var(--mdur,2s) ease-in-out infinite}
+.ma-sh1,.ma-sh2,.ma-lo1,.ma-lo2{animation:maPulse var(--mdur,2s) ease-in-out infinite}.ma-sh2,.ma-lo2{animation-delay:calc(var(--mdur,2s) / 2)}
+.ma-st{fill:#e08a4a;animation:maPulse var(--mdur,2s) ease-in-out infinite;animation-delay:calc(var(--i) * var(--mdur,2s) / 8)}
+.ma-str{animation:maStr var(--mdur,2s) ease-in-out infinite}
+@keyframes maWave{0%,100%{transform:translateY(0) scale(var(--mamp,1))}50%{transform:translateY(140px) scale(var(--mamp,1))}}
+@keyframes maPulse{0%,100%{transform:scale(calc(var(--mamp,1) * .7));opacity:calc(var(--mop,.7) * .5)}50%{transform:scale(calc(var(--mamp,1) * 1.25));opacity:var(--mop,.7)}}
+@keyframes maStr{0%,100%{transform:translateY(0) scaleX(var(--mamp,1))}50%{transform:translateY(176px) scaleX(var(--mamp,1))}}
+.ms-card.off .ma,.ms-card.off .mb{animation-play-state:paused!important;opacity:.15}
