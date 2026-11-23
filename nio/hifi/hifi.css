@@ -1607,3 +1607,59 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .dm-gt{font:500 11px "Red Hat Text";fill:var(--t2)}
 .dm-road{stroke:#d6d1e4;stroke-width:2}
 .dm-car{overflow:hidden}.dm-panel{fill:url(#dmPanel)}.dm-sill{stroke:#bfb8d4;stroke-width:2}
+
+/* ---------- v84 ---------- */
+/* doors: red when open, leader line and label */
+.ct-door.open .ct-dp{fill:#fde3df;stroke:#e0605a;filter:drop-shadow(0 0 6px rgba(224,96,90,.75))}
+.ct-dtag{opacity:0;transition:opacity var(--dur-panel) var(--ease);pointer-events:none}
+.ct-dtag.on{opacity:1}
+.ct-lead{stroke:#e0605a;stroke-width:1.4;fill:none}
+.ct-ldot{fill:#e0605a;filter:drop-shadow(0 0 4px rgba(224,96,90,.9))}
+.ct-ltx{font:500 11px "Red Hat Text";fill:#b2403a}
+.ct-lid.red path:first-child{fill:#fde3df;stroke:#e0605a;filter:drop-shadow(0 0 6px rgba(224,96,90,.6))}
+.qc-pill{color:#b2403a;border:1px solid #f3c2bd}
+/* windows: menu card */
+.qc-wcard{width:min(420px,96%);gap:6px}
+.wi-row{display:grid;grid-template-columns:96px 1fr 52px auto;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--s2)}
+.wi-row.wi-all{border-top:none}
+.wi-n{font-size:15px;color:var(--t1)}.wi-all .wi-n{font-weight:500}
+.wi-v{font:500 13px "Red Hat Text";color:var(--t2);text-align:right}
+.wi-bs{display:flex;gap:4px}
+.wi-b{height:34px;padding:0 10px;border-radius:10px;background:var(--s2);display:flex;align-items:center;font:500 13px "Red Hat Text";color:var(--t1);cursor:pointer;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.wi-b:hover{background:var(--s3)}.wi-b:active{transform:scale(.95);background:var(--sel)}
+.wi-sl{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:0;cursor:pointer}
+.wi-sl::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:linear-gradient(90deg,#8ea7e6 var(--p,0%),var(--s2) var(--p,0%))}
+.wi-sl::-moz-range-track{height:8px;border-radius:4px;background:linear-gradient(90deg,#8ea7e6 var(--p,0%),var(--s2) var(--p,0%))}
+.wi-sl::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-7px;border-radius:50%;background:#fff;border:2px solid #8ea7e6;box-shadow:0 2px 6px rgba(36,30,72,.2)}
+.wi-sl::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid #8ea7e6}
+.ct-win{transition:fill-opacity var(--dur-panel) var(--ease)}.ct-win.o{stroke:#9fb2ea;stroke-dasharray:3 3;fill:#c3cfee}
+/* drive mode: lavender knob, colour arc underneath */
+.dm-dial{max-width:400px}
+.dm-tr,.dm-v{fill:none;stroke-width:12;stroke-linecap:round}
+.dm-tr{stroke:var(--s2)}
+.dm-v{stroke:var(--mc);transition:stroke var(--dur-panel) var(--ease)}
+.dm-bez{fill:#eceaf3}
+.dm-cap2{filter:drop-shadow(0 10px 14px rgba(45,40,64,.18))}
+.dm-ring{fill:none;stroke:rgba(255,255,255,.7);stroke-width:1.5}
+.dm-ind{fill:var(--mc);transition:fill var(--dur-panel) var(--ease)}
+.dm-capg{transform-box:view-box;transform-origin:0 0;transition:transform var(--dur-panel) var(--ease);cursor:grab}
+.dm-drag .dm-capg{cursor:grabbing}
+.dm-dot{fill:#fff}
+.dm-c{position:static;padding:0 24px;margin-top:-8px}
+.dm-knob{display:none}
+/* SkyRide polish */
+.dm-liner{fill:#d9d4e6}
+.dm-tread{fill:#3a3647}
+.dm-side{fill:none;stroke:#5b566b;stroke-width:3}
+.dm-rim{stroke:#cfc9de;stroke-width:1.5}
+.dm-rimin{fill:none;stroke:#e9e6f0;stroke-width:2}
+.dm-sp{fill:#bdb6d3}.dm-sp2{fill:#cfc9e2}
+.dm-cap{fill:#f3f1f8;stroke:#cfc9de}.dm-capi{fill:var(--mc,#a29db8)}
+.dm-cal{fill:none;stroke:var(--mc,#8ea7e6);stroke-width:7;stroke-linecap:round;transition:stroke var(--dur-panel) var(--ease)}
+.dm-lip{stroke:#b3abcb;stroke-width:2.5}
+.dm-hl{stroke:#fff;stroke-width:2;opacity:.8}
+.dm-dim{stroke:var(--mc,#8ea7e6);stroke-width:2}
+.dm-tick{stroke:var(--mc,#8ea7e6);stroke-width:2;stroke-linecap:round}
+.dm-gv{font:500 13px "Red Hat Text";fill:var(--t1)}
+.dm-spin{animation:dmspin 2.4s linear infinite}
+.dm-stop.on .dm-lb{opacity:0}.dm-lb{transition:opacity var(--dur-hover) var(--ease),fill .3s var(--ease)}

@@ -1054,8 +1054,8 @@
         relax: [{ recline: 36, tilt: 4, ext: 40, leg: 8, headt: 14 }, `Relax · ${n.toLowerCase()} reclined to 36°`],
         work: [{ recline: 19, tilt: 0, ext: 0, leg: 0, headh: 30, headt: 10 }, 'Work · upright for a laptop'],
         lounge: [{ recline: 32, tilt: 4, ext: 50, leg: 18, headt: 12 }, 'Lounge · 32°, thigh support out'],
-        sleep: [{ recline: 45, tilt: 8, ext: 100, leg: 40, headt: 14, heat: '1', mass: true, mprog: 'wave', mint: 1, mspd: 1 }, 'Sleep · 45°, gentle massage, wakes you on arrival'],
-        exec: [{ recline: 45, tilt: 8, ext: 100, leg: 40, headt: 14 }, 'Executive · passenger seat forward, rear right reclined to 135°'],
+        sleep: [{ recline: 45, tilt: 8, ext: 100, leg: 6, headt: 14, heat: '1', mass: true, mprog: 'wave', mint: 1, mspd: 1 }, 'Sleep · 45°, gentle massage, wakes you on arrival'],
+        exec: [{ recline: 45, tilt: 8, ext: 100, leg: 6, headt: 14 }, 'Executive · passenger seat forward, rear right reclined to 135°'],
         rest: [{ recline: 40, tilt: 5, ext: 60, leg: 12, headt: 14, heat: '1', vent: 'Off', mass: true, mprog: 'wave', mint: 1, mspd: 1 }, 'Rest stop · reclined, warm, gentle massage'],
         child: rear ? [{ recline: 22, tilt: 0, ext: 0, leg: 0, heat: 'Off', vent: 'Off', mass: false }, 'Child seat · upright, heat and massage off']
                     : [{ fore: 230, recline: 22, heat: 'Off', vent: 'Off', mass: false }, 'Child seat · passenger seat forward, heat and massage off'] };
@@ -1525,17 +1525,21 @@
   function qcPaint(fr) {
     const Q = qcOf(fr), qc = fr.querySelector('[data-screen="car"] .qc:not(.ty)'); if (!qc) return;
     const svg = qc.querySelector('.ct');
-    svg.querySelectorAll('.ct-door').forEach(d => { const k = d.dataset.cp, s = k.endsWith('l') ? 1 : -1; d.style.transform = Q.open[k] ? `rotate(${s * 24}deg)` : ''; });
+    svg.querySelectorAll('.ct-door').forEach(d => { const k = d.dataset.cp, s = k.endsWith('l') ? 1 : -1; d.style.transform = Q.open[k] ? `rotate(${s * 24}deg)` : ''; d.classList.toggle('open', !!Q.open[k]); });
+    svg.querySelectorAll('.ct-dtag').forEach(g => g.classList.toggle('on', !!Q.open[g.dataset.dtag]));
+    svg.querySelectorAll('.ct-lid').forEach(l => l.classList.toggle('red', l.classList.contains('open')));
     svg.querySelector('.ct-frunk').classList.toggle('open', !!Q.open.frunk); svg.querySelector('.ct-boot').classList.toggle('open', !!Q.open.boot);
     svg.querySelector('.ct-port').classList.toggle('open', Q.port);
-    svg.querySelectorAll('.ct-win').forEach(w => { const v = Q.wins[w.dataset.win]; w.classList.remove('vent', 'open'); w.classList.toggle('v', v > 0 && v < 1); w.classList.toggle('o', v >= 1); });
-    { const vals = Object.values(Q.wins); Q.win = vals.every(v => v === 0) ? 'closed' : vals.every(v => v === WV.vent) ? 'vent' : vals.every(v => v === 1) ? 'open' : 'mixed';
-      const wc = qc.querySelector('.qc-wcard'), s = Q.wside;
-      wc.querySelectorAll('[data-wside]').forEach(d => d.classList.toggle('on', d.dataset.wside === s));
-      [['f', 'f' + s], ['r', 'r' + s]].forEach(([k, n]) => { const v = Q.wins[n]; wc.querySelector(`[data-sw="${k}"] .sw-gl`).style.transform = `translateY(${v * 30}px)`;
-        wc.querySelector(`[data-swt="${k}"]`).textContent = (k === 'f' ? 'Front' : 'Rear') + ' · ' + (v === 0 ? 'closed' : v >= 1 ? 'open' : 'vent'); });
-      const show = vals.some(v => v > 0) || Date.now() < (Q.wUntil || 0); wc.classList.toggle('on', show);
-      clearTimeout(fr._wcT); if (!vals.some(v => v > 0) && Date.now() < (Q.wUntil || 0)) fr._wcT = setTimeout(() => qcPaint(fr), Q.wUntil - Date.now() + 20); }
+    svg.querySelectorAll('.ct-win').forEach(w => { const v = Q.wins[w.dataset.win]; w.classList.remove('v', 'o', 'vent', 'open'); w.style.fillOpacity = (1 - v * .85).toFixed(2); w.classList.toggle('o', v > .02); });
+    { const wc = qc.querySelector('.qc-wcard'), lab = v => v <= .02 ? 'Closed' : v >= .98 ? 'Open' : Math.abs(v - .18) < .02 ? 'Vent' : Math.round(v * 100) + ' %';
+      wc.classList.toggle('on', !!Q.wcard);
+      const vals = Object.values(Q.wins), same = vals.every(v => Math.abs(v - vals[0]) < .01);
+      wc.querySelectorAll('[data-wi]').forEach(r => { const k = r.dataset.wi, v = k === 'all' ? (same ? vals[0] : null) : Q.wins[k];
+        const sl = r.querySelector('.wi-sl'); if (document.activeElement !== sl) sl.value = Math.round((v === null ? vals.reduce((a, b) => a + b) / 4 : v) * 100);
+        sl.style.setProperty('--p', sl.value + '%');
+        r.querySelector('.wi-v').textContent = v === null ? 'Mixed' : lab(v); });
+      const open = vals.filter(v => v > .02).length;
+      qc.querySelector('.qc-wst').textContent = open === 0 ? 'All closed' : same ? 'All ' + lab(vals[0]).toLowerCase() : open + ' open'; }
     svg.querySelectorAll('.ct-mir').forEach((m, i) => m.style.transform = Q.mir === 'fold' ? `rotate(${i ? 70 : -70}deg)` : '');
     svg.querySelectorAll('.ct-fab').forEach(s => s.classList.toggle('open', Q.shade[s.dataset.shade]));
     { const rg = svg.querySelector('.ct-roofg'), any = Q.shade.l || Q.shade.r, recent = Date.now() < (Q.rUntil || 0);
@@ -1573,6 +1577,11 @@
         else toast(fr, (Q.open[k] ? 'Closing the ' : 'Opening the ') + DOORN[k]);
         Q.open[k] = !Q.open[k]; }
       qcPaint(fr); return true; }
+    if (t.closest('[data-wopen]')) { Q.wcard = !Q.wcard; qcPaint(fr); return true; }
+    if (t.closest('[data-wclose]')) { Q.wcard = false; qcPaint(fr); return true; }
+    const wb = t.closest('[data-wset]'); if (wb) { const k = wb.closest('[data-wi]').dataset.wi, v = +wb.dataset.wset / 100;
+      (k === 'all' ? Object.keys(Q.wins) : [k]).forEach(n => Q.wins[n] = v); qcPaint(fr); return true; }
+    if (t.closest('.qc-wcard')) return true;
     const ws = t.closest('[data-wside]'); if (ws) { Q.wside = ws.dataset.wside; Q.wUntil = Date.now() + 3500; qcPaint(fr); return true; }
     const sw = t.closest('[data-sw]'); if (sw) { const n = sw.dataset.sw + Q.wside; Q.wins[n] = Q.wins[n] >= 1 ? 0 : 1; Q.wUntil = Date.now() + 3500; qcPaint(fr); return true; }
     const sg = t.closest('[data-qc] div');
@@ -1647,12 +1656,14 @@
   function dmPaint(root) {
     const D = root._dm || (root._dm = { m: 'Comfort', c: { Steering: 'Standard', Suspension: 'Soft', Power: 'Smooth', Regeneration: 'High', Traction: 'Normal' } });
     const i = DM.indexOf(D.m), col = DMC[D.m], set = D.m === 'Custom' ? D.c : DMSET[D.m], [h, r, dy, amp] = DMR[D.m];
-    root.style.setProperty('--mc', col); root.style.setProperty('--p', i * 25);
-    const a = Math.PI - i * Math.PI / 4, kn = root.querySelector('.dm-knob'); kn.setAttribute('cx', (160 + 118 * Math.cos(a)).toFixed(1)); kn.setAttribute('cy', (160 - 118 * Math.sin(a)).toFixed(1));
+    root.style.setProperty('--mc', col);
+    { const TH = [165, 127.5, 90, 52.5, 15], th = TH[i], P = a => [160 + 96 * Math.cos(a * Math.PI / 180), 92 + 96 * Math.sin(a * Math.PI / 180)];
+      const [x1, y1] = P(165), [x2, y2] = P(th - 0.01); root.querySelector('.dm-v').setAttribute('d', `M${x1.toFixed(1)} ${y1.toFixed(1)}A96 96 0 0 0 ${x2.toFixed(1)} ${y2.toFixed(1)}`);
+      root.querySelector('.dm-capg').style.transform = `rotate(${th - 90}deg)`; }
     root.querySelectorAll('.dm-stop').forEach(s => s.classList.toggle('on', s.dataset.dm === D.m));
     root.querySelector('.dm-n').textContent = D.m; root.querySelector('.dm-d').textContent = DMD[D.m];
     const car = root.querySelector('.dm-car'); car.style.setProperty('--dy', (dy * 1.8) + 'px');
-    root.querySelector('.dm-h').textContent = h; root.querySelector('.dm-k').textContent = set.Suspension; root.querySelector('.dm-r').textContent = r;
+    root.querySelector('.dm-h').textContent = h; root.querySelector('.dm-gv').textContent = h; root.querySelector('.dm-k').textContent = set.Suspension; root.querySelector('.dm-r').textContent = r;
     root.querySelector('.dm-st').textContent = D.m === 'Custom' ? 'Custom · tap to change' : D.m + ' settings';
     root.querySelector('.dm-set').classList.toggle('locked', D.m !== 'Custom');
     
@@ -1666,10 +1677,14 @@
     if (e.target.closest('[data-dmsave]')) { toast(frameOf(root), 'Custom mode saved to Emma’s profile'); }
   });
   let dmDrag = null;
-  function dmAim(e) { const svg = dmDrag.querySelector('.dm-dial'), r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 320 - 160, y = 160 - (e.clientY - r.top) / r.height * 196;
-    const i = Math.max(0, Math.min(4, Math.round(4 - Math.atan2(Math.max(y, 0), x) / Math.PI * 4))); if (DM[i] !== dmDrag._dm.m) { dmDrag._dm.m = DM[i]; dmPaint(dmDrag); } }
-  document.addEventListener('pointerdown', e => { const k = e.target.closest('.dm-knob'); if (!k) return; dmDrag = k.closest('[data-drv2]'); dmAim(e); });
+  function dmAim(e) { const svg = dmDrag.querySelector('.dm-dial'), r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 320 - 160, y = (e.clientY - r.top) / r.height * 232 - 92;
+    let a = Math.atan2(y, x) * 180 / Math.PI; if (a < 0) a = x < 0 ? 165 : 15; a = Math.max(15, Math.min(165, a));
+    const i = Math.round((165 - a) / 37.5); if (DM[i] !== dmDrag._dm.m) { dmDrag._dm.m = DM[i]; dmPaint(dmDrag); } }
+  document.addEventListener('pointerdown', e => { const k = e.target.closest('[data-dmknob]'); if (!k) return; dmDrag = k.closest('[data-drv2]'); dmDrag.classList.add('dm-drag'); dmAim(e); });
   document.addEventListener('pointermove', e => { if (dmDrag) dmAim(e); });
-  document.addEventListener('pointerup', () => { dmDrag = null; });
+  document.addEventListener('pointerup', () => { if (dmDrag) dmDrag.classList.remove('dm-drag'); dmDrag = null; });
   document.querySelectorAll('[data-drv2]').forEach(dmPaint);
+
+  document.addEventListener('input', e => { const sl = e.target.closest('.wi-sl'); if (!sl) return; const fr = frameOf(sl), Q = qcOf(fr), k = sl.closest('[data-wi]').dataset.wi, v = +sl.value / 100;
+    (k === 'all' ? Object.keys(Q.wins) : [k]).forEach(n => Q.wins[n] = v); sl.style.setProperty('--p', sl.value + '%'); qcPaint(fr); });
 })();
