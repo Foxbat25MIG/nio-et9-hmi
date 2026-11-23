@@ -1478,3 +1478,84 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .ct-box .ct,.qc-car .ct-box .ct{width:100%;height:100%;max-height:none}
 .ty .ct-box{height:78%}
 .ct-roof.open{opacity:.55}
+
+/* ---------- v82 ---------- */
+/* Car and Climate pages: no music/battery column */
+.frame[data-wide] .ctx{flex:0 0 0;opacity:0;margin-left:-20px;overflow:hidden;pointer-events:none}
+.ctx{transition:flex var(--dur-panel) var(--ease),opacity var(--dur-hover) var(--ease),margin var(--dur-panel) var(--ease)}
+/* seat side view: soft shadow that follows the seat */
+.sv-floor{fill:#2d2840;opacity:.12;filter:blur(6px);transition:transform .3s var(--ease)}
+/* cutaway: soft shadows, ET9 cabin parts */
+.ct-sh{fill:#2d2840;opacity:.10;filter:blur(5px)}
+.ct-wheel{fill:#8f8ba3}.ct-wheelc{fill:#a29db8}
+.ct-scr{fill:#3a3647;opacity:.75}
+.ct-bulk{fill:none;stroke:#d6d1e4;stroke-width:2;stroke-linecap:round}
+.ct-con{fill:#e6e2ef;stroke:#d6d1e4}.ct-con3{fill:#dcd7e9}
+/* window card */
+.qc-car{position:relative}
+.qc-wcard{position:absolute;left:50%;bottom:14px;width:min(360px,92%);transform:translate(-50%,16px) scale(.97);opacity:0;pointer-events:none;background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.8);border-radius:22px;padding:14px 16px;box-shadow:0 14px 40px rgba(36,30,72,.16);display:flex;flex-direction:column;gap:8px;z-index:3;transition:opacity var(--dur-panel) var(--ease),transform var(--dur-panel) var(--ease)}
+.qc-wcard.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.qc-wside{padding:3px!important;border-radius:12px}.qc-wside>div{height:30px!important;padding:0 12px;font-size:13px!important;border-radius:9px}
+.sw-svg{width:100%;display:block}
+.sw-body{fill:#fbfaff;stroke:#bfb8d4;stroke-width:1.4}
+.sw-open{fill:#efecf6}
+.sw-gl{fill:#c3cfee;transition:transform var(--dur-panel) var(--ease)}
+[data-sw]{cursor:pointer}
+.sw-pil{stroke:#bfb8d4;stroke-width:3}.sw-line{stroke:#e1ddea}
+.sw-wh{fill:#3a3647}.sw-hub{fill:#a29db8}.sw-ground{stroke:#e1ddea}
+.sw-read{gap:16px}.sw-read .bs{font-size:13px}
+.ct-win.v{opacity:.5}.ct-win.o{fill:transparent;stroke:#9fb2ea;stroke-dasharray:3 3}
+/* quick controls: menu centred and in proportion with the car */
+.qc{align-items:center;gap:28px}
+.qc-car{flex:0 1 420px;align-self:stretch}
+.qc-side{justify-content:center;align-self:center;max-height:100%}
+/* one touch: full width */
+.st-top .st-pickwrap{width:240px}
+.st-modes{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;align-content:start}
+.st-mode{min-height:96px;padding:16px;border-radius:18px;grid-template-columns:40px 1fr;column-gap:12px}
+.st-mode>.ms{font-size:30px}
+.st-mode b{font-size:17px}.st-mode .bs{font-size:13px}
+/* vents: smooth sweep */
+.vent-pad.sweep .vp-dot{left:calc(50% - 14px);top:calc(50% - 14px);animation:vsweep2 3.4s cubic-bezier(.45,0,.55,1) infinite alternate}
+.vent-pad.sweep .vp-blades i{animation:vblade2 3.4s cubic-bezier(.45,0,.55,1) infinite alternate}
+@keyframes vsweep2{from{transform:translateX(-80px)}to{transform:translateX(80px)}}
+@keyframes vblade2{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+/* driving */
+.dm{overflow:auto;scrollbar-width:none}
+.dm-top{gap:16px;align-items:stretch}
+.dm-dcard{flex:1;position:relative;padding:18px 18px 22px;display:flex;flex-direction:column;align-items:center}
+.dm-dial{width:100%;max-width:380px;display:block;overflow:visible}
+.dm-tr,.dm-v{fill:none;stroke-width:16;stroke-linecap:round}
+.dm-tr{stroke:var(--s2)}
+.dm-v{stroke:var(--mc,#8ea7e6);stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,25));transition:stroke-dashoffset var(--dur-panel) var(--ease),stroke var(--dur-panel) var(--ease)}
+.dm-stop{cursor:pointer}.dm-hit{fill:transparent}
+.dm-dot{fill:#fff;opacity:.9}
+.dm-lb{font:500 13px "Red Hat Text";fill:var(--t3);transition:fill .3s var(--ease)}
+.dm-stop.on .dm-lb{fill:var(--t1)}
+.dm-knob{fill:#fff;stroke:var(--mc,#8ea7e6);stroke-width:4;filter:drop-shadow(0 3px 6px rgba(36,30,72,.25));transition:cx var(--dur-panel) var(--ease),cy var(--dur-panel) var(--ease),stroke var(--dur-panel) var(--ease)}
+.dm-c{position:absolute;left:0;right:0;bottom:22px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 70px;text-align:center}
+.dm-n{font:400 34px "Red Hat Display";color:var(--t1)}
+.dm-d{font-size:13px}
+.dm-ccard{flex:1;display:flex;flex-direction:column;gap:8px;padding:18px}
+.dm-car{width:100%;display:block;overflow:visible}
+.dm-road{stroke:#d6d1e4;stroke-width:2}
+.dm-wh circle{fill:#3a3647}.dm-wh .dm-hub{fill:#a29db8}
+.dm-spr path{fill:none;stroke:var(--mc,#8ea7e6);stroke-width:2;stroke-linejoin:round;transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(var(--sy,1));transition:transform var(--dur-panel) var(--ease),stroke var(--dur-panel) var(--ease)}
+.dm-body{transform:translateY(var(--dy,0px));transition:transform var(--dur-panel) var(--ease)}
+.dm-body path:first-child{fill:#fbfaff;stroke:#bfb8d4;stroke-width:1.4;animation:dmbob var(--bs,2.4s) ease-in-out infinite alternate}
+.dm-gl{fill:#d5dff4;animation:dmbob var(--bs,2.4s) ease-in-out infinite alternate}
+@keyframes dmbob{from{transform:translateY(0)}to{transform:translateY(var(--amp,1.6px))}}
+.dm-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dm-chips>div{background:var(--s2);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.dm-chips .bs{font-size:12px}.dm-chips b{font:500 16px "Red Hat Text";color:var(--t1)}
+.dm-grid{display:grid;grid-template-columns:130px 1fr;gap:10px 16px;align-items:center}
+.dm-seg{padding:3px!important;border-radius:14px}.dm-seg>div{height:38px!important;font-size:14px!important;border-radius:11px}
+.dm-set.locked .dm-seg{pointer-events:none}
+.dm-set.locked .dm-seg>div:not(.on){opacity:.55}
+.dm-save{transition:opacity var(--dur-hover) var(--ease)}
+.sf-cab{fill:#f3f1f8;stroke:#e1ddea}
+.sf-console{fill:#e6e2ef}
+.st-modes{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.st-top>.row{align-items:stretch}
+.st-top .st-modes{flex:1}
+.st-mode{align-content:center}

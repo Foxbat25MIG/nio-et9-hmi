@@ -939,6 +939,7 @@
     // side view (adjustment view): parts follow the values, active parts and arrow nodes follow the chosen mode
     const q = s => w.querySelector(s);
     q('.ss-all').style.transform = `translate(${(v.fore - 130) * .12}px, ${-(v.height - 30) * .25}px)`;
+    { const fl = q('.sv-floor'); if (fl) fl.style.transform = `translateX(${(v.fore - 130) * .12}px)`; }
     q('.ss-back').style.transform = `rotate(${-(v.recline - 16)}deg)`;   // the render's backrest leans 16°
     q('.ss-cush').style.transform = `rotate(${-v.tilt}deg)`;
     q('.ss-head').style.transform = `translate(${-(v.headh - 30) * .035 + (v.headt - 10) * .2}px, ${-(v.headh - 30) * .12}px)`;   // slides along the backrest
@@ -1513,14 +1514,22 @@
 
   /* ---------- Quick controls: doors, frunk, boot, windows, mirrors, charge port, sunshades, lights ---------- */
   const DOORN = { dfl: 'driver door', dfr: 'passenger door', drl: 'rear left door', drr: 'rear right door', frunk: 'frunk', boot: 'boot' };
-  const qcOf = fr => fr._qc || (fr._qc = { lock: true, open: {}, port: false, win: 'closed', mir: 'out', shade: { l: false, r: false }, lights: 'auto' });
+  const qcOf = fr => fr._qc || (fr._qc = { lock: true, open: {}, port: false, win: 'closed', wins: { fl: 0, rl: 0, fr: 0, rr: 0 }, wside: 'l', mir: 'out', shade: { l: false, r: false }, lights: 'auto' });
+  const WV = { closed: 0, vent: .18, open: 1 };
   function qcPaint(fr) {
     const Q = qcOf(fr), qc = fr.querySelector('[data-screen="car"] .qc:not(.ty)'); if (!qc) return;
     const svg = qc.querySelector('.ct');
     svg.querySelectorAll('.ct-door').forEach(d => { const k = d.dataset.cp, s = k.endsWith('l') ? 1 : -1; d.style.transform = Q.open[k] ? `rotate(${s * 24}deg)` : ''; });
     svg.querySelector('.ct-frunk').classList.toggle('open', !!Q.open.frunk); svg.querySelector('.ct-boot').classList.toggle('open', !!Q.open.boot);
     svg.querySelector('.ct-port').classList.toggle('open', Q.port);
-    svg.querySelectorAll('.ct-win').forEach(w => { w.classList.toggle('vent', Q.win === 'vent'); w.classList.toggle('open', Q.win === 'open'); });
+    svg.querySelectorAll('.ct-win').forEach(w => { const v = Q.wins[w.dataset.win]; w.classList.remove('vent', 'open'); w.classList.toggle('v', v > 0 && v < 1); w.classList.toggle('o', v >= 1); });
+    { const vals = Object.values(Q.wins); Q.win = vals.every(v => v === 0) ? 'closed' : vals.every(v => v === WV.vent) ? 'vent' : vals.every(v => v === 1) ? 'open' : 'mixed';
+      const wc = qc.querySelector('.qc-wcard'), s = Q.wside;
+      wc.querySelectorAll('[data-wside]').forEach(d => d.classList.toggle('on', d.dataset.wside === s));
+      [['f', 'f' + s], ['r', 'r' + s]].forEach(([k, n]) => { const v = Q.wins[n]; wc.querySelector(`[data-sw="${k}"] .sw-gl`).style.transform = `translateY(${v * 30}px)`;
+        wc.querySelector(`[data-swt="${k}"]`).textContent = (k === 'f' ? 'Front' : 'Rear') + ' · ' + (v === 0 ? 'closed' : v >= 1 ? 'open' : 'vent'); });
+      const show = vals.some(v => v > 0) || Date.now() < (Q.wUntil || 0); wc.classList.toggle('on', show);
+      clearTimeout(fr._wcT); if (!vals.some(v => v > 0) && Date.now() < (Q.wUntil || 0)) fr._wcT = setTimeout(() => qcPaint(fr), Q.wUntil - Date.now() + 20); }
     svg.querySelectorAll('.ct-mir').forEach((m, i) => m.style.transform = Q.mir === 'fold' ? `rotate(${i ? 70 : -70}deg)` : '');
     svg.querySelectorAll('.ct-roof').forEach(s => s.classList.toggle('open', Q.shade[s.dataset.shade]));
     svg.classList.toggle('l-on', Q.lights === 'on'); svg.classList.toggle('l-drl', Q.lights === 'auto');
@@ -1555,9 +1564,11 @@
         else toast(fr, (Q.open[k] ? 'Closing the ' : 'Opening the ') + DOORN[k]);
         Q.open[k] = !Q.open[k]; }
       qcPaint(fr); return true; }
+    const ws = t.closest('[data-wside]'); if (ws) { Q.wside = ws.dataset.wside; Q.wUntil = Date.now() + 3500; qcPaint(fr); return true; }
+    const sw = t.closest('[data-sw]'); if (sw) { const n = sw.dataset.sw + Q.wside; Q.wins[n] = Q.wins[n] >= 1 ? 0 : 1; Q.wUntil = Date.now() + 3500; qcPaint(fr); return true; }
     const sg = t.closest('[data-qc] div');
     if (sg) { const k = sg.parentElement.dataset.qc, v = sg.dataset.v;
-      if (k === 'shade') Q.shade = { l: v === 'l' || v === 'both', r: v === 'r' || v === 'both' }; else Q[k] = v;
+      if (k === 'shade') Q.shade = { l: v === 'l' || v === 'both', r: v === 'r' || v === 'both' }; else if (k === 'win') { Object.keys(Q.wins).forEach(n => Q.wins[n] = WV[v]); Q.wUntil = Date.now() + 3500; } else Q[k] = v;
       if (k === 'win') toast(fr, v === 'open' ? 'All windows down' : v === 'vent' ? 'Windows open 2 cm' : 'All windows up');
       qcPaint(fr); return true; }
     return false;
@@ -1600,7 +1611,7 @@
   function wideUpdate() {
     document.querySelectorAll('.frame.proto').forEach(fr => {
       const scr = fr.querySelector('.scr.on'); if (!scr) return; const k = scr.dataset.screen;
-      const pg = scr.querySelector('.pg.on'); const wide = k === 'climate' || (k === 'car' && pg && WIDE_CAR.includes(pg.dataset.page));
+      const wide = k === 'climate' || k === 'car';
       if (wide) fr.dataset.wide = ''; else delete fr.dataset.wide;
       if (wide) { const art = fr.querySelector('.ctx .player .art'), m = fr.querySelector('[data-cmart]');
         if (art && m) { const img = art.querySelector('img'); m.innerHTML = img ? `<img src="${img.src}" alt="">` : ''; if (!img) m.style.backgroundImage = getComputedStyle(art).backgroundImage; }
@@ -1613,4 +1624,43 @@
     setTimeout(wideUpdate, 0);
   });
   wideUpdate();
+
+  /* ---------- Driving: mode dial + live SkyRide side view ---------- */
+  const DM = ['Eco', 'Comfort', 'Sport', 'Snow', 'Custom'];
+  const DMC = { Eco: '#7fbf8e', Comfort: '#8ea7e6', Sport: '#e2895c', Snow: '#8fc7de', Custom: '#a99fd0' };
+  const DMSET = { Eco: { Steering: 'Light', Suspension: 'Standard', Power: 'Gentle', Regeneration: 'High', Traction: 'Normal' },
+    Comfort: { Steering: 'Light', Suspension: 'Soft', Power: 'Smooth', Regeneration: 'Standard', Traction: 'Normal' },
+    Sport: { Steering: 'Firm', Suspension: 'Firm', Power: 'Sharp', Regeneration: 'High', Traction: 'Sport' },
+    Snow: { Steering: 'Light', Suspension: 'Soft', Power: 'Gentle', Regeneration: 'Low', Traction: 'Snow' } };
+  const DMD = { Eco: 'Gentle power and strong regeneration for the most range.', Comfort: 'Quiet and balanced. The default for city driving.',
+    Sport: 'Quicker response and a tighter, lower body.', Snow: 'Soft power and low regeneration for grip. The car rises for clearance.', Custom: 'Your own mix, saved to Emma’s profile.' };
+  const DMR = { Eco: ['−10 mm', '+18 km', 3, 1.2], Comfort: ['Standard', '±0 km', 0, 2.2], Sport: ['−15 mm', '−22 km', 4, .6], Snow: ['+20 mm', '−10 km', -6, 1.8], Custom: ['Standard', '±0 km', 0, 1.6] };
+  function dmPaint(root) {
+    const D = root._dm || (root._dm = { m: 'Comfort', c: { Steering: 'Standard', Suspension: 'Soft', Power: 'Smooth', Regeneration: 'High', Traction: 'Normal' } });
+    const i = DM.indexOf(D.m), col = DMC[D.m], set = D.m === 'Custom' ? D.c : DMSET[D.m], [h, r, dy, amp] = DMR[D.m];
+    root.style.setProperty('--mc', col); root.style.setProperty('--p', i * 25);
+    const a = Math.PI - i * Math.PI / 4, kn = root.querySelector('.dm-knob'); kn.setAttribute('cx', (160 + 118 * Math.cos(a)).toFixed(1)); kn.setAttribute('cy', (160 - 118 * Math.sin(a)).toFixed(1));
+    root.querySelectorAll('.dm-stop').forEach(s => s.classList.toggle('on', s.dataset.dm === D.m));
+    root.querySelector('.dm-n').textContent = D.m; root.querySelector('.dm-d').textContent = DMD[D.m];
+    const car = root.querySelector('.dm-car'); car.style.setProperty('--dy', dy + 'px'); car.style.setProperty('--amp', amp + 'px'); car.style.setProperty('--sy', (1 - dy / 30).toFixed(2));
+    root.querySelector('.dm-h').textContent = h; root.querySelector('.dm-k').textContent = set.Suspension; root.querySelector('.dm-r').textContent = r;
+    root.querySelector('.dm-st').textContent = D.m === 'Custom' ? 'Custom · tap to change' : D.m + ' settings';
+    root.querySelector('.dm-set').classList.toggle('locked', D.m !== 'Custom');
+    root.querySelector('.dm-save').textContent = D.m === 'Custom' ? 'Saved to Emma’s profile' : 'Copy to Custom';
+    root.querySelectorAll('.dm-seg').forEach(s => s.querySelectorAll('div').forEach(d => d.classList.toggle('on', d.dataset.v === set[s.dataset.dk])));
+    const chip = (root.closest('.frame') || document).querySelector('.status .chip'); if (chip) chip.lastChild.textContent = D.m;
+  }
+  document.addEventListener('click', e => {
+    const root = e.target.closest('[data-drv2]'); if (!root) return; const D = root._dm || (dmPaint(root), root._dm);
+    const st = e.target.closest('[data-dm]'); if (st) { D.m = st.dataset.dm; dmPaint(root); return; }
+    const sg = e.target.closest('.dm-seg div'); if (sg && D.m === 'Custom') { D.c[sg.parentElement.dataset.dk] = sg.dataset.v; setTimeout(() => dmPaint(root), 0); return; }
+    if (e.target.closest('[data-dmsave]') && D.m !== 'Custom') { D.c = { ...DMSET[D.m] }; D.m = 'Custom'; dmPaint(root); toast(frameOf(root), 'Copied to Custom · saved to Emma’s profile'); }
+  });
+  let dmDrag = null;
+  function dmAim(e) { const svg = dmDrag.querySelector('.dm-dial'), r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 320 - 160, y = 160 - (e.clientY - r.top) / r.height * 196;
+    const i = Math.max(0, Math.min(4, Math.round(4 - Math.atan2(Math.max(y, 0), x) / Math.PI * 4))); if (DM[i] !== dmDrag._dm.m) { dmDrag._dm.m = DM[i]; dmPaint(dmDrag); } }
+  document.addEventListener('pointerdown', e => { const k = e.target.closest('.dm-knob'); if (!k) return; dmDrag = k.closest('[data-drv2]'); dmAim(e); });
+  document.addEventListener('pointermove', e => { if (dmDrag) dmAim(e); });
+  document.addEventListener('pointerup', () => { dmDrag = null; });
+  document.querySelectorAll('[data-drv2]').forEach(dmPaint);
 })();
