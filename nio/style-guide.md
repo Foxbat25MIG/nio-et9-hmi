@@ -98,14 +98,22 @@ Applied here:
 3. Red is reserved for limits and warnings, never for branding.
 4. No gradients on UI chrome. The only gradient is the media placeholder tile.
 
-### Night (Lavender Dark) · provisional
-Same roles, same names, to be checked against the hero before Batch 1 Night:
-`bg #0f0e13`, `s1 #1a1820`, `s2 #24212c`, `s3 #322e3c`, `line #2c2935`,
-`t1 #f2f1f6`, `t2 #a9a5ba`, `t3 #716d82`, `ink #f2f1f6` / `on-ink #111014`,
-`route #9b8ffa`, `route-done #4a4560`, map land `#16151b`, road `#2a2733`, building `#1f1d26`, water `#1c2233`, park `#18201b`.
+### Night (Lavender Dark) · approved: A · Deep plum
+Same roles and names as Light; hue 262°, saturation 13 %, no pure black.
 
-**Theme switching:** Settings › Display › Appearance = **Auto · Light · Dark**
-(Auto follows sunset/sunrise and tunnels). The portfolio page also has a Light/Dark toggle above the frame.
+| Token | Night value |
+|---|---|
+| `bg` / `s1` / `s2` / `s3` / `line` | hsl(262 13 % 7 / 11 / 15 / 21 / 19 %) |
+| `t1` / `t2` / `t3` | `#f2f1f6` / `#a9a5ba` / `#7c788e` |
+| `ink` / `on-ink` | `#ece9f7` / `#15131b` (the one primary action turns light) |
+| `sel` / `on-sel` | hsl(222 34 % 30 %) / `#e3eafc` |
+| `route` / `route-done` | `#9b8ffa` (soft glow on the map) / `#4a4560` |
+| Map | land 9 %, roads 18 %, minor roads 15 %, buildings 13 % (plum hue); water `#1b2233`, park `#18221b` |
+| Shadows | `rgba(4,3,10,…)`, deeper than Light |
+
+**Theme switching:** Settings › Display › Appearance = **Auto · Light · Dark**; Auto follows the device’s light or dark setting.
+The portfolio page has a Light/Dark button above the frame; the choice is remembered per browser.
+Night is generated from the Light styles by `gen_dark.py` (run after every build), so a Light change carries over to Night automatically; state colours (open red, heat orange, cool blue, drive-mode colours) keep their hue and step up in lightness.
 Every colour in markup must be a token (`var(--…)`) so that switching theme only swaps the token set.
 
 ---
