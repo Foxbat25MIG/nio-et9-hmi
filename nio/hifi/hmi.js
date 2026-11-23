@@ -1565,6 +1565,9 @@
   function qcClick(t) {
     const qc = t.closest('[data-screen="car"] .qc:not(.ty)'); if (!qc) return false;
     const fr = frameOf(t), Q = qcOf(fr);
+    if (t.closest('[data-qcall]')) { Q.open = {}; Q.port = false; Object.keys(Q.wins).forEach(n => Q.wins[n] = 0); Q.shade = { l: false, r: false }; Q.rUntil = Date.now() + 2600; Q.wcard = false;
+      Q.lock = true; Q.mir = 'fold'; qcPaint(fr); toast(fr, 'Doors, frunk, boot, windows and sunshades closing · locked');
+      setTimeout(() => { if (Q.lock) { Q.mir = 'out'; qcPaint(fr); } }, 1800); return true; }
     if (t.closest('[data-qcdoors]')) { Q.doors = !Q.doors; qcPaint(fr); return true; }
     if (t.closest('[data-qclock]')) {
       if (Q.lock) { Q.lock = false; toast(fr, 'Unlocked'); }

@@ -1704,3 +1704,11 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .qc-side{width:320px}
 .dm-rh{padding:3px!important;border-radius:14px}.dm-rh>div{height:36px!important;font-size:13px!important;border-radius:11px}
 .dm-body{transition:transform 2s var(--ease)}
+/* v87: close-all button, sunshades fit, columns closer to the car */
+.qc-all{justify-content:center;height:52px}
+.qc{gap:14px}
+.qc-car{flex:0 1 400px}
+.qc-side{width:340px}
+.qc-row{min-width:0}
+.qc-seg{min-width:0;flex:0 1 auto}
+.qc-seg>div{padding:0 9px!important;white-space:nowrap}
