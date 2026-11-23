@@ -1444,3 +1444,37 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .cl-slot .cl-frrow,.cl-slot .cl-trayrow,.cl-slot .cl-pre{flex-wrap:wrap}
 .cl-slot .snd-tabs div{font-size:12px}
 .cl-slot .snd-tabs{gap:2px}.cl-slot .snd-tabs div{flex:auto;white-space:nowrap;padding:0 8px}
+
+/* ---------- v81: cutaway car · wide pages with mini side strip ---------- */
+.ct-floor{fill:#efecf6;stroke:#d6d1e4;stroke-width:1}
+.ct-dash{fill:#e1ddea}
+.ct-con{fill:#e6e2ef;stroke:#d6d1e4}.ct-con2{fill:#d6d1e4}
+.ct-arm{fill:#e6e2ef}
+.ct-dp{fill:#f7f5fb}
+.ct-seat .tv2-th,.ct-seat .tv2-cu,.ct-seat .tv2-bki{fill:#faf9fd}
+.ct-roof{fill:url(#ctRoof);stroke:#b9c9f0;stroke-width:1;opacity:0;pointer-events:none;transition:opacity var(--dur-panel) var(--ease)}
+.ct-roof.open{opacity:1}
+.ct-win{fill:#c3cfee}
+.ct-shade{display:none}
+
+.ctx{flex:1 1 0;min-width:0;transition:flex var(--dur-panel) var(--ease)}
+.ctx-mini{display:none}
+.frame[data-wide] .ctx{flex:0 0 104px}
+.frame[data-wide] .ctx>:not(.ctx-mini){display:none!important}
+.frame[data-wide] .ctx-mini{display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 10px;border-radius:var(--r-card);background:var(--s1);border:1px solid var(--line);animation:scrin var(--dur-panel) var(--ease)}
+.cm-art{width:76px;height:76px;border-radius:16px;background:var(--s2) center/cover no-repeat;overflow:hidden;cursor:pointer}
+.cm-art img{width:100%;height:100%;object-fit:cover;display:block}
+.cm-play{width:56px;height:56px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform var(--dur-press) var(--ease)}
+.cm-play .ms{color:var(--on-ink)}.cm-play:active{transform:scale(.94)}
+.cm-sep{width:40px;height:1px;background:var(--line)}
+.cm-bat{display:flex;flex-direction:column;align-items:center;gap:2px}.cm-bat .ms{color:var(--t2)}.cm-bat b{font:500 17px "Red Hat Display";color:var(--t1)}.cm-bat span{font:400 12px "Red Hat Text";color:var(--t3)}
+
+.qc{justify-content:center}
+.qc-side{width:340px}
+.qc-row>.b2{flex:none}
+.qc-seg{flex:none}
+.frame[data-wide] .cl-slot .cl-cab{width:280px}
+.ct-box{position:relative;height:96%;aspect-ratio:300/640;max-width:100%}
+.ct-box .ct,.qc-car .ct-box .ct{width:100%;height:100%;max-height:none}
+.ty .ct-box{height:78%}
+.ct-roof.open{opacity:.55}

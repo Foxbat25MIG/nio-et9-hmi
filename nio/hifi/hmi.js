@@ -1522,7 +1522,7 @@
     svg.querySelector('.ct-port').classList.toggle('open', Q.port);
     svg.querySelectorAll('.ct-win').forEach(w => { w.classList.toggle('vent', Q.win === 'vent'); w.classList.toggle('open', Q.win === 'open'); });
     svg.querySelectorAll('.ct-mir').forEach((m, i) => m.style.transform = Q.mir === 'fold' ? `rotate(${i ? 70 : -70}deg)` : '');
-    svg.querySelectorAll('.ct-shade').forEach(s => s.classList.toggle('open', Q.shade[s.dataset.shade]));
+    svg.querySelectorAll('.ct-roof').forEach(s => s.classList.toggle('open', Q.shade[s.dataset.shade]));
     svg.classList.toggle('l-on', Q.lights === 'on'); svg.classList.toggle('l-drl', Q.lights === 'auto');
     qc.querySelectorAll('[data-pill]').forEach(p => p.classList.toggle('on', p.dataset.pill === 'port' ? Q.port : !!Q.open[p.dataset.pill]));
     qc.querySelectorAll('.qc-btns [data-cp]').forEach(b => b.classList.toggle('on', b.dataset.cp === 'port' ? Q.port : !!Q.open[b.dataset.cp]));
@@ -1594,4 +1594,23 @@
   }
   document.addEventListener('click', () => setTimeout(clHome, 0));
   clHome();
+
+  // full-width pages: Climate, and Car › Quick controls, Seats, Climate, Tyres; music and battery shrink to a slim strip
+  const WIDE_CAR = ['Quick controls', 'Seats', 'Climate', 'Tyres'];
+  function wideUpdate() {
+    document.querySelectorAll('.frame.proto').forEach(fr => {
+      const scr = fr.querySelector('.scr.on'); if (!scr) return; const k = scr.dataset.screen;
+      const pg = scr.querySelector('.pg.on'); const wide = k === 'climate' || (k === 'car' && pg && WIDE_CAR.includes(pg.dataset.page));
+      if (wide) fr.dataset.wide = ''; else delete fr.dataset.wide;
+      if (wide) { const art = fr.querySelector('.ctx .player .art'), m = fr.querySelector('[data-cmart]');
+        if (art && m) { const img = art.querySelector('img'); m.innerHTML = img ? `<img src="${img.src}" alt="">` : ''; if (!img) m.style.backgroundImage = getComputedStyle(art).backgroundImage; }
+        const pl = fr.querySelector('.ctx .player'), pb = fr.querySelector('[data-cmplay] .ms'); if (pl && pb) pb.textContent = pl.classList.contains('playing') ? 'pause' : 'play_arrow'; }
+    });
+  }
+  document.addEventListener('click', e => {
+    const cp = e.target.closest('[data-cmplay]'); if (cp) { const pl = frameOf(cp).querySelector('.ctx .player .play'); if (pl) pl.click(); }
+    const ca = e.target.closest('[data-cmart]'); if (ca) route(frameOf(ca), 'media');
+    setTimeout(wideUpdate, 0);
+  });
+  wideUpdate();
 })();
