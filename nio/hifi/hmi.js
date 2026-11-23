@@ -980,6 +980,9 @@
     { const front = [['drive', 'directions_car', 'Drive', 'Upright and supported'], ['relax', 'weekend', 'Relax', S.sel === 'Driver' ? 'Reclines to 36° · when parked' : 'Reclines to 36°'], ['entry', 'sensor_door', 'Easy entry', S.easy === false ? 'Off' : 'Slides back when a door opens']];
       const rearM = [['work', 'laptop_mac', 'Work', 'Upright for a laptop'], ['lounge', 'chair', 'Lounge', '32°, thigh support out'], ['sleep', 'bedtime', 'Sleep', '45°, fully extended']];
       if (S.sel === 'Rear right') rearM.push(['exec', 'airline_seat_flat', 'Executive', 'Passenger seat moves forward']);
+      else rearM.push(['child', 'child_care', 'Child seat', 'Upright, heat and massage off']);
+      if (S.sel === 'Driver') front.push(['rest', 'self_improvement', 'Rest stop', 'Full recline, warm, gentle massage · parked']);
+      else { front[0] = ['drive', 'event_seat', 'Upright', 'Upright and supported']; front.push(['child', 'child_care', 'Child seat', 'Moves forward for a rear child seat']); }
       if (S.easy === undefined) S.easy = true;
       const list = rear ? rearM : front, key = S.sel + list.length;
       if (w._modesKey !== key) { w._modesKey = key; q('.st-modes').innerHTML = list.map(([k, i, n, s]) => `<div class="st-mode" data-seatmode="${k}" data-tap><span class="ms">${i}</span><b>${n}</b><span class="bs">${s}</span></div>`).join(''); }
@@ -1052,7 +1055,10 @@
         work: [{ recline: 19, tilt: 0, ext: 0, leg: 0, headh: 30, headt: 10 }, 'Work · upright for a laptop'],
         lounge: [{ recline: 32, tilt: 4, ext: 50, leg: 18, headt: 12 }, 'Lounge · 32°, thigh support out'],
         sleep: [{ recline: 45, tilt: 8, ext: 100, leg: 40, headt: 14, heat: '1', mass: true, mprog: 'wave', mint: 1, mspd: 1 }, 'Sleep · 45°, gentle massage, wakes you on arrival'],
-        exec: [{ recline: 45, tilt: 8, ext: 100, leg: 40, headt: 14 }, 'Executive · passenger seat forward, rear right reclined to 135°'] };
+        exec: [{ recline: 45, tilt: 8, ext: 100, leg: 40, headt: 14 }, 'Executive · passenger seat forward, rear right reclined to 135°'],
+        rest: [{ recline: 40, tilt: 5, ext: 60, leg: 12, headt: 14, heat: '1', vent: 'Off', mass: true, mprog: 'wave', mint: 1, mspd: 1 }, 'Rest stop · reclined, warm, gentle massage'],
+        child: rear ? [{ recline: 22, tilt: 0, ext: 0, leg: 0, heat: 'Off', vent: 'Off', mass: false }, 'Child seat · upright, heat and massage off']
+                    : [{ fore: 230, recline: 22, heat: 'Off', vent: 'Off', mass: false }, 'Child seat · passenger seat forward, heat and massage off'] };
       const [ch, msg] = P[k]; const changes = { [n]: ch };
       if (k === 'exec') changes.Passenger = { fore: 260, recline: 19, headh: 0 };
       stSet(w, changes, msg); w._modeOn = k; stPaint(w);
@@ -1531,7 +1537,10 @@
       const show = vals.some(v => v > 0) || Date.now() < (Q.wUntil || 0); wc.classList.toggle('on', show);
       clearTimeout(fr._wcT); if (!vals.some(v => v > 0) && Date.now() < (Q.wUntil || 0)) fr._wcT = setTimeout(() => qcPaint(fr), Q.wUntil - Date.now() + 20); }
     svg.querySelectorAll('.ct-mir').forEach((m, i) => m.style.transform = Q.mir === 'fold' ? `rotate(${i ? 70 : -70}deg)` : '');
-    svg.querySelectorAll('.ct-roof').forEach(s => s.classList.toggle('open', Q.shade[s.dataset.shade]));
+    svg.querySelectorAll('.ct-fab').forEach(s => s.classList.toggle('open', Q.shade[s.dataset.shade]));
+    { const rg = svg.querySelector('.ct-roofg'), any = Q.shade.l || Q.shade.r, recent = Date.now() < (Q.rUntil || 0);
+      rg.classList.toggle('show', any || recent); rg.classList.toggle('sun', any);
+      clearTimeout(fr._rgT); if (!any && recent) fr._rgT = setTimeout(() => qcPaint(fr), Q.rUntil - Date.now() + 20); }
     svg.classList.toggle('l-on', Q.lights === 'on'); svg.classList.toggle('l-drl', Q.lights === 'auto');
     qc.querySelectorAll('[data-pill]').forEach(p => p.classList.toggle('on', p.dataset.pill === 'port' ? Q.port : !!Q.open[p.dataset.pill]));
     qc.querySelectorAll('.qc-btns [data-cp]').forEach(b => b.classList.toggle('on', b.dataset.cp === 'port' ? Q.port : !!Q.open[b.dataset.cp]));
@@ -1568,7 +1577,7 @@
     const sw = t.closest('[data-sw]'); if (sw) { const n = sw.dataset.sw + Q.wside; Q.wins[n] = Q.wins[n] >= 1 ? 0 : 1; Q.wUntil = Date.now() + 3500; qcPaint(fr); return true; }
     const sg = t.closest('[data-qc] div');
     if (sg) { const k = sg.parentElement.dataset.qc, v = sg.dataset.v;
-      if (k === 'shade') Q.shade = { l: v === 'l' || v === 'both', r: v === 'r' || v === 'both' }; else if (k === 'win') { Object.keys(Q.wins).forEach(n => Q.wins[n] = WV[v]); Q.wUntil = Date.now() + 3500; } else Q[k] = v;
+      if (k === 'shade') { Q.shade = { l: v === 'l' || v === 'both', r: v === 'r' || v === 'both' }; Q.rUntil = Date.now() + 2600; } else if (k === 'win') { Object.keys(Q.wins).forEach(n => Q.wins[n] = WV[v]); Q.wUntil = Date.now() + 3500; } else Q[k] = v;
       if (k === 'win') toast(fr, v === 'open' ? 'All windows down' : v === 'vent' ? 'Windows open 2 cm' : 'All windows up');
       qcPaint(fr); return true; }
     return false;
@@ -1642,11 +1651,11 @@
     const a = Math.PI - i * Math.PI / 4, kn = root.querySelector('.dm-knob'); kn.setAttribute('cx', (160 + 118 * Math.cos(a)).toFixed(1)); kn.setAttribute('cy', (160 - 118 * Math.sin(a)).toFixed(1));
     root.querySelectorAll('.dm-stop').forEach(s => s.classList.toggle('on', s.dataset.dm === D.m));
     root.querySelector('.dm-n').textContent = D.m; root.querySelector('.dm-d').textContent = DMD[D.m];
-    const car = root.querySelector('.dm-car'); car.style.setProperty('--dy', dy + 'px'); car.style.setProperty('--amp', amp + 'px'); car.style.setProperty('--sy', (1 - dy / 30).toFixed(2));
+    const car = root.querySelector('.dm-car'); car.style.setProperty('--dy', (dy * 1.8) + 'px');
     root.querySelector('.dm-h').textContent = h; root.querySelector('.dm-k').textContent = set.Suspension; root.querySelector('.dm-r').textContent = r;
     root.querySelector('.dm-st').textContent = D.m === 'Custom' ? 'Custom · tap to change' : D.m + ' settings';
     root.querySelector('.dm-set').classList.toggle('locked', D.m !== 'Custom');
-    root.querySelector('.dm-save').textContent = D.m === 'Custom' ? 'Saved to Emma’s profile' : 'Copy to Custom';
+    
     root.querySelectorAll('.dm-seg').forEach(s => s.querySelectorAll('div').forEach(d => d.classList.toggle('on', d.dataset.v === set[s.dataset.dk])));
     const chip = (root.closest('.frame') || document).querySelector('.status .chip'); if (chip) chip.lastChild.textContent = D.m;
   }
@@ -1654,7 +1663,7 @@
     const root = e.target.closest('[data-drv2]'); if (!root) return; const D = root._dm || (dmPaint(root), root._dm);
     const st = e.target.closest('[data-dm]'); if (st) { D.m = st.dataset.dm; dmPaint(root); return; }
     const sg = e.target.closest('.dm-seg div'); if (sg && D.m === 'Custom') { D.c[sg.parentElement.dataset.dk] = sg.dataset.v; setTimeout(() => dmPaint(root), 0); return; }
-    if (e.target.closest('[data-dmsave]') && D.m !== 'Custom') { D.c = { ...DMSET[D.m] }; D.m = 'Custom'; dmPaint(root); toast(frameOf(root), 'Copied to Custom · saved to Emma’s profile'); }
+    if (e.target.closest('[data-dmsave]')) { toast(frameOf(root), 'Custom mode saved to Emma’s profile'); }
   });
   let dmDrag = null;
   function dmAim(e) { const svg = dmDrag.querySelector('.dm-dial'), r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 320 - 160, y = 160 - (e.clientY - r.top) / r.height * 196;
