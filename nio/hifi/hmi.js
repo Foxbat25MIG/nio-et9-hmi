@@ -945,12 +945,14 @@
     q('.ss-back').style.transform = `rotate(${-(v.recline - 16)}deg)`;   // the render's backrest leans 16°
     q('.ss-cush').style.transform = `rotate(${-v.tilt}deg)`;
     q('.ss-head').style.transform = `translate(${-(v.headh - 30) * .035 + (v.headt - 10) * .2}px, ${-(v.headh - 30) * .12}px)`;   // slides along the backrest
-    // live recline readout: arc from upright to the backrest line, label in degrees
-    { const rot = v.recline, rad = (-90 - rot) * Math.PI / 180, R = 64, cx = 92, cy = 183;
-      const ex = cx + R * Math.cos(rad), ey = cy + R * Math.sin(rad);
-      q('.ann-arc').setAttribute('d', `M${cx} ${cy - R}A${R} ${R} 0 0 0 ${ex.toFixed(1)} ${ey.toFixed(1)}`);
-      q('.ann-r').setAttribute('x2', (cx + 128 * Math.cos(rad)).toFixed(1)); q('.ann-r').setAttribute('y2', (cy + 128 * Math.sin(rad)).toFixed(1));
-    }
+    // protractor on the ring: a node at upright and a node at the backrest angle, the arc between them, the angle next to the node
+    { const C = [150, 110], R = 112, at = deg => { const r = (-90 - deg) * Math.PI / 180; return [C[0] + R * Math.cos(r), C[1] + R * Math.sin(r)]; };
+      const up = at(0), bk = at(v.recline), set = (s, o) => { const e = q(s); Object.entries(o).forEach(([k, x]) => e.setAttribute(k, typeof x === 'number' ? x.toFixed(1) : x)); };
+      set('.ann-nv', { cx: up[0], cy: up[1] }); set('.ann-nr', { cx: bk[0], cy: bk[1] });
+      set('.ann-v', { x1: up[0], y1: up[1] - 4, x2: up[0], y2: up[1] - 16 });
+      const lr = (-90 - v.recline) * Math.PI / 180; set('.ann-r', { x1: bk[0] + 4 * Math.cos(lr), y1: bk[1] + 4 * Math.sin(lr), x2: bk[0] + 16 * Math.cos(lr), y2: bk[1] + 16 * Math.sin(lr) });
+      q('.ann-arc').setAttribute('d', `M${up[0].toFixed(1)} ${up[1].toFixed(1)}A${R} ${R} 0 0 0 ${bk[0].toFixed(1)} ${bk[1].toFixed(1)}`);
+      const lb = q('.ann-lb'); lb.textContent = v.recline + '°'; set('.ann-lb', { x: bk[0] - 22 * Math.cos(lr + Math.PI / 2) - 6, y: bk[1] - 22 * Math.sin(lr + Math.PI / 2) + 4 }); }
         q('.ss-leg').style.transform = `translateX(${(v.ext || 0) * .25}px) rotate(${-(v.leg || 0)}deg)`;
     
     
@@ -968,7 +970,7 @@
     { const n = Object.values(ADJ).flatMap(m => m.nodes).find(x => x.k === (S.last || 'recline'));
       q('.ann-t').textContent = Math.round(v[n.k]) + (n.unit.trim() === '°' ? '°' : n.unit);
       const ZN = { head: 'Headrest', back: 'Backrest', cush: 'Seat', leg: 'Thigh support' }, zk = Object.keys(ADJ).find(z => ADJ[z].nodes.includes(n));
-      q('.ann-s').textContent = (/^(Height|Tilt|Recline|Length|Angle)$/.test(n.label) ? ZN[zk] + ' ' + n.label.toLowerCase() : n.label).toUpperCase(); }
+      q('.ann-s').textContent = /^(Height|Tilt|Recline|Length|Angle)$/.test(n.label) ? ZN[zk] + ' ' + n.label.toLowerCase() : n.label; }
     // massage dots
     const m = q('.st-mass'); m.classList.toggle('on', !!v.mass); m.style.setProperty('--dur', (2.6 - v.mspd * .6) + 's'); m.style.setProperty('--amp', (.35 + v.mint * .13).toFixed(2));
     q('.st-mass-s').textContent = v.mass ? `16-point hot stone · intensity ${v.mint} · speed ${v.mspd}` : '16-point hot stone · off';
