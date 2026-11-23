@@ -978,3 +978,27 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .ss-back{transform-origin:90px 169px}.ss-cush{transform-origin:115px 169px}.ss-leg{transform-origin:214px 152px}
 .ss-all{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
 .sv-floor{fill:#e2deeb}
+/* Seats v9: two-tone silhouette traced from Adi's render; steppers under the drawing */
+.st-side .sv-lt{fill:#ECE9F4;stroke:#d6d1e3;stroke-width:.8;transition:fill .35s var(--ease),stroke .35s var(--ease)}
+.st-side .sv-dk{fill:#3A3647;transition:fill .35s var(--ease)}
+.st-side .sv-part.act>.sv-lt{fill:#d7e0f8;stroke:#7a6bf2;stroke-width:1.4}
+.st-side .sv-part.act>.sv-dk,.st-side .ss-head.act .sv-dk{fill:#5a4fc8}
+.st-side .ss-back.act .ss-head:not(.act) .sv-dk{fill:#3A3647}
+.st-read{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.stp{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:14px;background:var(--s2);transition:background-color .3s var(--ease)}
+.stp.on{background:var(--sel)}
+.stp-l{font:400 12px "Red Hat Text";color:var(--t2)}
+.stp-c{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.stp-v{font:500 18px "Red Hat Display";color:var(--t1)}
+.stp-b{width:36px;height:36px;border-radius:10px;background:var(--s1);display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.stp-b .ms{font-size:20px;color:var(--t1)}
+.stp-b:hover{background:var(--s3)}.stp-b:active{transform:scale(.94);background:var(--sel)}
+/* two tones with real contrast on the light panel */
+.st-side .sv-panel-in{fill:#f6f5fa!important}
+.st-side .sv-lt{fill:#d9d4e6;stroke:#c9c3da;stroke-width:.6}
+.st-side .sv-part.act>.sv-lt{fill:#c3cff4;stroke:#7a6bf2;stroke-width:1.2}
+/* two-tone seat: override the older seat drawings' fills */
+.st-side .sv-part>path.sv-lt,.st-side path.sv-lt{fill:#d9d4e6!important;stroke:#c6c0d8!important;stroke-width:.6!important}
+.st-side .sv-part>path.sv-dk,.st-side path.sv-dk{fill:#3A3647!important;stroke:none!important}
+.st-side .sv-part.act>path.sv-lt{fill:#c3cff4!important;stroke:#7a6bf2!important;stroke-width:1.2!important}
+.st-side .sv-part.act>path.sv-dk{fill:#5a4fc8!important}

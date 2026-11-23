@@ -952,28 +952,22 @@
       q('.ann-r').setAttribute('x2', (cx + 128 * Math.cos(rad)).toFixed(1)); q('.ann-r').setAttribute('y2', (cy + 128 * Math.sin(rad)).toFixed(1));
     }
         q('.ss-leg').style.transform = `rotate(${(1 - v.leg / 100) * 30}deg)`;
-    q('.ss-leg').style.opacity = S.sel === 'Driver' ? 0 : 1;
-    if (S.sel === 'Driver' && S.mode === 'leg') S.mode = 'cush'; w.classList.toggle('st-isdriver', S.sel === 'Driver');
+    
+    
     const M = ADJ[S.mode || 'cush'];
     w.querySelectorAll('[data-adjmode]').forEach(x => x.classList.toggle('on', x.dataset.adjmode === (S.mode || 'cush')));
     w.querySelectorAll('.sv-part').forEach(p => p.classList.toggle('act', M.parts.includes(p.dataset.part)));
-    // arrows are drawn once per mode (so a press never loses its target); each pair carries its live value
+    // controls live under the drawing as − value + steppers (built once per mode, values refreshed every paint)
     const mode = S.mode || 'cush';
     if (w._ndMode !== mode) {
       w._ndMode = mode;
-      q('.sv-nodes').innerHTML = M.nodes.map(n => {
-        const g = n.gap || 22, h = n.ax === 'h';
-        const arrow = (sgn, rot) => `<g class="nd-a" data-adj="${n.k}|${sgn}" data-tap transform="translate(${n.x + (h ? g * sgn : 0)} ${n.y + (h ? 0 : g * sgn)})"><g class="nd-ai"><circle r="14"/><path d="M-4.5 2.5L0 -2.5L4.5 2.5" transform="rotate(${rot})"/></g></g>`;
-        const lx = h || n.lab === 't' ? n.x : n.lab === 'r' ? n.x + 22 : n.x - 22, ly = n.lab === 't' ? n.y - g - 20 : n.y + 4;
-        return `<g class="nd" data-node="${n.k}">${arrow(-1, h ? -90 : 0)}${arrow(1, h ? 90 : 180)}<text class="nd-v num" data-ndv="${n.k}" x="${lx}" y="${ly}" text-anchor="${h || n.lab === 't' ? 'middle' : n.lab === 'r' ? 'start' : 'end'}"></text></g>`;
-      }).join('');
+      q('.st-read').innerHTML = M.nodes.map(n => `<div class="stp" data-stp="${n.k}"><span class="stp-l">${n.label}</span><div class="stp-c"><b class="stp-b" data-adj="${n.k}|${n.ax === 'v' || n.flip ? 1 : -1}" data-tap aria-label="Less"><span class="ms">remove</span></b><span class="stp-v num"></span><b class="stp-b" data-adj="${n.k}|${n.ax === 'v' || n.flip ? -1 : 1}" data-tap aria-label="More"><span class="ms">add</span></b></div></div>`).join('');
     }
-    q('.sv-nodes').querySelectorAll('[data-ndv]').forEach(tx => { const n = M.nodes.find(x => x.k === tx.dataset.ndv); tx.textContent = Math.round(v[n.k]) + n.unit; });
+    q('.st-read').querySelectorAll('[data-stp]').forEach(d => { const n = M.nodes.find(x => x.k === d.dataset.stp); d.querySelector('.stp-v').textContent = Math.round(v[n.k]) + n.unit; d.classList.toggle('on', S.last === n.k); });
     // the big readout shows the control you touched last (backrest angle by default)
     { const n = Object.values(ADJ).flatMap(m => m.nodes).find(x => x.k === (S.last || 'recline'));
       q('.ann-t').textContent = Math.round(v[n.k]) + (n.unit.trim() === '°' ? '°' : n.unit);
       q('.ann-s').textContent = n.label.toUpperCase(); }
-    q('.st-read').innerHTML = M.nodes.map(n => `<div class="${S.node === n.k ? 'on' : ''}"><span>${n.label}</span><b class="num">${Math.round(v[n.k])}${n.unit}</b></div>`).join('');
     // massage dots
     const m = q('.st-mass'); m.classList.toggle('on', !!v.mass); m.style.setProperty('--dur', (2.6 - v.mspd * .6) + 's'); m.style.setProperty('--amp', (.35 + v.mint * .13).toFixed(2));
     q('.st-mass-s').textContent = v.mass ? `16-point hot stone · intensity ${v.mint} · speed ${v.mspd}` : '16-point hot stone · off';
