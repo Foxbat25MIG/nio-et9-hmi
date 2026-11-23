@@ -927,7 +927,7 @@
   const stOf = w => w._st || (w._st = { sel: 'Driver', s: JSON.parse(JSON.stringify(SEATS0)), mem: {} });
   const parked = w => { const fr = frameOf(w), g = fr.querySelector('.gear .on'); return !g || g.textContent.trim() === 'P'; };
   function stPaint(w) {
-    try { wcPaint(frameOf(w)); } catch (e) {}
+    try { wcPaint(frameOf(w)); w.querySelectorAll('.st-who').forEach(e => e.textContent = stOf(w).sel); } catch (e) {}
     const S = stOf(w), v = S.s[S.sel], rear = S.sel.startsWith('Rear');
     w.querySelectorAll('[data-seatpick]').forEach(g => { const n = g.dataset.seatpick, s = S.s[n]; g.classList.toggle('on', n === S.sel);
       g.querySelector('.b-heat').classList.toggle('lit', s.heat !== 'Off'); g.querySelector('.b-vent').classList.toggle('lit', s.vent !== 'Off'); g.querySelector('.b-mass').classList.toggle('lit', s.mass); });
@@ -1443,7 +1443,7 @@
     return false;
   }
   function clClick(t) {
-    if (seatqClick(t)) return true;
+    if (seatqClick(t) || qcClick(t) || tyClick(t)) return true;
     const scr = t.closest('[data-screen="climate"]'), fr = frameOf(t);
     const df = t.closest('.dk[data-cldef]');
     if (df) { const C = clOf(fr); C.deff = !C.deff; if (C.deff) { C.ac = true; } clPaint(fr); toast(fr, C.deff ? 'Front defrost on · full fan to the windscreen' : 'Front defrost off'); return true; }
@@ -1510,4 +1510,77 @@
   document.addEventListener('pointermove', e => { if (vDrag) vAim(e); });
   document.addEventListener('pointerup', () => { if (vDrag) { vDrag.classList.remove('drag'); vDrag = null; } });
   document.querySelectorAll('.frame').forEach(fr => { if (fr.querySelector('[data-screen="climate"]')) { clPaint(fr); clPurify(fr); wcPaint(fr); } });
+
+  /* ---------- Quick controls: doors, frunk, boot, windows, mirrors, charge port, sunshades, lights ---------- */
+  const DOORN = { dfl: 'driver door', dfr: 'passenger door', drl: 'rear left door', drr: 'rear right door', frunk: 'frunk', boot: 'boot' };
+  const qcOf = fr => fr._qc || (fr._qc = { lock: true, open: {}, port: false, win: 'closed', mir: 'out', shade: { l: false, r: false }, lights: 'auto' });
+  function qcPaint(fr) {
+    const Q = qcOf(fr), qc = fr.querySelector('[data-screen="car"] .qc:not(.ty)'); if (!qc) return;
+    const svg = qc.querySelector('.ct');
+    svg.querySelectorAll('.ct-door').forEach(d => { const k = d.dataset.cp, s = k.endsWith('l') ? 1 : -1; d.style.transform = Q.open[k] ? `rotate(${s * 24}deg)` : ''; });
+    svg.querySelector('.ct-frunk').classList.toggle('open', !!Q.open.frunk); svg.querySelector('.ct-boot').classList.toggle('open', !!Q.open.boot);
+    svg.querySelector('.ct-port').classList.toggle('open', Q.port);
+    svg.querySelectorAll('.ct-win').forEach(w => { w.classList.toggle('vent', Q.win === 'vent'); w.classList.toggle('open', Q.win === 'open'); });
+    svg.querySelectorAll('.ct-mir').forEach((m, i) => m.style.transform = Q.mir === 'fold' ? `rotate(${i ? 70 : -70}deg)` : '');
+    svg.querySelectorAll('.ct-shade').forEach(s => s.classList.toggle('open', Q.shade[s.dataset.shade]));
+    svg.classList.toggle('l-on', Q.lights === 'on'); svg.classList.toggle('l-drl', Q.lights === 'auto');
+    qc.querySelectorAll('[data-pill]').forEach(p => p.classList.toggle('on', p.dataset.pill === 'port' ? Q.port : !!Q.open[p.dataset.pill]));
+    qc.querySelectorAll('.qc-btns [data-cp]').forEach(b => b.classList.toggle('on', b.dataset.cp === 'port' ? Q.port : !!Q.open[b.dataset.cp]));
+    const sh = Q.shade.l && Q.shade.r ? 'both' : Q.shade.l ? 'l' : Q.shade.r ? 'r' : 'closed';
+    const seg = { win: Q.win, mir: Q.mir, shade: sh, lights: Q.lights };
+    qc.querySelectorAll('[data-qc]').forEach(s => s.querySelectorAll('div').forEach(d => d.classList.toggle('on', d.dataset.v === seg[s.dataset.qc])));
+    const open = Object.keys(Q.open).filter(k => Q.open[k]).map(k => DOORN[k]);
+    const lk = qc.querySelector('.qc-lock'); lk.classList.toggle('un', !Q.lock);
+    lk.querySelector('.ms').textContent = Q.lock ? 'lock' : 'lock_open';
+    lk.querySelector('.qc-lt').textContent = Q.lock ? 'Locked' : 'Unlocked';
+    const sub = open.length ? (open.length === 1 ? open[0][0].toUpperCase() + open[0].slice(1) + ' open' : open.length + ' open: ' + open.join(', ')) : (Q.lock ? 'All doors closed' : 'Tap to lock');
+    lk.querySelector('.qc-ls').textContent = sub;
+    const cs = fr._csEl || (fr._csEl = [...fr.querySelectorAll('.ctx *')].find(e => !e.children.length && /doors closed/i.test(e.textContent)));
+    if (cs) cs.textContent = (Q.lock ? 'Locked' : 'Unlocked') + ' · ' + (open.length ? open.length + ' open' : 'all doors closed');
+  }
+  function qcClick(t) {
+    const qc = t.closest('[data-screen="car"] .qc:not(.ty)'); if (!qc) return false;
+    const fr = frameOf(t), Q = qcOf(fr);
+    if (t.closest('[data-qclock]')) {
+      if (Q.lock) { Q.lock = false; toast(fr, 'Unlocked'); }
+      else if (Object.values(Q.open).some(Boolean)) toast(fr, 'Close the doors, frunk and boot to lock');
+      else { Q.lock = true; Q.mir = 'fold'; toast(fr, 'Locked · mirrors fold'); setTimeout(() => { if (Q.lock) { Q.mir = 'out'; qcPaint(fr); } }, 1800); }
+      qcPaint(fr); return true; }
+    const cp = t.closest('[data-cp]');
+    if (cp) { const k = cp.dataset.cp;
+      if (k === 'mir') Q.mir = Q.mir === 'fold' ? 'out' : 'fold';
+      else if (k === 'port') { Q.port = !Q.port; toast(fr, Q.port ? 'Charge port open · plug in on the left rear' : 'Charge port closed'); }
+      else if (k === 'shl' || k === 'shr') { const s = k.slice(2); Q.shade[s] = !Q.shade[s]; }
+      else { if (!Q.open[k] && Q.lock && k !== 'frunk' && k !== 'boot') { Q.lock = false; toast(fr, 'Unlocked · opening the ' + DOORN[k]); }
+        else toast(fr, (Q.open[k] ? 'Closing the ' : 'Opening the ') + DOORN[k]);
+        Q.open[k] = !Q.open[k]; }
+      qcPaint(fr); return true; }
+    const sg = t.closest('[data-qc] div');
+    if (sg) { const k = sg.parentElement.dataset.qc, v = sg.dataset.v;
+      if (k === 'shade') Q.shade = { l: v === 'l' || v === 'both', r: v === 'r' || v === 'both' }; else Q[k] = v;
+      if (k === 'win') toast(fr, v === 'open' ? 'All windows down' : v === 'vent' ? 'Windows open 2 cm' : 'All windows up');
+      qcPaint(fr); return true; }
+    return false;
+  }
+  /* ---------- Tyres: live pressures, slow-leak demo, reset ---------- */
+  const TY0 = { fl: 2.9, fr: 2.9, rl: 3.0, rr: 3.0 };
+  function tyPaint(fr) {
+    const ty = fr.querySelector('.qc.ty'); if (!ty) return; const P = fr._ty || (fr._ty = { ...TY0 });
+    let warn = null;
+    Object.keys(P).forEach(k => { const low = P[k] < TY0[k] - 0.3; if (low) warn = k;
+      const c = ty.querySelector(`[data-ty="${k}"]`); c.querySelector('.ty-p').textContent = P[k].toFixed(1); c.classList.toggle('warn', low);
+      ty.querySelector(`.ct-wh[data-wh="${k}"]`).classList.toggle('warn', low); });
+    const st = ty.querySelector('.ty-st'); st.classList.toggle('warn', !!warn);
+    if (!fr._tyMsg) { ty.querySelector('.ty-h').textContent = warn ? { fl: 'Front left', fr: 'Front right', rl: 'Rear left', rr: 'Rear right' }[warn] + ' is losing pressure' : 'All tyres OK';
+      ty.querySelector('.ty-s').textContent = warn ? 'Slow down and check it at the next stop' : 'Checked today, 13:20'; }
+  }
+  function tyClick(t) {
+    const ty = t.closest('.qc.ty'); if (!ty) return false; const fr = frameOf(t); tyPaint(fr); const P = fr._ty;
+    if (t.closest('[data-tyleak]')) { clearInterval(fr._tyI); fr._tyI = setInterval(() => { P.rr = Math.max(2.3, P.rr - 0.05); tyPaint(fr); if (P.rr <= 2.3) clearInterval(fr._tyI); }, 160); return true; }
+    if (t.closest('[data-tyreset]')) { clearInterval(fr._tyI); Object.assign(P, TY0); fr._tyMsg = true; tyPaint(fr);
+      ty.querySelector('.ty-h').textContent = 'Learning new pressures'; ty.querySelector('.ty-s').textContent = 'Drive for about 10 minutes';
+      setTimeout(() => { fr._tyMsg = false; tyPaint(fr); }, 2600); return true; }
+    return false;
+  }
+  document.querySelectorAll('.frame').forEach(fr => { qcPaint(fr); tyPaint(fr); });
 })();

@@ -1340,3 +1340,81 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .sq-x{width:40px;height:40px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .sq-x:hover{background:var(--s3)}
 .sq-all{justify-content:space-between}
+
+/* ---------- v78: ET9 top view · Quick controls · Tyres ---------- */
+.qc{flex:1;display:flex;gap:16px;min-height:0;min-width:0}
+.qc-car{flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--s2),#e9e6f1);border-radius:24px;min-width:0;padding:10px 0}
+.ct{height:100%;max-height:620px;width:auto;overflow:visible;display:block}
+.ct-body{fill:#fbfaff;stroke:#bfb8d4;stroke-width:1.6}
+.ct-wh{fill:#3a3647;transition:fill .6s var(--ease)}
+.ct-cav{fill:#d9d4e6}
+.ct-dp{fill:#fbfaff;stroke:#bfb8d4;stroke-width:1.2}
+.ct-seam,.ct-crease,.ct-hood{fill:none;stroke:#d6d1e4;stroke-width:1}
+.ct-hd{fill:#cfc9de}
+.ct-door,.ct-mir,.ct-lid,.ct-port{cursor:pointer}
+.ct-door,.ct-mir{transition:transform var(--dur-panel) var(--ease)}
+.ct-door:hover .ct-dp,.ct-lid:hover path:first-child{fill:#f1eefa}
+.ct-cabin{fill:#f3f1f8;stroke:#d6d1e4}
+.ct-glass{fill:#d5dff4;stroke:#bfcbe8;stroke-width:1}
+.ct-shade{fill:#e4e0ee;stroke:#cfc9de;transform-box:fill-box;transform-origin:50% 100%;transition:transform var(--dur-panel) var(--ease);cursor:pointer}
+.ct-shade.open{transform:scaleY(.1)}
+.ct-spine{fill:#e8e5f0;stroke:#d6d1e4}
+.ct-win{fill:#c3cfee;stroke:transparent;transition:fill var(--dur-panel) var(--ease),opacity var(--dur-panel) var(--ease),stroke var(--dur-panel) var(--ease)}
+.ct-win.vent{opacity:.5}
+.ct-win.open{fill:transparent;stroke:#9fb2ea;stroke-dasharray:3 3}
+.ct-lid path:first-child{fill:#fbfaff;stroke:#bfb8d4;stroke-width:1.2;transition:fill .3s var(--ease)}
+.ct-lid{transform-box:fill-box;transition:transform var(--dur-panel) var(--ease)}
+.ct-frunk{transform-origin:50% 100%}.ct-boot{transform-origin:50% 0}
+.ct-lid.open{transform:scaleY(.38)}
+.ct-hl,.ct-tl{fill:none;stroke:#d6d1e4;stroke-width:4;stroke-linecap:round;transition:stroke .6s var(--ease),filter .6s var(--ease)}
+.ct.l-drl .ct-hl{stroke:#f4ead0}
+.ct.l-on .ct-hl{stroke:#fff3c4;filter:drop-shadow(0 -4px 6px rgba(255,214,120,.9))}
+.ct.l-on .ct-tl,.ct.l-drl .ct-tl{stroke:#e0786f}.ct.l-on .ct-tl{filter:drop-shadow(0 4px 6px rgba(224,96,90,.8))}
+.ct-mir path{fill:#efedf5;stroke:#bfb8d4}
+.ct-pf{fill:#cfc9de;transition:transform var(--dur-panel) var(--ease)}
+.ct-port.open .ct-pf{transform:rotate(-75deg)}
+.ct-pglow{opacity:0;transition:opacity var(--dur-panel) var(--ease)}
+.ct-port.open .ct-pglow{opacity:1;animation:miglow 1.6s var(--ease) infinite alternate}
+.qc-pill{position:absolute;transform:translate(-50%,-50%) scale(.9);padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 4px 14px rgba(36,30,72,.12);font:500 13px "Red Hat Text";color:var(--t1);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity var(--dur-panel) var(--ease),transform var(--dur-panel) var(--ease)}
+.qc-pill.on{opacity:1;transform:translate(-50%,-50%)}
+.qc-side{width:300px;flex:none;display:flex;flex-direction:column;gap:12px;overflow:auto;scrollbar-width:none}
+.qc-lock{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:22px;background:var(--ink);color:var(--on-ink);cursor:pointer;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.qc-lock:active{transform:scale(.98)}
+.qc-lock .qc-li .ms{font-size:30px;color:var(--on-ink)}
+.qc-lock b{font:500 18px "Red Hat Text"}.qc-lock .bs{color:rgba(255,255,255,.72);font-size:13px}
+.qc-lock.un{background:var(--s1);color:var(--t1);border:1px solid var(--line)}.qc-lock.un .qc-li .ms{color:var(--t1)}.qc-lock.un .bs{color:var(--t2)}
+.qc-btns{display:flex;gap:8px}.qc-btns .qbtn{height:76px;font-size:13px}
+.qc-card{gap:2px!important;padding:12px 16px}
+.qc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px}
+.qc-row+.qc-row{border-top:1px solid var(--s2)}
+.qc-seg{padding:3px!important;border-radius:14px}.qc-seg>div{height:36px!important;padding:0 10px;font-size:13px!important;border-radius:11px}
+.qc-link{cursor:pointer}
+.ty .ct-wh{fill:#8f8ba3}
+.ty .ct-wh.warn{fill:#e5a54a}
+.ty-chip{position:absolute;display:flex;flex-direction:column;gap:0;padding:10px 14px;border-radius:16px;background:var(--s1);border:1px solid var(--line);box-shadow:0 4px 14px rgba(36,30,72,.08);transition:background-color var(--dur-panel) var(--ease),border-color var(--dur-panel) var(--ease)}
+.ty-chip .lbl{font-size:11px;margin:0}.ty-chip b{font:500 24px "Red Hat Display";color:var(--t1)}.ty-chip small{font-size:13px;color:var(--t2)}.ty-chip .bs{font-size:13px}
+.ty-chip.warn{background:#fdf0dc;border-color:#f0c987}.ty-chip.warn b{color:#9a5b0c}
+.ty-dot{width:12px;height:12px;border-radius:50%;background:#7fbf8e;box-shadow:0 0 0 5px rgba(127,191,142,.2);flex:none;transition:background-color .4s var(--ease)}
+.ty-st.warn .ty-dot{background:#e5a54a;box-shadow:0 0 0 5px rgba(229,165,74,.22)}
+
+/* seats: tab bar like Sound */
+.st-wrap>.st-sw{flex:1}
+.st-sw .snd{gap:0;display:block}
+.st-sw .snd-tabs div{font-size:14px}
+
+/* airflow: side view */
+.mi-glass{fill:none;stroke:#c3cdee;stroke-width:3.5;stroke-linecap:round}
+.mi-roof{fill:none;stroke:#e1ddea;stroke-width:1.5}
+.mi-floor{stroke:#e1ddea;stroke-width:1.5}
+.mi-dash{fill:#d6d1e4}
+.mi-wheel{stroke:#a29db8;stroke-width:3;stroke-linecap:round}
+.mi-seat{fill:#dcd8e8;transition:fill .3s var(--ease)}
+.mi-pc{fill:#a29db8;transition:fill .3s var(--ease)}
+.mi-pl{fill:none;stroke:#a29db8;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s var(--ease)}
+.mi-gs{fill:none;stroke:#a9bbef;stroke-width:10;stroke-linecap:round}
+.cl-mode.on .mi-pc{fill:var(--on-sel)}.cl-mode.on .mi-pl{stroke:var(--on-sel)}
+.cl-mode.on .mi-seat{fill:#b9c6ec}.cl-mode.on .mi-dash{fill:#c3cdee}
+.cl-mode.on .mi-gs{stroke:#7f9be6;fill:none}
+.qc-car{overflow:hidden;padding:14px 0}
+.qc-car .ct{height:86%}
+.ty .qc-car .ct{height:66%}
