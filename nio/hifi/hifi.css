@@ -1295,3 +1295,5 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .dock .dvol>.ms{width:28px;overflow:hidden;flex:none}
 .dock .dk{width:68px}
 .dock .dvol .sl{width:150px}
+/* fan spins around its hub, not its bounding box */
+.fd-fan{transform-box:view-box;transform-origin:0 0}
