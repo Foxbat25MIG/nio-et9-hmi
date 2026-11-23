@@ -950,7 +950,7 @@
       const ex = cx + R * Math.cos(rad), ey = cy + R * Math.sin(rad);
       q('.ann-arc').setAttribute('d', `M${cx} ${cy - R}A${R} ${R} 0 0 0 ${ex.toFixed(1)} ${ey.toFixed(1)}`);
       q('.ann-r').setAttribute('x2', (cx + 128 * Math.cos(rad)).toFixed(1)); q('.ann-r').setAttribute('y2', (cy + 128 * Math.sin(rad)).toFixed(1));
-      q('.ann-t').textContent = `${v.recline}°`; }
+    }
     q('.ss-lum').style.strokeWidth = (2 + v.lumbar / 12).toFixed(1);
     q('.ss-leg').style.transform = `rotate(${(1 - v.leg / 100) * 64}deg)`;   // folds down under the cushion, swings up to extend
     q('.ss-leg').style.opacity = rear ? 1 : 0;
@@ -958,12 +958,22 @@
     const M = ADJ[S.mode || 'basic'];
     w.querySelectorAll('[data-adjmode]').forEach(x => x.classList.toggle('on', x.dataset.adjmode === (S.mode || 'basic')));
     w.querySelectorAll('.sv-part').forEach(p => p.classList.toggle('act', M.parts.includes(p.dataset.part)));
-    // every control shows its two arrows right away: one tap moves, hold repeats (no extra "open" step)
-    q('.sv-nodes').innerHTML = M.nodes.map(n => {
-      const g = n.gap || 22, h = n.ax === 'h';
-      const arrow = (sgn, rot) => `<g class="nd-a" data-adj="${n.k}|${sgn}" data-tap transform="translate(${n.x + (h ? g * sgn : 0)} ${n.y + (h ? 0 : g * sgn)})"><g class="nd-ai"><circle r="14"/><path d="M-4.5 2.5L0 -2.5L4.5 2.5" transform="rotate(${rot})"/></g></g>`;
-      return `<g class="nd" data-node="${n.k}">${arrow(-1, h ? -90 : 0)}${arrow(1, h ? 90 : 180)}</g>`;
-    }).join('');
+    // arrows are drawn once per mode (so a press never loses its target); each pair carries its live value
+    const mode = S.mode || 'basic';
+    if (w._ndMode !== mode) {
+      w._ndMode = mode;
+      q('.sv-nodes').innerHTML = M.nodes.map(n => {
+        const g = n.gap || 22, h = n.ax === 'h';
+        const arrow = (sgn, rot) => `<g class="nd-a" data-adj="${n.k}|${sgn}" data-tap transform="translate(${n.x + (h ? g * sgn : 0)} ${n.y + (h ? 0 : g * sgn)})"><g class="nd-ai"><circle r="14"/><path d="M-4.5 2.5L0 -2.5L4.5 2.5" transform="rotate(${rot})"/></g></g>`;
+        const lx = h ? n.x : n.x - 22, ly = n.y + 4;
+        return `<g class="nd" data-node="${n.k}">${arrow(-1, h ? -90 : 0)}${arrow(1, h ? 90 : 180)}<text class="nd-v num" data-ndv="${n.k}" x="${lx}" y="${ly}" text-anchor="${h ? 'middle' : 'end'}"></text></g>`;
+      }).join('');
+    }
+    q('.sv-nodes').querySelectorAll('[data-ndv]').forEach(tx => { const n = M.nodes.find(x => x.k === tx.dataset.ndv); tx.textContent = Math.round(v[n.k]) + n.unit; });
+    // the big readout shows the control you touched last (backrest angle by default)
+    { const n = Object.values(ADJ).flatMap(m => m.nodes).find(x => x.k === (S.last || 'recline'));
+      q('.ann-t').textContent = Math.round(v[n.k]) + (n.unit.trim() === '°' ? '°' : n.unit);
+      q('.ann-s').textContent = n.label.toUpperCase(); }
     q('.st-read').innerHTML = M.nodes.map(n => `<div class="${S.node === n.k ? 'on' : ''}"><span>${n.label}</span><b class="num">${Math.round(v[n.k])}${n.unit}</b></div>`).join('');
     // massage dots
     const m = q('.st-mass'); m.classList.toggle('on', !!v.mass); m.style.setProperty('--dur', (2.6 - v.mspd * .6) + 's'); m.style.setProperty('--amp', (.35 + v.mint * .13).toFixed(2));
@@ -974,12 +984,12 @@
     tilt: { parts: ['cush', 'back'], nodes: [{ k: 'tilt', label: 'Cushion tilt', unit: '°', ax: 'v', x: 296, y: 148, gap: 20, lo: -5, hi: 10, st: 1, flip: true }, { k: 'lumbar', label: 'Lumbar support', unit: ' %', ax: 'h', x: 188, y: 104, gap: 22, lo: 0, hi: 100, st: 5 }] },
     side: { parts: ['cush', 'back'], nodes: [{ k: 'bolster', label: 'Side bolsters', unit: ' %', ax: 'h', x: 200, y: 100, gap: 24, lo: 0, hi: 100, st: 5 }] },
     head: { parts: ['head'], nodes: [{ k: 'headh', label: 'Headrest height', unit: ' %', ax: 'v', x: 192, y: 22, gap: 18, lo: 0, hi: 100, st: 5, flip: true }, { k: 'headt', label: 'Headrest tilt', unit: ' %', ax: 'h', x: 70, y: 22, gap: 20, lo: 0, hi: 100, st: 5 }] },
-    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 286, y: 224, gap: 22, lo: 0, hi: 100, st: 5 }] } };
+    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 278, y: 224, gap: 32, lo: 0, hi: 100, st: 5 }] } };
   function stAdjust(w, k, sgn) {
     const S = stOf(w);
     const n = Object.values(ADJ).flatMap(m => m.nodes).find(x => x.k === k); if (!n) return;
     const v = S.s[S.sel], d = (n.flip ? -sgn : sgn) * n.st, nv = Math.max(n.lo, Math.min(n.hi, v[k] + d));
-    if (nv === v[k]) return false; v[k] = nv; stPaint(w); tick('soft'); return true;
+    if (nv === v[k]) return false; v[k] = nv; S.last = k; stPaint(w); tick('soft'); return true;
   }
   let adjHold = null;
   document.addEventListener('pointerdown', e => { const a = e.target.closest('[data-adj]'); if (!a) return; e.preventDefault();
@@ -990,7 +1000,7 @@
   function stSet(w, changes, msg) { const S = stOf(w); Object.entries(changes).forEach(([n, c]) => Object.assign(S.s[n], c)); stPaint(w); if (msg) toast(frameOf(w), msg); }
   function seatClick(t) {
     const w = t.closest('.st-wrap'); if (!w) return false; const S = stOf(w);
-    const pk = t.closest('[data-seatpick]'); if (pk) { S.sel = pk.dataset.seatpick; S.node = null; stPaint(w); return true; }
+    const pk = t.closest('[data-seatpick]'); if (pk) { S.sel = pk.dataset.seatpick; S.node = null; S.last = null; w._ndMode = null; stPaint(w); return true; }
     if (t.closest('[data-adj]')) { suppressAdjClick = false; return true; }
     const am = t.closest('[data-adjmode]'); if (am) { S.mode = am.dataset.adjmode; S.node = null; stPaint(w); return true; }
     const nd = t.closest('[data-node]'); if (nd) { S.node = S.node === nd.dataset.node ? null : nd.dataset.node; stPaint(w); return true; }
@@ -998,6 +1008,7 @@
     const tg = t.closest('[data-seattog]'); if (tg) { const k = tg.dataset.seattog; S.s[S.sel][k] = !S.s[S.sel][k]; stPaint(w); return true; }
     const md = t.closest('[data-seatmode]');
     if (md) {
+      S.last = md.dataset.seatmode === 'vip' || md.dataset.seatmode === 'zero' || md.dataset.seatmode === 'nap' || md.dataset.seatmode === 'reset' ? 'recline' : S.last;
       const k = md.dataset.seatmode, driverMoving = S.sel === 'Driver' && !parked(w);
       if (k === 'vip') { S.sel = 'Rear right'; stSet(w, { 'Rear right': { recline: 45, leg: 100, tilt: 8, headt: 60, heat: '1' }, Passenger: { fore: 0, recline: 0, headh: 20 } }, 'VIP Position · passenger seat forward, rear right reclined to 135°'); }
       else if (driverMoving && (k === 'zero' || k === 'nap')) toast(frameOf(w), 'Available for the driver seat when parked');

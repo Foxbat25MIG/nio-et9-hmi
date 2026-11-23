@@ -951,3 +951,11 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .ann-s{font:500 8px "Red Hat Text";letter-spacing:.16em;fill:var(--t3)}
 .ss-back{transform-origin:116px 160px}.ss-cush{transform-origin:132px 170px}.ss-leg{transform-origin:250px 162px}
 .sv-ann .ann-tick{stroke:#7a6bf2;stroke-width:1.4}
+/* Seats v6: thin shell seat, values next to every arrow pair */
+.sv-stalk{stroke:#2a2733;stroke-width:3;stroke-linecap:round;fill:none}
+.sv-part>path:first-child{stroke:#cfc9dc;stroke-width:.8}
+.ss-lum{stroke:#c9c0f2;stroke-width:2.5}
+.nd-v{font:500 12px "Red Hat Text";fill:var(--t2);pointer-events:none}
+.ann-t{font:300 26px "Red Hat Display"}
+.ss-back{transform-origin:116px 162px}.ss-cush{transform-origin:118px 166px}.ss-leg{transform-origin:256px 158px}
+.ann-s{letter-spacing:.1em}
