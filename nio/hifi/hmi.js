@@ -945,6 +945,12 @@
     q('.ss-back').style.transform = `rotate(${-(v.recline - 12) * 1.1}deg)`;
     q('.ss-cush').style.transform = `rotate(${-(v.tilt - 2)}deg)`;
     q('.ss-head').style.transform = `translate(${-(v.headt - 50) * .12}px, ${-(v.headh - 50) * .2}px)`;
+    // live recline readout: arc from upright to the backrest line, label in degrees
+    { const rot = (v.recline - 12) * 1.1 + 9, rad = (-90 - rot) * Math.PI / 180, R = 64, cx = 116, cy = 160;
+      const ex = cx + R * Math.cos(rad), ey = cy + R * Math.sin(rad);
+      q('.ann-arc').setAttribute('d', `M${cx} ${cy - R}A${R} ${R} 0 0 0 ${ex.toFixed(1)} ${ey.toFixed(1)}`);
+      q('.ann-r').setAttribute('x2', (cx + 128 * Math.cos(rad)).toFixed(1)); q('.ann-r').setAttribute('y2', (cy + 128 * Math.sin(rad)).toFixed(1));
+      q('.ann-t').textContent = `${v.recline}°`; }
     q('.ss-lum').style.strokeWidth = (2 + v.lumbar / 12).toFixed(1);
     q('.ss-leg').style.transform = `rotate(${(1 - v.leg / 100) * 64}deg)`;   // folds down under the cushion, swings up to extend
     q('.ss-leg').style.opacity = rear ? 1 : 0;

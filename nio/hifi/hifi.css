@@ -930,3 +930,24 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .tv-q{fill:url(#tvQuilt)}
 .st-seat.on .tv-q{fill:url(#tvQuiltA)}
 .st-seat.on .tv-head{fill:#c8d4f6;stroke:#7a6bf2}
+/* Seats v5: flowing sculpted seat, orbit guides, live angle */
+.sv-panel-in{fill:#f6f5fa!important}
+.sv-orbit circle,.sv-orbit path{fill:none;stroke:#d9d4e6;stroke-width:.8}
+.sv-orbit .o2{stroke-dasharray:1 5;stroke-linecap:round}
+.sv-orbit .o3{stroke:#bfb6e0;stroke-width:1}
+.sv-part>path:first-child{fill:url(#svSeg);stroke:#d5cfe2;stroke-width:.8}
+.ss-back>path:first-child{fill:url(#svSegB)}
+.sv-band{fill:none;stroke:#3b3747;stroke-width:3.2;stroke-linecap:round}
+.sv-key{fill:#3b3747;opacity:.85}
+.sv-dark>path:first-child{fill:url(#svDark)!important;stroke:#2a2733!important}
+.sv-part.act>path:first-child{fill:url(#svAct);stroke:#9d8ff4}
+.sv-part.act .sv-band{stroke:#6a5be0}
+.sv-dark.act>path:first-child{fill:#6a5be0!important;stroke:#5246c8!important}
+.ss-lum{stroke:#c9c0f2;stroke-width:3}
+.sv-ann .ann-v{stroke:#cfc9de;stroke-width:.8;stroke-dasharray:2 4}
+.sv-ann .ann-r{stroke:#9d8ff4;stroke-width:.8}
+.sv-ann .ann-arc{fill:none;stroke:#7a6bf2;stroke-width:1.4;transition:d .6s cubic-bezier(.2,.8,.2,1)}
+.ann-t{font:300 20px "Red Hat Display";fill:var(--t1)}
+.ann-s{font:500 8px "Red Hat Text";letter-spacing:.16em;fill:var(--t3)}
+.ss-back{transform-origin:116px 160px}.ss-cush{transform-origin:132px 170px}.ss-leg{transform-origin:250px 162px}
+.sv-ann .ann-tick{stroke:#7a6bf2;stroke-width:1.4}
