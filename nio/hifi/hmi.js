@@ -1592,6 +1592,6 @@
       const want = inCar ? slot : scr; if (pane.parentElement !== want) want.appendChild(pane);
     });
   }
-  document.addEventListener('click', () => requestAnimationFrame(clHome));
+  document.addEventListener('click', () => setTimeout(clHome, 0));
   clHome();
 })();
