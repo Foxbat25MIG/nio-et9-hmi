@@ -946,29 +946,29 @@
     q('.ss-cush').style.transform = `rotate(${-(v.tilt - 2)}deg)`;
     q('.ss-head').style.transform = `translate(${-(v.headt - 50) * .12}px, ${-(v.headh - 50) * .2}px)`;
     q('.ss-lum').style.strokeWidth = (2 + v.lumbar / 12).toFixed(1);
-    q('.ss-leg').style.transform = `translate(${v.leg * .1}px, ${v.leg * .02}px) rotate(${-v.leg * .1}deg)`;
+    q('.ss-leg').style.transform = `rotate(${(1 - v.leg / 100) * 64}deg)`;   // folds down under the cushion, swings up to extend
     q('.ss-leg').style.opacity = rear ? 1 : 0;
     if (!rear && S.mode === 'leg') S.mode = 'basic';
     const M = ADJ[S.mode || 'basic'];
     w.querySelectorAll('[data-adjmode]').forEach(x => x.classList.toggle('on', x.dataset.adjmode === (S.mode || 'basic')));
     w.querySelectorAll('.sv-part').forEach(p => p.classList.toggle('act', M.parts.includes(p.dataset.part)));
+    // every control shows its two arrows right away: one tap moves, hold repeats (no extra "open" step)
     q('.sv-nodes').innerHTML = M.nodes.map(n => {
-      const open = S.node === n.k, dx = n.ax === 'h' ? 34 : 0, dy = n.ax === 'v' ? 34 : 0;
-      const arrow = (sgn, rot) => `<g class="nd-a" data-adj="${n.k}|${sgn}" data-tap transform="translate(${n.x + dx * sgn} ${n.y + dy * sgn})"><g class="nd-ai"><circle r="16"/><path d="M-5 3L0 -3L5 3" transform="rotate(${rot})"/></g></g>`;
-      return `<g class="nd${open ? ' open' : ''}" data-node="${n.k}" data-tap>${open ? arrow(-1, n.ax === 'h' ? -90 : 0) + arrow(1, n.ax === 'h' ? 90 : 180) : ''}<g transform="translate(${n.x} ${n.y})"><circle class="nd-c" r="13"/><circle class="nd-d" r="4.5"/></g></g>`;
+      const g = n.gap || 22, h = n.ax === 'h';
+      const arrow = (sgn, rot) => `<g class="nd-a" data-adj="${n.k}|${sgn}" data-tap transform="translate(${n.x + (h ? g * sgn : 0)} ${n.y + (h ? 0 : g * sgn)})"><g class="nd-ai"><circle r="14"/><path d="M-4.5 2.5L0 -2.5L4.5 2.5" transform="rotate(${rot})"/></g></g>`;
+      return `<g class="nd" data-node="${n.k}">${arrow(-1, h ? -90 : 0)}${arrow(1, h ? 90 : 180)}</g>`;
     }).join('');
     q('.st-read').innerHTML = M.nodes.map(n => `<div class="${S.node === n.k ? 'on' : ''}"><span>${n.label}</span><b class="num">${Math.round(v[n.k])}${n.unit}</b></div>`).join('');
     // massage dots
     const m = q('.st-mass'); m.classList.toggle('on', !!v.mass); m.style.setProperty('--dur', (2.6 - v.mspd * .6) + 's'); m.style.setProperty('--amp', (.35 + v.mint * .13).toFixed(2));
     q('.st-mass-s').textContent = v.mass ? `16-point hot stone · intensity ${v.mint} · speed ${v.mspd}` : '16-point hot stone · off';
-    q('.st-lock').style.visibility = S.sel === 'Driver' && !parked(w) ? 'visible' : 'hidden';
   }
   const ADJ = {
-    basic: { parts: ['cush', 'back'], nodes: [{ k: 'fore', label: 'Fore and aft', unit: ' %', ax: 'h', x: 204, y: 157, lo: 0, hi: 100, st: 5 }, { k: 'height', label: 'Height', unit: ' %', ax: 'v', x: 290, y: 200, lo: 0, hi: 100, st: 5 }, { k: 'recline', label: 'Backrest recline', unit: '°', ax: 'h', x: 124, y: 92, lo: 0, hi: 45, st: 1, flip: true }] },
-    tilt: { parts: ['cush', 'back'], nodes: [{ k: 'tilt', label: 'Cushion tilt', unit: '°', ax: 'v', x: 246, y: 157, lo: -5, hi: 10, st: 1, flip: true }, { k: 'lumbar', label: 'Lumbar support', unit: ' %', ax: 'h', x: 132, y: 136, lo: 0, hi: 100, st: 5 }] },
-    side: { parts: ['cush', 'back'], nodes: [{ k: 'bolster', label: 'Side bolsters', unit: ' %', ax: 'h', x: 196, y: 157, lo: 0, hi: 100, st: 5 }] },
-    head: { parts: ['head'], nodes: [{ k: 'headh', label: 'Headrest height', unit: ' %', ax: 'v', x: 131, y: 27, lo: 0, hi: 100, st: 5, flip: true }, { k: 'headt', label: 'Headrest tilt', unit: ' %', ax: 'h', x: 196, y: 27, lo: 0, hi: 100, st: 5 }] },
-    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 284, y: 182, lo: 0, hi: 100, st: 5 }] } };
+    basic: { parts: ['cush', 'back'], nodes: [{ k: 'fore', label: 'Fore and aft', unit: ' %', ax: 'h', x: 196, y: 222, gap: 26, lo: 0, hi: 100, st: 5 }, { k: 'height', label: 'Height', unit: ' %', ax: 'v', x: 300, y: 172, gap: 22, lo: 0, hi: 100, st: 5, flip: true }, { k: 'recline', label: 'Backrest recline', unit: '°', ax: 'h', x: 76, y: 86, gap: 22, lo: 0, hi: 45, st: 1, flip: true }] },
+    tilt: { parts: ['cush', 'back'], nodes: [{ k: 'tilt', label: 'Cushion tilt', unit: '°', ax: 'v', x: 292, y: 148, gap: 20, lo: -5, hi: 10, st: 1, flip: true }, { k: 'lumbar', label: 'Lumbar support', unit: ' %', ax: 'h', x: 176, y: 110, gap: 22, lo: 0, hi: 100, st: 5 }] },
+    side: { parts: ['cush', 'back'], nodes: [{ k: 'bolster', label: 'Side bolsters', unit: ' %', ax: 'h', x: 196, y: 108, gap: 24, lo: 0, hi: 100, st: 5 }] },
+    head: { parts: ['head'], nodes: [{ k: 'headh', label: 'Headrest height', unit: ' %', ax: 'v', x: 180, y: 28, gap: 18, lo: 0, hi: 100, st: 5, flip: true }, { k: 'headt', label: 'Headrest tilt', unit: ' %', ax: 'h', x: 80, y: 28, gap: 20, lo: 0, hi: 100, st: 5 }] },
+    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 286, y: 222, gap: 22, lo: 0, hi: 100, st: 5 }] } };
   function stAdjust(w, k, sgn) {
     const S = stOf(w);
     const n = Object.values(ADJ).flatMap(m => m.nodes).find(x => x.k === k); if (!n) return;

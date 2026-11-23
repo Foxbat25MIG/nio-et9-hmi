@@ -896,3 +896,22 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .st-read{flex-direction:row;gap:8px}
 .st-read>div{flex:1}
 .ss-back{transform-origin:118px 164px}.ss-cush{transform-origin:136px 168px}.ss-leg{transform-origin:256px 170px}
+/* Seats v3: soft-shaded modern seat, arrows always visible */
+.sv-panel-in{fill:#f1eff7;stroke:none}
+.sv-rail{fill:#d4cfe2}.sv-ped{fill:#e3dfee;stroke:#d0cadf;stroke-width:1}
+.sv-part>path:first-child{fill:url(#svSeg);stroke:#c7c0da;stroke-width:1;transition:fill .35s var(--ease),stroke .35s var(--ease)}
+.ss-back>path:first-child{fill:url(#svSegB)}
+.sv-st{fill:none;stroke:#d6d0e6;stroke-width:1.2;stroke-dasharray:2 3;stroke-linecap:round}
+.ss-lum{fill:none;stroke:#b3a6ef;stroke-linecap:round}
+.sv-part.act>path:first-child{fill:url(#svAct);stroke:#9d8ff4}
+.sv-part.act .sv-st{stroke:#b7c6f2}
+.nd-ai circle{fill:#fff;stroke:#d8d2e8;stroke-width:1;filter:drop-shadow(0 2px 4px rgba(36,30,72,.14))}
+.nd-ai path{fill:none;stroke:#6a5be0;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.nd-a{cursor:pointer}
+.nd-a:hover .nd-ai circle{fill:#f4f2fd}
+.nd-a:active .nd-ai circle{fill:#7a6bf2;stroke:#7a6bf2}.nd-a:active .nd-ai path{stroke:#fff}
+.nd-ai{animation:ndIn .35s cubic-bezier(.2,.8,.2,1) both}
+.ss-back{transform-origin:116px 160px}.ss-cush{transform-origin:134px 168px}.ss-leg{transform-origin:256px 170px}
+.st-sidewrap,.st-sidewrap svg{background:none!important}
+.st-side .sv-panel-in{fill:#f4f2f9!important}
+.ss-leg{transform-origin:256px 163px}
