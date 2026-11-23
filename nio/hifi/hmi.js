@@ -939,24 +939,55 @@
     w.querySelectorAll('[data-seatk]').forEach(sl => { const k = sl.dataset.seatk, lo = +sl.dataset.min, hi = +sl.dataset.max; sl.style.setProperty('--v', ((v[k] - lo) / (hi - lo) * 100) + '%'); const o = sl.parentElement.querySelector('.val'); if (o) o.textContent = (k === 'leg' ? Math.round(v[k]) : v[k]) + (sl.dataset.unit || ''); });
     w.querySelectorAll('[data-seatopt]').forEach(o => o.querySelectorAll('span').forEach(x => x.classList.toggle('on', x.textContent === v[o.dataset.seatopt])));
     w.querySelectorAll('[data-seattog]').forEach(tg => tg.classList.toggle('on', !!v[tg.dataset.seattog]));
-    // side view: the drawing follows every slider
+    // side view (adjustment view): parts follow the values, active parts and arrow nodes follow the chosen mode
     const q = s => w.querySelector(s);
-    q('.ss-all').style.transform = `translate(${(v.fore - 50) * .7}px, ${-(v.height - 50) * .3}px)`;
-    q('.ss-back').style.transform = `rotate(${-v.recline * 1.4}deg)`;
-    q('.ss-cush').style.transform = `rotate(${-v.tilt}deg)`;
-    q('.ss-head').style.transform = `translate(${-(v.headt - 50) * .14}px, ${-(v.headh - 50) * .3}px)`;
-    q('.ss-lum').style.transform = `translateX(${(v.lumbar - 50) * .08}px)`;
-    q('.ss-leg').style.transform = `translateX(${v.leg * .5}px) rotate(${v.leg * .25}deg)`;
+    q('.ss-all').style.transform = `translate(${(v.fore - 50) * .6}px, ${-(v.height - 50) * .25}px)`;
+    q('.ss-back').style.transform = `rotate(${-(v.recline - 12) * 1.1}deg)`;
+    q('.ss-cush').style.transform = `rotate(${-(v.tilt - 2)}deg)`;
+    q('.ss-head').style.transform = `translate(${-(v.headt - 50) * .12}px, ${-(v.headh - 50) * .2}px)`;
+    q('.ss-lum').style.strokeWidth = (2 + v.lumbar / 12).toFixed(1);
+    q('.ss-leg').style.transform = `translate(${v.leg * .1}px, ${v.leg * .02}px) rotate(${-v.leg * .1}deg)`;
     q('.ss-leg').style.opacity = rear ? 1 : 0;
+    if (!rear && S.mode === 'leg') S.mode = 'basic';
+    const M = ADJ[S.mode || 'basic'];
+    w.querySelectorAll('[data-adjmode]').forEach(x => x.classList.toggle('on', x.dataset.adjmode === (S.mode || 'basic')));
+    w.querySelectorAll('.sv-part').forEach(p => p.classList.toggle('act', M.parts.includes(p.dataset.part)));
+    q('.sv-nodes').innerHTML = M.nodes.map(n => {
+      const open = S.node === n.k, dx = n.ax === 'h' ? 34 : 0, dy = n.ax === 'v' ? 34 : 0;
+      const arrow = (sgn, rot) => `<g class="nd-a" data-adj="${n.k}|${sgn}" data-tap transform="translate(${n.x + dx * sgn} ${n.y + dy * sgn})"><g class="nd-ai"><circle r="16"/><path d="M-5 3L0 -3L5 3" transform="rotate(${rot})"/></g></g>`;
+      return `<g class="nd${open ? ' open' : ''}" data-node="${n.k}" data-tap>${open ? arrow(-1, n.ax === 'h' ? -90 : 0) + arrow(1, n.ax === 'h' ? 90 : 180) : ''}<g transform="translate(${n.x} ${n.y})"><circle class="nd-c" r="13"/><circle class="nd-d" r="4.5"/></g></g>`;
+    }).join('');
+    q('.st-read').innerHTML = M.nodes.map(n => `<div class="${S.node === n.k ? 'on' : ''}"><span>${n.label}</span><b class="num">${Math.round(v[n.k])}${n.unit}</b></div>`).join('');
     // massage dots
     const m = q('.st-mass'); m.classList.toggle('on', !!v.mass); m.style.setProperty('--dur', (2.6 - v.mspd * .6) + 's'); m.style.setProperty('--amp', (.35 + v.mint * .13).toFixed(2));
     q('.st-mass-s').textContent = v.mass ? `16-point hot stone · intensity ${v.mint} · speed ${v.mspd}` : '16-point hot stone · off';
     q('.st-lock').style.visibility = S.sel === 'Driver' && !parked(w) ? 'visible' : 'hidden';
   }
+  const ADJ = {
+    basic: { parts: ['cush', 'back'], nodes: [{ k: 'fore', label: 'Fore and aft', unit: ' %', ax: 'h', x: 204, y: 157, lo: 0, hi: 100, st: 5 }, { k: 'height', label: 'Height', unit: ' %', ax: 'v', x: 290, y: 200, lo: 0, hi: 100, st: 5 }, { k: 'recline', label: 'Backrest recline', unit: '°', ax: 'h', x: 124, y: 92, lo: 0, hi: 45, st: 1, flip: true }] },
+    tilt: { parts: ['cush', 'back'], nodes: [{ k: 'tilt', label: 'Cushion tilt', unit: '°', ax: 'v', x: 246, y: 157, lo: -5, hi: 10, st: 1, flip: true }, { k: 'lumbar', label: 'Lumbar support', unit: ' %', ax: 'h', x: 132, y: 136, lo: 0, hi: 100, st: 5 }] },
+    side: { parts: ['cush', 'back'], nodes: [{ k: 'bolster', label: 'Side bolsters', unit: ' %', ax: 'h', x: 196, y: 157, lo: 0, hi: 100, st: 5 }] },
+    head: { parts: ['head'], nodes: [{ k: 'headh', label: 'Headrest height', unit: ' %', ax: 'v', x: 131, y: 27, lo: 0, hi: 100, st: 5, flip: true }, { k: 'headt', label: 'Headrest tilt', unit: ' %', ax: 'h', x: 196, y: 27, lo: 0, hi: 100, st: 5 }] },
+    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 284, y: 182, lo: 0, hi: 100, st: 5 }] } };
+  function stAdjust(w, k, sgn) {
+    const S = stOf(w);
+    const n = Object.values(ADJ).flatMap(m => m.nodes).find(x => x.k === k); if (!n) return;
+    const v = S.s[S.sel], d = (n.flip ? -sgn : sgn) * n.st, nv = Math.max(n.lo, Math.min(n.hi, v[k] + d));
+    if (nv === v[k]) return false; v[k] = nv; stPaint(w); tick('soft'); return true;
+  }
+  let adjHold = null;
+  document.addEventListener('pointerdown', e => { const a = e.target.closest('[data-adj]'); if (!a) return; e.preventDefault();
+    const w = a.closest('.st-wrap'), [k, s] = a.dataset.adj.split('|'); stAdjust(w, k, +s); suppressAdjClick = true;
+    adjHold = setTimeout(function rep() { stAdjust(w, k, +s); adjHold = setTimeout(rep, 110); }, 420); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => document.addEventListener(ev, () => { clearTimeout(adjHold); adjHold = null; }));
+  let suppressAdjClick = false;
   function stSet(w, changes, msg) { const S = stOf(w); Object.entries(changes).forEach(([n, c]) => Object.assign(S.s[n], c)); stPaint(w); if (msg) toast(frameOf(w), msg); }
   function seatClick(t) {
     const w = t.closest('.st-wrap'); if (!w) return false; const S = stOf(w);
-    const pk = t.closest('[data-seatpick]'); if (pk) { S.sel = pk.dataset.seatpick; stPaint(w); return true; }
+    const pk = t.closest('[data-seatpick]'); if (pk) { S.sel = pk.dataset.seatpick; S.node = null; stPaint(w); return true; }
+    if (t.closest('[data-adj]')) { suppressAdjClick = false; return true; }
+    const am = t.closest('[data-adjmode]'); if (am) { S.mode = am.dataset.adjmode; S.node = null; stPaint(w); return true; }
+    const nd = t.closest('[data-node]'); if (nd) { S.node = S.node === nd.dataset.node ? null : nd.dataset.node; stPaint(w); return true; }
     const o = t.closest('[data-seatopt] span'); if (o) { S.s[S.sel][o.parentElement.dataset.seatopt] = o.textContent; stPaint(w); return true; }
     const tg = t.closest('[data-seattog]'); if (tg) { const k = tg.dataset.seattog; S.s[S.sel][k] = !S.s[S.sel][k]; stPaint(w); return true; }
     const md = t.closest('[data-seatmode]');
