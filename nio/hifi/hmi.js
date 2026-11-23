@@ -651,9 +651,13 @@
   // long-press the dock volume to open Settings › Sound
   let lpT = null, lpX = 0, lpFired = false;
   document.addEventListener('click', e => { if (lpFired) { lpFired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);   // a long-press is not a mute tap
-  document.addEventListener('pointerdown', e => { const v = e.target.closest('.dock .dvol, .dock .vol, .dock .dk.short'); if (!v) return; lpX = e.clientX;
-    const seat = v.classList.contains('short');
-    lpT = setTimeout(() => { lpT = null; if (drag) { drag.s.classList.remove('drag'); drag = null; } const fr = frameOf(v); route(fr, seat ? 'car:Seats' : 'settings:Sound'); lpFired = true; toast(fr, seat ? 'Seat settings' : 'Sound settings'); }, 650); });
+  // hold a bottom-bar button to open its menu: volume → Sound, Seats → Car › Seats, Climate → Car › Climate, Defrost → Climate, NOMI → Settings › NOMI
+  const HOLD = { seats: ['car:Seats', 'Seat settings'], climate: ['car:Climate', 'Climate settings'], defrost: ['climate', 'Climate · defrost'], nomi: ['settings:NOMI', 'NOMI settings'] };
+  document.addEventListener('pointerdown', e => { const v = e.target.closest('.dock .dvol, .dock .vol, .dock .dk.cmf'); if (!v) return; lpX = e.clientX;
+    const k = v.hasAttribute('data-nomi') ? 'nomi' : v.dataset.cmf, h = HOLD[k] || ['settings:Sound', 'Sound settings'];
+    lpT = setTimeout(() => { lpT = null; if (drag) { drag.s.classList.remove('drag'); drag = null; } const fr = frameOf(v);
+      const q = fr.querySelector('.seatq'); if (q) q.classList.remove('on'); const nv = fr.querySelector('.nomiov'); if (nv) nv.classList.remove('on');
+      route(fr, h[0]); lpFired = true; toast(fr, h[1]); setTimeout(wideUpdate, 0); }, 650); });
   document.addEventListener('pointermove', e => { if (lpT && Math.abs(e.clientX - lpX) > 8) { clearTimeout(lpT); lpT = null; } });
   document.addEventListener('pointerup', () => { if (lpT) { clearTimeout(lpT); lpT = null; } });
 
@@ -986,7 +990,7 @@
       if (S.easy === undefined) S.easy = true;
       const list = rear ? rearM : front, key = S.sel + list.length;
       if (w._modesKey !== key) { w._modesKey = key; q('.st-modes').innerHTML = list.map(([k, i, n, s]) => `<div class="st-mode" data-seatmode="${k}" data-tap><span class="ms">${i}</span><b>${n}</b><span class="bs">${s}</span></div>`).join(''); }
-      q('.st-modes').querySelectorAll('.st-mode').forEach(c => { if (c.dataset.seatmode === 'entry') { c.classList.toggle('on', !!S.easy); c.querySelector('.bs').textContent = S.easy ? 'Slides back when a door opens' : 'Off'; } }); }
+      q('.st-modes').querySelectorAll('.st-mode').forEach(c => { if (c.dataset.seatmode === 'entry') { c.classList.toggle('on', !!S.easy); c.querySelector('.bs').textContent = S.easy ? 'Body lowers 50 mm, seat slides back' : 'Off'; } }); }
     // massage: programme, areas, intensity and speed all show in the live preview
     { const on = !!v.mass, prog = v.mprog || 'wave', zones = v.mzones || 'uml', mi = v.mint > 3 ? 2 : (v.mint || 2), sp = v.mspd > 3 ? 2 : (v.mspd || 2);
       const mc = q('.ms-card'); mc.classList.toggle('off', !on);
@@ -1579,7 +1583,9 @@
       if (k === 'mir') Q.mir = Q.mir === 'fold' ? 'out' : 'fold';
       else if (k === 'port') { Q.port = !Q.port; toast(fr, Q.port ? 'Charge port open · plug in on the left rear' : 'Charge port closed'); }
       else if (k === 'shl' || k === 'shr') { const s = k.slice(2); Q.shade[s] = !Q.shade[s]; }
-      else { if (!Q.open[k] && Q.lock && k !== 'frunk' && k !== 'boot') { Q.lock = false; toast(fr, 'Unlocked · opening the ' + DOORN[k]); }
+      else { const sw = fr.querySelector('.st-wrap'), easy = sw && stOf(sw).easy !== false && k.startsWith('d') && !Q.open[k];
+        if (!Q.open[k] && Q.lock && k !== 'frunk' && k !== 'boot') { Q.lock = false; toast(fr, 'Unlocked · opening the ' + DOORN[k] + (easy ? ' · body lowers 50 mm' : '')); }
+        else if (easy) toast(fr, 'Opening the ' + DOORN[k] + ' · body lowers 50 mm for easy entry');
         else toast(fr, (Q.open[k] ? 'Closing the ' : 'Opening the ') + DOORN[k]);
         Q.open[k] = !Q.open[k]; }
       qcPaint(fr); return true; }
@@ -1637,6 +1643,12 @@
       const scr = fr.querySelector('.scr.on'); if (!scr) return; const k = scr.dataset.screen;
       const wide = k === 'climate' || k === 'car';
       if (wide) fr.dataset.wide = ''; else delete fr.dataset.wide;
+      { const pg = scr.querySelector('.pg.on'), page = pg && pg.dataset.page, set = (sel, on) => fr.querySelectorAll(sel).forEach(d => d.classList.toggle('on', !!on));
+        const q = fr.querySelector('.seatq'), nv = fr.querySelector('.nomiov');
+        set('.dk[data-seatq]', (q && q.classList.contains('on')) || (k === 'car' && page === 'Seats'));
+        set('.dk[data-cmf="climate"]', k === 'climate' || (k === 'car' && page === 'Climate'));
+        set('.dk[data-nomi]', (nv && nv.classList.contains('on')) || (k === 'settings' && page === 'NOMI'));
+        const C = fr._cl; set('.dk[data-cldef]', C && C.deff); }
       if (wide) { const art = fr.querySelector('.ctx .player .art'), m = fr.querySelector('[data-cmart]');
         if (art && m) { const img = art.querySelector('img'); m.innerHTML = img ? `<img src="${img.src}" alt="">` : ''; if (!img) m.style.backgroundImage = getComputedStyle(art).backgroundImage; }
         const pl = fr.querySelector('.ctx .player'), pb = fr.querySelector('[data-cmplay] .ms'); if (pl && pb) pb.textContent = pl.classList.contains('playing') ? 'pause' : 'play_arrow'; }

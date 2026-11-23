@@ -1712,3 +1712,13 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .qc-row{min-width:0}
 .qc-seg{min-width:0;flex:0 1 auto}
 .qc-seg>div{padding:0 9px!important;white-space:nowrap}
+
+/* ---------- v88: one car drawing everywhere ---------- */
+.ct-mirs{fill:#efedf5;stroke:#bfb8d4}
+.st-lbg{fill:rgba(255,255,255,.92);stroke:#e1ddea}
+.st-pick .st-lbl,.cz-svg .st-lbl{font:500 11px "Red Hat Text";fill:var(--t2)}
+.st-seat.on .st-lbg{fill:var(--sel);stroke:#9fb2ea}.st-seat.on .st-lbl{fill:var(--on-sel)}
+.st-pick,.cz-svg{height:100%;width:auto;max-width:100%;display:block;margin:0 auto}
+.st-pickwrap{overflow:hidden}
+.cz-pill rect{fill:rgba(255,255,255,.95)}
+.cz-pill text{font-size:14px}
