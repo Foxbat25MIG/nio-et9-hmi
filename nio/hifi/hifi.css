@@ -1100,3 +1100,147 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 @keyframes maPulse{0%,100%{transform:scale(calc(var(--mamp,1) * .7));opacity:calc(var(--mop,.7) * .5)}50%{transform:scale(calc(var(--mamp,1) * 1.25));opacity:var(--mop,.7)}}
 @keyframes maStr{0%,100%{transform:translateY(0) scaleX(var(--mamp,1))}50%{transform:translateY(176px) scaleX(var(--mamp,1))}}
 .ms-card.off .ma,.ms-card.off .mb{animation-play-state:paused!important;opacity:.15}
+
+/* ---------- Climate (HVAC) v74 ---------- */
+.ic-svg{width:26px;height:26px;display:block}
+.dock .dk.cmf{width:72px}
+.dock .dk.cmf .ic-svg{width:28px;height:28px}
+.dk.cmf .cmf-l{display:flex;align-items:center;gap:5px}
+.dk.cmf .lv{display:flex;gap:2px;align-items:flex-end}
+.dk.cmf .lv b{width:3px;height:8px;border-radius:2px;background:#e2895c;transition:background-color var(--dur-hover) var(--ease)}
+.dk.cmf .lv b:nth-child(2){height:10px}.dk.cmf .lv b:nth-child(3){height:12px}
+.dk.cmf .lv b.off{background:var(--s3)}
+.dk[data-cmf="defrost"].on{background:#fde6d8;color:#8a3d14}.dk[data-cmf="defrost"].on .ic-svg{color:#c4561c}
+.clim .t[data-go]{cursor:pointer;border-radius:12px;transition:background-color var(--dur-hover) var(--ease)}
+.clim .t[data-go]:hover{background:var(--s2)}
+
+.cl-pane{gap:16px;padding:16px}
+.cl-cab{width:300px;flex:none;display:flex;flex-direction:column;gap:10px;padding:16px 18px}
+.cz-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--s2),#e9e6f1);border-radius:20px;padding:4px}
+.cz-svg{height:100%;max-height:440px;width:auto;display:block}
+.cl-cabrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 2px;cursor:pointer}
+.cl-cabrow .b2{font-size:15px}.cl-cabrow .bs{font-size:12px}
+.cz-tint{opacity:0;transition:opacity .6s var(--ease)}
+.cz-s0{stop-color:var(--zc,#cddcf7);stop-opacity:.85;transition:stop-color .6s var(--ease)}
+.cz-s1{stop-color:var(--zc,#cddcf7);stop-opacity:0;transition:stop-color .6s var(--ease)}
+.cz-flow path{fill:none;stroke:var(--zc,#9db6e8);stroke-width:2;stroke-linecap:round;stroke-dasharray:4 10;opacity:.75;animation:czf var(--fs,1.6s) linear infinite;animation-delay:var(--d);transition:stroke .6s var(--ease),opacity .6s var(--ease)}
+@keyframes czf{to{stroke-dashoffset:-28}}
+.cz-flow.off path{opacity:0}
+.cz-vents rect{fill:#dcd8e8}
+.cz-wind,.cz-rwind{fill:none;stroke:#e9a27b;stroke-width:3;stroke-linecap:round;stroke-dasharray:3 6;opacity:0;transition:opacity .6s var(--ease)}
+.cl-deff .cz-wind,.cl-defr .cz-rwind{opacity:1;animation:czf 1.2s linear infinite}
+.cz-pill rect{fill:#fff;stroke:#dcd8e8;stroke-width:1;transition:fill .3s var(--ease),stroke .3s var(--ease)}
+.cz-pill text{font:500 13px "Red Hat Display";fill:var(--t1)}
+.cz-seat.on .cz-pill rect{fill:var(--sel);stroke:#7a6bf2}
+.cz-seat.on .cz-pill text{fill:var(--on-sel)}
+.cz-lock{opacity:0;transform-box:fill-box;transition:opacity .3s var(--ease)}
+.cz-lock circle{fill:var(--ink)}.cz-lock path{fill:none;stroke:#fff;stroke-width:1.5;stroke-linejoin:round}
+.cl-locked .cz-lock{opacity:1}
+
+.cl-wrap{flex:1}
+.cl-wrap .snd-tabs div{font-size:14px}
+.cl-zone{gap:14px!important}
+.cl-heat{display:flex;align-items:center;gap:8px;font-size:13px}
+.cl-dot{width:8px;height:8px;border-radius:50%;background:#7fbf8e;box-shadow:0 0 0 4px rgba(127,191,142,.2)}
+.cl-big{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;gap:12px}
+.cl-bb{width:64px;height:64px;border-radius:20px;background:var(--s2);display:flex;align-items:center;justify-content:center;color:var(--t1);cursor:pointer;user-select:none;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.cl-bb:hover{background:var(--s3)}.cl-bb:active{transform:scale(.94);background:var(--sel)}
+.cl-tv{display:flex;align-items:flex-start;justify-content:center;gap:4px}
+.cl-t{font:300 72px/1 "Red Hat Display";color:var(--t1);letter-spacing:-.02em;transition:color .4s var(--ease)}
+.cl-u{font:400 20px "Red Hat Text";color:var(--t3);margin-top:8px}
+.cl-fanrow{display:flex;align-items:center;gap:14px}
+.cl-fl{display:flex;align-items:center;gap:8px;font:400 15px "Red Hat Text";color:var(--t2);width:72px}
+.cl-fan{flex:1;display:flex;align-items:flex-end;gap:6px;height:48px;padding:0 4px}
+.cl-fan i{flex:1;height:var(--h);border-radius:6px;background:var(--s3);cursor:pointer;transition:background-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.cl-fan i:hover{background:#cfcae0}
+.cl-fan i.on{background:#8ea7e6}
+.cl-fan.auto i.on{background:#b9c6ec}
+.cl-fan i:active{transform:scaleY(.92)}
+.cl-fv{width:56px;text-align:right;font:500 16px "Red Hat Text";color:var(--t1)}
+.cl-qrow{display:flex;gap:10px}
+.cl-q{height:92px;position:relative;text-align:center;padding:0 6px}
+.cl-q .ic-svg{color:var(--t1)}
+.cl-q.on .ic-svg{color:var(--on-sel)}
+.cl-qs{font:400 11px "Red Hat Text";font-style:normal;color:var(--t3);margin-top:-2px}
+.cl-q.on .cl-qs{color:var(--on-sel);opacity:.8}
+.cl-q[data-cl="maxh"].on,.cl-q[data-cl="deff"].on,.cl-q[data-cl="defr"].on{background:#fde6d8;border-color:#f6c9ad;color:#8a3d14}
+.cl-q[data-cl="maxh"].on .ms,.cl-q[data-cl="deff"].on .ic-svg,.cl-q[data-cl="defr"].on .ic-svg,.cl-q[data-cl="deff"].on .cl-qs,.cl-q[data-cl="defr"].on .cl-qs{color:#8a3d14}
+
+.cl-modes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cl-mode{height:104px;border-radius:18px;background:var(--s2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font:400 14px "Red Hat Text";color:var(--t2);cursor:pointer;transition:background-color var(--dur-hover) var(--ease),color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.cl-mode:hover{background:var(--s3)}.cl-mode:active{transform:scale(.96)}
+.cl-mode.on{background:var(--sel);color:var(--on-sel);font-weight:500}
+.cl-mi{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cl-mi circle{fill:currentColor;stroke:none}
+.cl-vent{display:flex;gap:20px;align-items:center}
+.vent-pad{width:220px;height:150px;flex:none;border-radius:20px;background:linear-gradient(180deg,#f3f1f8,#e8e5f0);position:relative;overflow:hidden;touch-action:none;cursor:grab;border:1px solid var(--line)}
+.vent-pad:active{cursor:grabbing}
+.vp-grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:36.6px 37.5px;background-position:center;opacity:.6}
+.vp-blades{position:absolute;inset:22px 30px;display:flex;flex-direction:column;justify-content:space-between}
+.vp-blades i{height:6px;border-radius:3px;background:#c9c3dc;transform:translateY(calc(var(--vy,0) * 5px)) rotate(calc(var(--vx,0) * 14deg)) scaleX(calc(1 - var(--vxa,0) * .12));transition:transform .4s var(--ease)}
+.vp-dot{position:absolute;left:calc(50% + var(--vx,0) * 80px - 14px);top:calc(50% + var(--vy,0) * 52px - 14px);width:28px;height:28px;border-radius:50%;background:var(--sel);border:3px solid #fff;box-shadow:0 2px 10px rgba(36,30,72,.25),0 0 0 10px rgba(122,107,242,.12);transition:left .3s var(--ease),top .3s var(--ease)}
+.vent-pad.drag .vp-dot,.vent-pad.drag .vp-blades i{transition:none}
+.vent-pad.sweep .vp-dot{animation:vsweep 4s var(--ease) infinite alternate}
+.vent-pad.sweep .vp-blades i{animation:vblade 4s var(--ease) infinite alternate}
+@keyframes vsweep{from{left:calc(50% - 94px)}to{left:calc(50% + 66px)}}
+@keyframes vblade{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+.vent-pad.focus .vp-dot{box-shadow:0 2px 10px rgba(36,30,72,.25),0 0 0 4px rgba(122,107,242,.18)}
+.vent-pad.diffuse .vp-dot{box-shadow:0 2px 10px rgba(36,30,72,.25),0 0 0 18px rgba(122,107,242,.10)}
+
+.cl-aq{display:flex;gap:18px;align-items:center;padding:4px 0 6px}
+.aq-m{width:150px;position:relative;display:flex;flex-direction:column;align-items:center}
+.aq-m svg{width:150px;height:88px;display:block}
+.aq-tr,.aq-v{fill:none;stroke-width:10;stroke-linecap:round}
+.aq-tr{stroke:var(--s2)}
+.aq-v{stroke:#7fbf8e;stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,20));transition:stroke-dashoffset 1s var(--ease),stroke .6s var(--ease)}
+.aq-m b{position:absolute;top:40px;font:400 34px "Red Hat Display";color:var(--t1)}
+.aq-m .bs{font-size:13px;margin-top:2px}
+.aq-note{flex:1;min-width:0}
+.cl-scents{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cl-scent{border-radius:18px;background:var(--s2);padding:14px;display:flex;flex-direction:column;gap:3px;cursor:pointer;border:2px solid transparent;transition:background-color var(--dur-hover) var(--ease),border-color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.cl-scent:hover{background:var(--s3)}.cl-scent:active{transform:scale(.97)}
+.cl-scent.on{background:var(--sel);border-color:#9fb2ea}
+.cl-scent b{font:500 15px "Red Hat Text";color:var(--t1)}.cl-scent .bs{font-size:13px}
+.sc-dot{width:26px;height:26px;border-radius:50%;margin-bottom:6px}
+.sc-forest{background:radial-gradient(circle at 35% 35%,#bfe0c4,#6f9e78)}.sc-sea{background:radial-gradient(circle at 35% 35%,#d4e6fb,#7ea4d6)}.sc-amber{background:radial-gradient(circle at 35% 35%,#f8dcb8,#c98d4f)}
+.sc-lv{height:5px;border-radius:3px;background:rgba(255,255,255,.7);margin-top:8px;overflow:hidden}.sc-lv i{display:block;height:100%;background:#8f8ba3;border-radius:3px}
+.cl-scent:nth-child(3) .sc-lv i{background:#d77a52}
+.cl-scents.off,.cl-frag-off{opacity:.45;pointer-events:none;transition:opacity .4s var(--ease)}
+.cl-ic{color:var(--t2);display:flex}
+.cl-pre{display:flex;gap:24px;align-items:flex-end}
+.cl-stp{display:grid;grid-template-columns:40px auto 40px;align-items:center;gap:10px}
+.cl-stp .stp-b{width:40px;height:40px;background:var(--s2);color:var(--t1)}
+.cl-sv{min-width:56px;text-align:center;font:500 20px "Red Hat Display";color:var(--t1)}
+.cl-stp.big .cl-sv{font-size:30px;font-weight:400;min-width:96px}
+.cl-days{display:flex;gap:6px}
+.cl-days span{flex:1;height:44px;border-radius:12px;background:var(--s2);display:flex;align-items:center;justify-content:center;font:500 15px "Red Hat Text";color:var(--t2);cursor:pointer;transition:background-color var(--dur-hover) var(--ease),color var(--dur-hover) var(--ease)}
+.cl-days span.on{background:var(--sel);color:var(--on-sel)}
+.cl-pre-off .cl-pre{opacity:.45;pointer-events:none}
+.cl-keep>div{flex:1;gap:8px}
+.cl-frrow{display:flex;gap:20px;align-items:center}
+.fr-box{width:150px;height:120px;flex:none;border-radius:20px;position:relative;overflow:hidden;background:linear-gradient(160deg,#e9f1fd,#cfdff7);transition:background .6s var(--ease)}
+.fr-box[data-frm="warm"]{background:linear-gradient(160deg,#fdf0e4,#f6d2b4)}
+.fr-box[data-frm="off"]{background:linear-gradient(160deg,#f3f1f7,#e3e0ec)}
+.fr-door{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1}
+.fr-t{font:300 44px/1 "Red Hat Display";color:var(--t1)}
+.fr-m{font:400 13px "Red Hat Text";color:var(--t2);margin-top:4px}
+.fr-frost{position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.9) 0 2px,transparent 3px),radial-gradient(circle at 70% 30%,rgba(255,255,255,.8) 0 1.5px,transparent 2.5px),radial-gradient(circle at 40% 80%,rgba(255,255,255,.8) 0 2px,transparent 3px);background-size:40px 40px;opacity:.8;animation:frost 6s linear infinite;transition:opacity .6s var(--ease)}
+.fr-box[data-frm="warm"] .fr-frost{opacity:0}.fr-box[data-frm="off"] .fr-frost{opacity:0}
+@keyframes frost{to{background-position:0 40px,0 40px,0 40px}}
+.cl-fridge.off .cl-frrow .col{opacity:.45;pointer-events:none}
+.cl-trayrow{display:flex;gap:18px;align-items:center}
+.tray-svg{width:120px;height:78px;flex:none;background:var(--s2);border-radius:16px}
+.tr-seat{fill:#e3e0ec;stroke:#cfc9de}.tr-arm{fill:#cfc9de}
+.tr-tab rect{fill:#8f8ba3}
+.tr-tab{transform-origin:40px 41px;transform:rotate(-90deg) scaleX(.36);transition:transform .6s var(--ease)}
+.tray-out .tr-tab{transform:none}
+.cl-hint{font-size:13px}
+/* bottom bar fits the three comfort buttons */
+.dock{padding:0 10px}
+.dock .dk{width:66px}.dock .dk.cmf{width:64px}
+.dock .dvol{padding:0 6px;gap:6px}.dock .dvol .sl{width:72px}
+.dock .clim{width:198px}.dock .clim .t{width:78px;font-size:30px}
+.dock .sep{margin:0 4px}
+.cl-wrap .row>.segx{flex:1}
+.cl-trayrow .btn{flex:none;white-space:nowrap}
+.cl-frrow .lab,.cl-frrow .bs{font-size:13px}

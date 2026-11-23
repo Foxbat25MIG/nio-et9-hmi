@@ -50,14 +50,14 @@
   const frameOf = el => el.closest('.frame') || document;
   document.addEventListener('click', e => {
     const t = e.target;
-    const tog = t.closest('.tog'); if (tog && !tog.hasAttribute('data-seattog')) {
-      tog.classList.toggle('on');
+    const tog = t.closest('.tog'); if (tog && !tog.hasAttribute('data-seattog') && !tog.hasAttribute('data-cltog')) {
+      tog.classList.toggle('on'); clTog(tog);
       if (tog.hasAttribute('data-guard')) { const on = tog.classList.contains('on'), gc = tog.closest('.av-c, .app, .frame').querySelector('.gm-card');
         if (gc) { gc.classList.toggle('on', on); gc.querySelector('.gm-st').textContent = on ? 'Guard Mode is on' : 'Guard Mode is off'; gc.querySelector('.gm-sub').textContent = on ? 'Watching with 4 cameras while the ET9 is parked and locked' : 'Turn it on to record when someone comes close'; } }
       if (tog.hasAttribute('data-tapsound')) { muted = !tog.classList.contains('on'); try { localStorage.setItem('nio-sound', muted ? 'off' : 'on'); } catch (er) {} paintSound(); }
       return;
     }
-    if (seatClick(t) || navClick(t) || pClick(t) || calClick(t) || sndClick(t)) return;
+    if (clClick(t) || seatClick(t) || navClick(t) || pClick(t) || calClick(t) || sndClick(t)) return;
     const drv = t.closest('[data-drv]');
     if (drv) { const fr = frameOf(drv), n = drv.dataset.drv;
       drv.parentElement.querySelectorAll('[data-drv]').forEach(d => d.classList.toggle('on', d === drv));
@@ -165,11 +165,7 @@
     const pr = t.closest('.prof'); if (pr) { pr.parentElement.querySelectorAll('.prof').forEach(x => { x.classList.toggle('on', x === pr); x.querySelector('.bs').textContent = x === pr ? 'Driving now' : 'Seat, mirrors, Custom mode, music'; }); return; }
     const fl = t.closest('[data-flip]'); if (fl) { const s = fl.querySelector('span:last-child'); const a = s.textContent; s.textContent = fl.dataset.flip; fl.dataset.flip = a; return; }
     const cb = t.closest('.clim .icb');
-    if (cb) {
-      const v = cb.parentElement.querySelector('.t');
-      let n = parseFloat(v.textContent) + (cb.textContent.includes('add') ? 0.5 : -0.5);
-      n = Math.max(16, Math.min(28, n)); v.textContent = n.toFixed(1) + '°'; return;
-    }
+    if (cb) { const fr = frameOf(cb); clStep(fr, cb.closest('.clim').classList.contains('r') ? 'Passenger' : 'Driver', cb.textContent.includes('add') || cb.querySelector('path[d*="v12"]') ? 1 : -1); return; }
     const pl = t.closest('.player .play');
     if (pl) { setPlaying(pl.closest('.player'), !pl.closest('.player').classList.contains('playing')); return; }
     const vi = t.closest('.vol .ms, .dvol .ms');
@@ -199,7 +195,7 @@
       let a = '';
       if (k === 'park') a = 'Parking Trois Glands is a 5 minute walk from Mudam and fits the ET9. Reserve a space from 13:55?<div class="acts" style="margin-top:10px"><div class="btn pri sm" data-ask="reserve">Reserve</div><div class="btn sec sm nomi-x">Not now</div></div>';
       if (k === 'reserve') a = 'Done. Level −2, bay 14, from 13:55 until 15:55. I’ve added it to your trip.';
-      if (k === 'seat') { a = 'Driver seat heat set to 2.'; fr.querySelectorAll('.dk.short .lv b').forEach((b, i) => b.classList.toggle('off', i >= 2)); }
+      if (k === 'seat') { a = 'Driver seat heat set to 2.'; fr.querySelectorAll('.dk .lv b').forEach((b, i) => b.classList.toggle('off', i >= 2)); }
       if (k === 'calm') { a = 'Playing Memory Box by Peter Cat Recording Co.'; setSong(fr, songIndex('Memory Box', 'Peter Cat Recording Co.'), true); }
       if (k === 'air') { const q = document.querySelector('[data-live="aqi"]'), x = document.querySelector('[data-live="aqitext"]'); a = q && q.textContent.trim() && q.textContent !== 'AQI –' ? `Outside air is ${q.textContent}${x ? ', ' + x.textContent : ''}. Cabin filtering is on.` : 'Outside air quality is good today. Cabin filtering is on.'; }
       bubble(log, 'ai', a); say(null, a.replace(/<[^>]+>/g, ''));
@@ -632,8 +628,8 @@
     snd.parentElement.classList.toggle('scrolled', snd.scrollTop > 4);
     if (snd._jump) return;
     const top = snd.getBoundingClientRect().top + 40;
-    let cur = 'vol'; snd.querySelectorAll('.snd-sec').forEach(s => { if (s.getBoundingClientRect().top <= top) cur = s.dataset.sec; });
-    if (snd.scrollTop + snd.clientHeight >= snd.scrollHeight - 4) cur = 'car';
+    const secs = snd.querySelectorAll('.snd-sec'); let cur = secs[0].dataset.sec; secs.forEach(s => { if (s.getBoundingClientRect().top <= top) cur = s.dataset.sec; }); if (0) snd.querySelectorAll('.snd-sec').forEach(s => { if (s.getBoundingClientRect().top <= top) cur = s.dataset.sec; });
+    if (snd.scrollTop + snd.clientHeight >= snd.scrollHeight - 4) cur = secs[secs.length - 1].dataset.sec;
     sndTabs(snd, cur);
   }, true);
   function sndClick(t) {
@@ -1354,4 +1350,129 @@
     }
     requestAnimationFrame(frame);
   });
+
+  /* ---------- Climate: 4 zones, airflow, air quality, comfort, fridge and tray table ---------- */
+  const CZ = ['Driver', 'Passenger', 'Rear left', 'Rear right'];
+  const clOf = fr => fr._cl || (fr._cl = { sel: 'Driver', t: { Driver: 21.5, Passenger: 21.5, 'Rear left': 22, 'Rear right': 22 }, fan: { Driver: 3, Passenger: 3, 'Rear left': 2, 'Rear right': 2 },
+    vent: { Driver: [0, 0], Passenger: [0, 0], 'Rear left': [0, 0], 'Rear right': [0, 0] }, auto: true, ac: true, recirc: false, maxc: false, maxh: false, deff: false, defr: false,
+    sync: false, lock: false, mode: 'both', pre: 7 * 60 + 45, fr: 4, frm: 'cool', frOn: true, tray: false, pur: true, pm: 14, keep: 'off', follow: false });
+  const tShow = v => v <= 16 ? 'LO' : v >= 28 ? 'HI' : v.toFixed(1);
+  const zColor = v => v < 20.5 ? '#9db6e8' : v > 23 ? '#eda57f' : v > 22 ? '#e8bfa4' : '#c3c0e4';
+  const autoFan = (C, z) => Math.max(1, Math.min(7, Math.round(2 + Math.abs(C.t[z] - 21.5) * 1.2)));
+  function clStep(fr, z, d) {
+    const C = clOf(fr); C.maxc = C.maxh = false;
+    const v = Math.max(16, Math.min(28, C.t[z] + d * 0.5));
+    (C.sync ? CZ : [z]).forEach(k => { if (C.lock && k.startsWith('Rear') && k !== z) return; C.t[k] = v; });
+    clFollow(fr); clPaint(fr);
+  }
+  function clFollow(fr) {
+    const C = clOf(fr); if (!C.follow) return;
+    const lvl = v => v >= 24 ? '2' : v >= 23 ? '1' : 'Off';
+    const w = fr.querySelector('.st-wrap'); if (w) { const S = stOf(w); CZ.forEach(k => S.s[k].heat = lvl(C.t[k])); stPaint(w); }
+    const n = lvl(C.t.Driver) === 'Off' ? 0 : +lvl(C.t.Driver);
+    fr.querySelectorAll('.dk .lv b').forEach((b, i) => b.classList.toggle('off', i >= n));
+  }
+  function clPaint(fr) {
+    const C = clOf(fr), scr = fr.querySelector('[data-screen="climate"]'); if (!scr) return;
+    const z = C.sel, fan = C.auto ? autoFan(C, z) : C.fan[z];
+    fr.querySelectorAll('.dock .clim .t').forEach(el => el.textContent = tShow(C.t[el.closest('.clim').classList.contains('r') ? 'Passenger' : 'Driver']) + (C.t[el.closest('.clim').classList.contains('r') ? 'Passenger' : 'Driver'] > 16 && C.t[el.closest('.clim').classList.contains('r') ? 'Passenger' : 'Driver'] < 28 ? '°' : ''));
+    const svg = scr.querySelector('.cz-svg');
+    CZ.forEach((k, i) => {
+      const col = zColor(C.t[k]), f = C.auto ? autoFan(C, k) : C.fan[k];
+      svg.querySelector(`[data-czt="${k}"]`).textContent = tShow(C.t[k]) + (C.t[k] > 16 && C.t[k] < 28 ? '°' : '');
+      svg.querySelectorAll(`#czg${i} stop`).forEach(s => s.style.setProperty('--zc', col));
+      const tint = svg.querySelector(`[data-czg="${k}"]`); tint.style.opacity = Math.min(1, 0.25 + Math.abs(C.t[k] - 21.5) / 4);
+      const fl = svg.querySelector(`[data-czf="${k}"]`); fl.style.setProperty('--zc', col); fl.style.setProperty('--fs', (2.6 - f * 0.28).toFixed(2) + 's'); fl.classList.toggle('off', !f);
+      svg.querySelector(`[data-czone="${k}"]`).classList.toggle('on', k === z);
+    });
+    svg.classList.toggle('cl-locked', C.lock); svg.classList.toggle('cl-deff', C.deff); svg.classList.toggle('cl-defr', C.defr);
+    scr.querySelector('.cl-zn').textContent = z; scr.querySelector('.cl-vz').textContent = z;
+    const tv = scr.querySelector('.cl-t'); tv.textContent = tShow(C.t[z]); tv.style.color = C.t[z] < 20.5 ? '#3e5f9e' : C.t[z] > 22.5 ? '#a8532a' : '';
+    scr.querySelector('.cl-u').style.opacity = C.t[z] > 16 && C.t[z] < 28 ? 1 : 0;
+    const fb = scr.querySelector('.cl-fan'); fb.classList.toggle('auto', C.auto); fb.querySelectorAll('i').forEach((b, i) => b.classList.toggle('on', i < fan));
+    scr.querySelector('.cl-fv').textContent = C.auto ? 'Auto' : fan;
+    const heat = C.t[z] > 22.5 ? 'Heat pump · warming to ' : C.t[z] < 20.5 ? 'A/C · cooling to ' : 'Holding ';
+    scr.querySelector('.cl-heat span').textContent = C.maxc ? 'Max cool · all zones' : C.maxh ? 'Max heat · all zones' : heat + tShow(C.t[z]) + (C.t[z] > 16 && C.t[z] < 28 ? '°' : '');
+    scr.querySelector('.cl-dot').style.background = C.t[z] > 22.5 || C.maxh ? '#e2895c' : C.t[z] < 20.5 || C.maxc ? '#7fa1e0' : '#7fbf8e';
+    ['auto', 'ac', 'recirc', 'maxc', 'maxh', 'deff', 'defr'].forEach(k => scr.querySelector(`[data-cl="${k}"]`).classList.toggle('on', !!C[k]));
+    scr.querySelectorAll('[data-cltog]').forEach(g => g.classList.toggle('on', !!C[g.dataset.cltog]));
+    scr.querySelectorAll('[data-clmode]').forEach(m => m.classList.toggle('on', m.dataset.clmode === (C.deff ? 'wind' : C.mode)));
+    const [vx, vy] = C.vent[z], pad = scr.querySelector('.vent-pad'); pad.style.setProperty('--vx', vx); pad.style.setProperty('--vy', vy); pad.style.setProperty('--vxa', Math.abs(vx));
+    fr.querySelectorAll('.dk[data-cldef]').forEach(d => d.classList.toggle('on', C.deff));
+    const h = Math.floor(C.pre / 60), m = C.pre % 60; scr.querySelector('[data-clv="pre"]').textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+    scr.querySelector('.cl-pre-tx').textContent = `Warms to ${tShow(C.t.Driver)}° from the grid while plugged in, so your range stays full.`;
+    scr.querySelector('[data-clv="fr"]').textContent = C.fr + '°';
+    const box = scr.querySelector('.fr-box'); box.dataset.frm = C.frOn ? C.frm : 'off';
+    box.querySelector('.fr-t').textContent = C.frOn ? C.fr + '°' : 'Off'; box.querySelector('.fr-m').textContent = !C.frOn ? 'Fridge is off' : C.frm === 'cool' ? 'Cooling' : 'Warming';
+    scr.querySelector('.cl-fridge').classList.toggle('off', !C.frOn);
+    scr.querySelector('.tray-svg').classList.toggle('tray-out', C.tray);
+    scr.querySelector('.tr-st').textContent = C.tray ? 'Table is out' : 'Folded away';
+    scr.querySelector('[data-cltray] span:last-child').textContent = C.tray ? 'Fold in' : 'Fold out';
+    clAir(fr);
+  }
+  function clAir(fr) {
+    const C = clOf(fr), scr = fr.querySelector('[data-screen="climate"]'); if (!scr) return;
+    const pm = Math.round(C.pm), out = 22, col = v => v <= 12 ? '#7fbf8e' : v <= 35 ? '#e5b45a' : '#e07a5f';
+    const a = scr.querySelector('[data-aq="in"]'), b = scr.querySelector('[data-aq="out"]');
+    a.style.setProperty('--p', Math.min(100, pm * 2)); a.style.stroke = col(pm); b.style.setProperty('--p', Math.min(100, out * 2)); b.style.stroke = col(out);
+    scr.querySelector('[data-aqv="in"]').textContent = pm; scr.querySelector('[data-aqv="out"]').textContent = out;
+    scr.querySelector('.aq-st').textContent = pm <= 12 ? 'Excellent' : pm <= 35 ? 'Good' : 'Poor';
+    scr.querySelector('.aq-tx').textContent = C.pur ? (pm <= 8 ? 'Purifier is holding the cabin clean. Filter at 86 %.' : 'Purifier is cleaning the cabin air…') : 'Purifier is off. Outside air comes in as it is.';
+  }
+  function clPurify(fr) {   // PM2.5 drifts down with the purifier, back up without it
+    const C = clOf(fr); clearInterval(fr._clpi);
+    fr._clpi = setInterval(() => { const goal = C.pur ? 5 : C.recirc ? 12 : 18; C.pm += (goal - C.pm) * 0.18; if (Math.abs(goal - C.pm) < 0.4) { C.pm = goal; clearInterval(fr._clpi); } clAir(fr); }, 400);
+  }
+  const KEEP = { off: 'Climate turns off when you lock the car.', pet: 'Holds 21° while you’re away and shows “My pet is fine” on the screen for passers-by.', camp: 'Keeps the cabin comfortable, lights and power on all night. Uses about 1 % of battery per hour.' };
+  function clClick(t) {
+    const scr = t.closest('[data-screen="climate"]'), fr = frameOf(t);
+    const df = t.closest('.dk[data-cldef]');
+    if (df) { const C = clOf(fr); C.deff = !C.deff; if (C.deff) { C.ac = true; } clPaint(fr); toast(fr, C.deff ? 'Front defrost on · full fan to the windscreen' : 'Front defrost off'); return true; }
+    if (!scr) return false;
+    const C = clOf(fr);
+    const zn = t.closest('[data-czone]'); if (zn) { C.sel = zn.dataset.czone; clPaint(fr); return true; }
+    const st = t.closest('[data-clstep]');
+    if (st) { const [k, d] = st.dataset.clstep.split('|'), n = +d;
+      if (k === 't') clStep(fr, C.sel, n);
+      if (k === 'pre') { C.pre = (C.pre + n * 15 + 1440) % 1440; clPaint(fr); }
+      if (k === 'fr') { const [lo, hi] = C.frm === 'cool' ? [-2, 10] : [35, 55]; C.fr = Math.max(lo, Math.min(hi, C.fr + n)); clPaint(fr); }
+      return true; }
+    const fb = t.closest('[data-clfan]'); if (fb) { C.auto = false; C.fan[C.sel] = +fb.dataset.clfan; if (C.sync) CZ.forEach(k => C.fan[k] = C.fan[C.sel]); clPaint(fr); return true; }
+    const q = t.closest('[data-cl]');
+    if (q) { const k = q.dataset.cl;
+      if (k === 'sync') { C.sync = !C.sync; if (C.sync) CZ.forEach(z => { if (!(C.lock && z.startsWith('Rear') && !C.sel.startsWith('Rear'))) C.t[z] = C.t[C.sel]; }); clFollow(fr); toast(fr, C.sync ? `All zones set to ${tShow(C.t[C.sel])}°` : 'Zones set separately'); }
+      else if (k === 'lock') { C.lock = !C.lock; toast(fr, C.lock ? 'Rear climate locked' : 'Rear passengers can change climate'); }
+      else if (k === 'maxc' || k === 'maxh') { const on = !C[k]; if (on && !C._save) C._save = { ...C.t }; C.maxc = C.maxh = false; C[k] = on;
+        if (on) { CZ.forEach(z => C.t[z] = k === 'maxc' ? 16 : 28); C.auto = false; CZ.forEach(z => C.fan[z] = 7); if (k === 'maxc') { C.ac = true; C.recirc = true; } }
+        else if (C._save) { C.t = C._save; C._save = null; C.auto = true; } clFollow(fr); }
+      else { C[k] = !C[k]; if (k === 'recirc' || k === 'ac') clPurify(fr);
+        if (k === 'deff') toast(fr, C.deff ? 'Front defrost on · full fan to the windscreen' : 'Front defrost off');
+        if (k === 'defr') toast(fr, C.defr ? 'Rear window and mirrors heating for 15 min' : 'Rear defrost off'); }
+      clPaint(fr); return true; }
+    const md = t.closest('[data-clmode]'); if (md) { C.mode = md.dataset.clmode; if (C.mode !== 'wind') C.deff = false; else C.deff = true; clPaint(fr); return true; }
+    const sp = t.closest('.cl-spread div'); if (sp) { const pad = scr.querySelector('.vent-pad'); pad.classList.remove('focus', 'diffuse', 'sweep'); pad.classList.add(sp.textContent.toLowerCase()); return false; }
+    const sc = t.closest('[data-clscent]'); if (sc) { scr.querySelectorAll('[data-clscent]').forEach(x => x.classList.toggle('on', x === sc)); toast(fr, sc.querySelector('b').textContent + ' · fragrance on'); return true; }
+    const dy = t.closest('[data-clday]'); if (dy) { dy.classList.toggle('on'); return true; }
+    const kp = t.closest('[data-clkeep]'); if (kp) { C.keep = kp.dataset.clkeep; scr.querySelector('.cl-keep-tx').textContent = KEEP[C.keep]; return false; }
+    const fm = t.closest('.cl-frmode div'); if (fm) { C.frm = fm.textContent === 'Cool' ? 'cool' : 'warm'; C.fr = C.frm === 'cool' ? 4 : 45; clPaint(fr); return false; }
+    const tr = t.closest('[data-cltray]'); if (tr) { C.tray = !C.tray; clPaint(fr); return true; }
+    return false;
+  }
+  function clTog(tg) {
+    const scr = tg.closest('[data-screen="climate"]'); if (!scr) return; const fr = frameOf(tg), C = clOf(fr), on = tg.classList.contains('on');
+    if (tg.hasAttribute('data-clpur')) { C.pur = on; clPurify(fr); }
+    if (tg.hasAttribute('data-clfrag')) scr.querySelector('.cl-scents').classList.toggle('off', !on);
+    if (tg.hasAttribute('data-clfollow')) { C.follow = on; clFollow(fr); toast(fr, on ? 'Seat heating now follows the cabin temperature' : 'Seat heating is set by hand'); }
+    if (tg.hasAttribute('data-clpre')) scr.querySelector('.cl-pre').parentElement.classList.toggle('cl-pre-off', !on);
+    if (tg.hasAttribute('data-clfr')) { C.frOn = on; clPaint(fr); }
+  }
+  // aim the vents: drag the dot on the pad
+  let vDrag = null;
+  function vAim(e) { const pad = vDrag, r = pad.getBoundingClientRect(), fr = frameOf(pad), C = clOf(fr);
+    const x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width - 0.5) * 2.4)), y = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height - 0.5) * 2.4));
+    C.vent[C.sel] = [+x.toFixed(2), +y.toFixed(2)]; pad.style.setProperty('--vx', x); pad.style.setProperty('--vy', y); pad.style.setProperty('--vxa', Math.abs(x)); }
+  document.addEventListener('pointerdown', e => { const pad = e.target.closest('[data-vpad]'); if (!pad) return; vDrag = pad; pad.classList.add('drag'); pad.classList.remove('sweep'); vAim(e); });
+  document.addEventListener('pointermove', e => { if (vDrag) vAim(e); });
+  document.addEventListener('pointerup', () => { if (vDrag) { vDrag.classList.remove('drag'); vDrag = null; } });
+  document.querySelectorAll('.frame').forEach(fr => { if (fr.querySelector('[data-screen="climate"]')) { clPaint(fr); clPurify(fr); } });
 })();
