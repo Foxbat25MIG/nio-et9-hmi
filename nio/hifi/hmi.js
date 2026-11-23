@@ -1389,8 +1389,7 @@
     scr.querySelector('.cl-zn').textContent = z; scr.querySelector('.cl-vz').textContent = z;
     const tv = scr.querySelector('.cl-t'); tv.textContent = tShow(C.t[z]); tv.style.color = C.t[z] < 20.5 ? '#3e5f9e' : C.t[z] > 22.5 ? '#a8532a' : '';
     scr.querySelector('.cl-u').style.opacity = C.t[z] > 16 && C.t[z] < 28 ? 1 : 0;
-    const fb = scr.querySelector('.cl-fan'); fb.classList.toggle('auto', C.auto); fb.querySelectorAll('i').forEach((b, i) => b.classList.toggle('on', i < fan));
-    scr.querySelector('.cl-fv').textContent = C.auto ? 'Auto' : fan;
+    fdPaint(scr.querySelector('.fd'), fan, C.auto);
     const heat = C.t[z] > 22.5 ? 'Heat pump · warming to ' : C.t[z] < 20.5 ? 'A/C · cooling to ' : 'Holding ';
     scr.querySelector('.cl-heat span').textContent = C.maxc ? 'Max cool · all zones' : C.maxh ? 'Max heat · all zones' : heat + tShow(C.t[z]) + (C.t[z] > 16 && C.t[z] < 28 ? '°' : '');
     scr.querySelector('.cl-dot').style.background = C.t[z] > 22.5 || C.maxh ? '#e2895c' : C.t[z] < 20.5 || C.maxc ? '#7fa1e0' : '#7fbf8e';
@@ -1466,6 +1465,22 @@
     if (tg.hasAttribute('data-clpre')) scr.querySelector('.cl-pre').parentElement.classList.toggle('cl-pre-off', !on);
     if (tg.hasAttribute('data-clfr')) { C.frOn = on; clPaint(fr); }
   }
+  // fan dial: arc fills 1–7, the fan spins faster; drag or tap along the arc
+  function fdPaint(fd, n, auto) {
+    const a = Math.PI * (n - 1) / 6, th = fd.querySelector('.fd-th');
+    fd.style.setProperty('--p', (n - 1) / 6 * 100); fd.style.setProperty('--fs', (1.9 - n * 0.22).toFixed(2) + 's');
+    th.setAttribute('cx', (100 - 78 * Math.cos(a)).toFixed(1)); th.setAttribute('cy', (104 - 78 * Math.sin(a)).toFixed(1));
+    fd.querySelectorAll('.fd-tk').forEach(k => k.classList.toggle('on', +k.dataset.fdk <= n));
+    fd.classList.toggle('auto', auto); fd.querySelector('.fd-n').textContent = n; fd.querySelector('.fd-l').textContent = auto ? 'Auto' : 'Fan';
+  }
+  let fdDrag = null;
+  function fdAim(e) { const fd = fdDrag, r = fd.querySelector('svg').getBoundingClientRect(), fr = frameOf(fd), C = clOf(fr);
+    const x = (e.clientX - r.left) / r.width * 200 - 100, y = 104 - (e.clientY - r.top) / r.height * 124;
+    let a = Math.atan2(Math.max(y, 0), x); const n = Math.max(1, Math.min(7, Math.round(7 - a / Math.PI * 6)));
+    if (C.auto || C.fan[C.sel] !== n) { C.auto = false; C.maxc = C.maxh = false; C.fan[C.sel] = n; if (C.sync) CZ.forEach(k => C.fan[k] = n); clPaint(fr); } }
+  document.addEventListener('pointerdown', e => { const fd = e.target.closest('[data-cldial]'); if (!fd) return; fdDrag = fd; fd.classList.add('drag'); fdAim(e); });
+  document.addEventListener('pointermove', e => { if (fdDrag) fdAim(e); });
+  document.addEventListener('pointerup', () => { if (fdDrag) { fdDrag.classList.remove('drag'); fdDrag = null; } });
   // aim the vents: drag the dot on the pad
   let vDrag = null;
   function vAim(e) { const pad = vDrag, r = pad.getBoundingClientRect(), fr = frameOf(pad), C = clOf(fr);
