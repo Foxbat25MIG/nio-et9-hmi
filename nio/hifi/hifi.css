@@ -1663,3 +1663,36 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .dm-gv{font:500 13px "Red Hat Text";fill:var(--t1)}
 .dm-spin{animation:dmspin 2.4s linear infinite}
 .dm-stop.on .dm-lb{opacity:0}.dm-lb{transition:opacity var(--dur-hover) var(--ease),fill .3s var(--ease)}
+
+/* ---------- v85 ---------- */
+.dm-stop.on .dm-lb{opacity:1;fill:var(--t1);font-weight:600}
+.dm-c{margin-top:2px}
+.dm-car{overflow:visible}
+.dm-tyre{fill:#3a3647}.dm-side{fill:none;stroke:#4d485d;stroke-width:2}
+.dm-rim{stroke:#cfc9de;stroke-width:1.2}.dm-rimin{fill:none;stroke:#fff;stroke-width:1.5;opacity:.7}
+.dm-slot{fill:#a9a3c0;opacity:.55}
+.dm-liner{fill:none;stroke:#d6d1e4;stroke-width:12}
+.dm-panel{stroke:none}
+.dm-lip{fill:none;stroke:#b3abcb;stroke-width:2.5}
+.dm-crease{stroke:#fff;stroke-width:2}.dm-sill{stroke:#b3abcb;stroke-width:2}
+.dm-hl,.dm-gap{display:none}
+/* doors under the lock card */
+.qc-lockw{display:flex;flex-direction:column;border-radius:22px;background:var(--s1);border:1px solid var(--line);overflow:hidden}
+.qc-lockw .qc-lock{border-radius:21px;border:none}
+.qc-dchev{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.14);transition:transform var(--dur-panel) var(--ease),background-color var(--dur-hover) var(--ease)}
+.qc-dchev .ms{color:inherit}
+.qc-lock.un .qc-dchev{background:var(--s2)}
+.qc-lockw.exp .qc-dchev{transform:rotate(180deg)}
+.qc-doors{display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--dur-panel) var(--ease)}
+.qc-lockw.exp .qc-doors{grid-template-rows:1fr}
+.qc-dl{overflow:hidden;padding:0 16px}
+.qc-lockw.exp .qc-dl{padding:6px 16px 10px}
+.qc-dr{display:grid;grid-template-columns:1fr auto 72px;align-items:center;gap:10px;min-height:46px;border-top:1px solid var(--s2)}
+.qc-dr:first-child{border-top:none}
+.qc-dr .b2{font-size:15px;color:var(--t1)}.qc-dr .qc-ds{font-size:13px}
+.qc-dr .wi-b{justify-content:center}
+.qc-dr.open .qc-ds{color:#b2403a}.qc-dr.open .wi-b{background:#fde3df;color:#8a2e29}
+.dm-v{stroke-dasharray:none!important;stroke-dashoffset:0!important}
+.dm-ccard{overflow:hidden}
+.dm-body .dm-panel{stroke:none!important;fill:url(#dmPanel)!important}
+.dm-body .dm-liner{fill:none!important;stroke:#d6d1e4!important;stroke-width:12!important}

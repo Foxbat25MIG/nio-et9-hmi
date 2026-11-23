@@ -1527,6 +1527,8 @@
     const svg = qc.querySelector('.ct');
     svg.querySelectorAll('.ct-door').forEach(d => { const k = d.dataset.cp, s = k.endsWith('l') ? 1 : -1; d.style.transform = Q.open[k] ? `rotate(${s * 24}deg)` : ''; d.classList.toggle('open', !!Q.open[k]); });
     svg.querySelectorAll('.ct-dtag').forEach(g => g.classList.toggle('on', !!Q.open[g.dataset.dtag]));
+    qc.querySelector('.qc-lockw').classList.toggle('exp', !!Q.doors);
+    qc.querySelectorAll('[data-dr]').forEach(r => { const o = !!Q.open[r.dataset.dr]; r.classList.toggle('open', o); r.querySelector('.qc-ds').textContent = o ? 'Open' : 'Closed'; r.querySelector('[data-cp]').textContent = o ? 'Close' : 'Open'; });
     svg.querySelectorAll('.ct-lid').forEach(l => l.classList.toggle('red', l.classList.contains('open')));
     svg.querySelector('.ct-frunk').classList.toggle('open', !!Q.open.frunk); svg.querySelector('.ct-boot').classList.toggle('open', !!Q.open.boot);
     svg.querySelector('.ct-port').classList.toggle('open', Q.port);
@@ -1563,6 +1565,7 @@
   function qcClick(t) {
     const qc = t.closest('[data-screen="car"] .qc:not(.ty)'); if (!qc) return false;
     const fr = frameOf(t), Q = qcOf(fr);
+    if (t.closest('[data-qcdoors]')) { Q.doors = !Q.doors; qcPaint(fr); return true; }
     if (t.closest('[data-qclock]')) {
       if (Q.lock) { Q.lock = false; toast(fr, 'Unlocked'); }
       else if (Object.values(Q.open).some(Boolean)) toast(fr, 'Close the doors, frunk and boot to lock');
@@ -1657,13 +1660,13 @@
     const D = root._dm || (root._dm = { m: 'Comfort', c: { Steering: 'Standard', Suspension: 'Soft', Power: 'Smooth', Regeneration: 'High', Traction: 'Normal' } });
     const i = DM.indexOf(D.m), col = DMC[D.m], set = D.m === 'Custom' ? D.c : DMSET[D.m], [h, r, dy, amp] = DMR[D.m];
     root.style.setProperty('--mc', col);
-    { const TH = [165, 127.5, 90, 52.5, 15], th = TH[i], P = a => [160 + 96 * Math.cos(a * Math.PI / 180), 92 + 96 * Math.sin(a * Math.PI / 180)];
-      const [x1, y1] = P(165), [x2, y2] = P(th - 0.01); root.querySelector('.dm-v').setAttribute('d', `M${x1.toFixed(1)} ${y1.toFixed(1)}A96 96 0 0 0 ${x2.toFixed(1)} ${y2.toFixed(1)}`);
-      root.querySelector('.dm-capg').style.transform = `rotate(${th - 90}deg)`; }
+    { const TH = [195, 232.5, 270, 307.5, 345], th = TH[i], P = a => [160 + 96 * Math.cos(a * Math.PI / 180), 138 + 96 * Math.sin(a * Math.PI / 180)];
+      const [x1, y1] = P(195), [x2, y2] = P(th + 0.01); root.querySelector('.dm-v').setAttribute('d', `M${x1.toFixed(1)} ${y1.toFixed(1)}A96 96 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`);
+      root.querySelector('.dm-capg').style.transform = `rotate(${th - 270}deg)`; }
     root.querySelectorAll('.dm-stop').forEach(s => s.classList.toggle('on', s.dataset.dm === D.m));
     root.querySelector('.dm-n').textContent = D.m; root.querySelector('.dm-d').textContent = DMD[D.m];
     const car = root.querySelector('.dm-car'); car.style.setProperty('--dy', (dy * 1.8) + 'px');
-    root.querySelector('.dm-h').textContent = h; root.querySelector('.dm-gv').textContent = h; root.querySelector('.dm-k').textContent = set.Suspension; root.querySelector('.dm-r').textContent = r;
+    root.querySelector('.dm-h').textContent = h; root.querySelector('.dm-k').textContent = set.Suspension; root.querySelector('.dm-r').textContent = r;
     root.querySelector('.dm-st').textContent = D.m === 'Custom' ? 'Custom · tap to change' : D.m + ' settings';
     root.querySelector('.dm-set').classList.toggle('locked', D.m !== 'Custom');
     
@@ -1677,9 +1680,9 @@
     if (e.target.closest('[data-dmsave]')) { toast(frameOf(root), 'Custom mode saved to Emma’s profile'); }
   });
   let dmDrag = null;
-  function dmAim(e) { const svg = dmDrag.querySelector('.dm-dial'), r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 320 - 160, y = (e.clientY - r.top) / r.height * 232 - 92;
-    let a = Math.atan2(y, x) * 180 / Math.PI; if (a < 0) a = x < 0 ? 165 : 15; a = Math.max(15, Math.min(165, a));
-    const i = Math.round((165 - a) / 37.5); if (DM[i] !== dmDrag._dm.m) { dmDrag._dm.m = DM[i]; dmPaint(dmDrag); } }
+  function dmAim(e) { const svg = dmDrag.querySelector('.dm-dial'), r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 320 - 160, y = (e.clientY - r.top) / r.height * 220 - 138;
+    let a = Math.atan2(y, x) * 180 / Math.PI; if (a < 0) a += 360; if (a < 180) a = x < 0 ? 195 : 345; a = Math.max(195, Math.min(345, a));
+    const i = Math.round((a - 195) / 37.5); if (DM[i] !== dmDrag._dm.m) { dmDrag._dm.m = DM[i]; dmPaint(dmDrag); } }
   document.addEventListener('pointerdown', e => { const k = e.target.closest('[data-dmknob]'); if (!k) return; dmDrag = k.closest('[data-drv2]'); dmDrag.classList.add('dm-drag'); dmAim(e); });
   document.addEventListener('pointermove', e => { if (dmDrag) dmAim(e); });
   document.addEventListener('pointerup', () => { if (dmDrag) dmDrag.classList.remove('dm-drag'); dmDrag = null; });
