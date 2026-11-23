@@ -1372,7 +1372,7 @@
     const w = fr.querySelector('.st-wrap'); if (w) { const S = stOf(w); CZ.forEach(k => { S.s[k].heat = lvl(C.t[k]); if (S.s[k].heat !== 'Off') S.s[k].vent = 'Off'; }); stPaint(w); }
   }
   function clPaint(fr) {
-    const C = clOf(fr), scr = fr.querySelector('[data-screen="climate"]'); if (!scr) return;
+    const C = clOf(fr), scr = fr.querySelector('.cl-pane'); if (!scr) return;
     const z = C.sel, fan = C.auto ? autoFan(C, z) : C.fan[z];
     fr.querySelectorAll('.dock .clim .t').forEach(el => el.textContent = tShow(C.t[el.closest('.clim').classList.contains('r') ? 'Passenger' : 'Driver']) + (C.t[el.closest('.clim').classList.contains('r') ? 'Passenger' : 'Driver'] > 16 && C.t[el.closest('.clim').classList.contains('r') ? 'Passenger' : 'Driver'] < 28 ? '°' : ''));
     const svg = scr.querySelector('.cz-svg');
@@ -1409,7 +1409,7 @@
     clAir(fr);
   }
   function clAir(fr) {
-    const C = clOf(fr), scr = fr.querySelector('[data-screen="climate"]'); if (!scr) return;
+    const C = clOf(fr), scr = fr.querySelector('.cl-pane'); if (!scr) return;
     const pm = Math.round(C.pm), out = 22, col = v => v <= 12 ? '#7fbf8e' : v <= 35 ? '#e5b45a' : '#e07a5f';
     const a = scr.querySelector('[data-aq="in"]'), b = scr.querySelector('[data-aq="out"]');
     a.style.setProperty('--p', Math.min(100, pm * 2)); a.style.stroke = col(pm); b.style.setProperty('--p', Math.min(100, out * 2)); b.style.stroke = col(out);
@@ -1444,7 +1444,7 @@
   }
   function clClick(t) {
     if (seatqClick(t) || qcClick(t) || tyClick(t)) return true;
-    const scr = t.closest('[data-screen="climate"]'), fr = frameOf(t);
+    const scr = t.closest('.cl-pane'), fr = frameOf(t);
     const df = t.closest('.dk[data-cldef]');
     if (df) { const C = clOf(fr); C.deff = !C.deff; if (C.deff) { C.ac = true; } clPaint(fr); toast(fr, C.deff ? 'Front defrost on · full fan to the windscreen' : 'Front defrost off'); return true; }
     if (!scr) return false;
@@ -1478,7 +1478,7 @@
     return false;
   }
   function clTog(tg) {
-    const scr = tg.closest('[data-screen="climate"]'); if (!scr) return; const fr = frameOf(tg), C = clOf(fr), on = tg.classList.contains('on');
+    const scr = tg.closest('.cl-pane'); if (!scr) return; const fr = frameOf(tg), C = clOf(fr), on = tg.classList.contains('on');
     if (tg.hasAttribute('data-clpur')) { C.pur = on; clPurify(fr); }
     if (tg.hasAttribute('data-clfrag')) scr.querySelector('.cl-scents').classList.toggle('off', !on);
     if (tg.hasAttribute('data-clfollow')) { C.follow = on; clFollow(fr); toast(fr, on ? 'Seat heating now follows the cabin temperature' : 'Seat heating is set by hand'); }
@@ -1509,7 +1509,7 @@
   document.addEventListener('pointerdown', e => { const pad = e.target.closest('[data-vpad]'); if (!pad) return; vDrag = pad; pad.classList.add('drag'); pad.classList.remove('sweep'); vAim(e); });
   document.addEventListener('pointermove', e => { if (vDrag) vAim(e); });
   document.addEventListener('pointerup', () => { if (vDrag) { vDrag.classList.remove('drag'); vDrag = null; } });
-  document.querySelectorAll('.frame').forEach(fr => { if (fr.querySelector('[data-screen="climate"]')) { clPaint(fr); clPurify(fr); wcPaint(fr); } });
+  document.querySelectorAll('.frame').forEach(fr => { if (fr.querySelector('.cl-pane')) { clPaint(fr); clPurify(fr); wcPaint(fr); } });
 
   /* ---------- Quick controls: doors, frunk, boot, windows, mirrors, charge port, sunshades, lights ---------- */
   const DOORN = { dfl: 'driver door', dfr: 'passenger door', drl: 'rear left door', drr: 'rear right door', frunk: 'frunk', boot: 'boot' };
@@ -1583,4 +1583,15 @@
     return false;
   }
   document.querySelectorAll('.frame').forEach(fr => { qcPaint(fr); tyPaint(fr); });
+
+  // one live Climate panel: it sits in Car › Climate when that page is open, otherwise on the Climate screen
+  function clHome() {
+    document.querySelectorAll('.frame').forEach(fr => {
+      const pane = fr.querySelector('.cl-pane'), slot = fr.querySelector('.cl-slot'), scr = fr.querySelector('[data-screen="climate"]'); if (!pane || !slot || !scr) return;
+      const inCar = slot.closest('.pg.on') && slot.closest('.scr.on');
+      const want = inCar ? slot : scr; if (pane.parentElement !== want) want.appendChild(pane);
+    });
+  }
+  document.addEventListener('click', () => requestAnimationFrame(clHome));
+  clHome();
 })();

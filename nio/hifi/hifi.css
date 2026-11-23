@@ -1418,3 +1418,29 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .qc-car{overflow:hidden;padding:14px 0}
 .qc-car .ct{height:86%}
 .ty .qc-car .ct{height:66%}
+
+/* ---------- v79: dotted moving airflow · smooth glass · Car › Climate ---------- */
+.mi-glass{fill:none;stroke:#c3cdee;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.mi-air{fill:none;stroke:#9fb2ea;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:.1 4.6;animation:miflow 1.4s linear infinite}
+.mi-ah{fill:none;stroke:#9fb2ea;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
+.cl-mode:not(.on) .mi-air{animation-duration:2.6s;opacity:.7}
+.cl-mode.on .mi-air,.cl-mode.on .mi-ah{stroke:#4f6fc8}
+.cl-mode.on .mi-air{animation-duration:.9s}
+@keyframes miflow{to{stroke-dashoffset:-9.4}}
+.cl-mode .mi-ar{display:none}
+.cl-slot{flex:1;display:flex;min-height:0;min-width:0}
+.cl-slot .cl-pane{padding:0;background:transparent;gap:12px;flex:1;border-radius:0}
+.cl-slot .cl-cab{width:220px;padding:14px}
+.cl-slot .cl-cabrow .bs{display:none}
+.cl-slot .cl-top{grid-template-columns:minmax(0,1fr);gap:10px}
+.cl-slot .cl-vsep{display:none}
+.cl-slot .fd{margin:0 auto}
+.cl-slot .cl-qrow .cl-q span{font-size:12px}
+.cl-slot .cl-modes{grid-template-columns:repeat(2,1fr)}
+.cl-slot .cl-vent{flex-direction:column;align-items:stretch}
+.cl-slot .vent-pad{width:100%}
+.cl-slot .cl-aq{flex-wrap:wrap}
+.cl-slot .cl-scents{grid-template-columns:1fr}
+.cl-slot .cl-frrow,.cl-slot .cl-trayrow,.cl-slot .cl-pre{flex-wrap:wrap}
+.cl-slot .snd-tabs div{font-size:12px}
+.cl-slot .snd-tabs{gap:2px}.cl-slot .snd-tabs div{flex:auto;white-space:nowrap;padding:0 8px}
