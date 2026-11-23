@@ -915,3 +915,18 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .st-sidewrap,.st-sidewrap svg{background:none!important}
 .st-side .sv-panel-in{fill:#f4f2f9!important}
 .ss-leg{transform-origin:256px 163px}
+/* Seats v4: ET9 cream Nappa, quilted centre panels, pillow headrest, graphite base */
+.sv-floor{fill:#e4e0ec}
+.sv-part>path:first-child{fill:url(#svSeg);stroke:#d3c9ba;stroke-width:1}
+.ss-back>path:first-child{fill:url(#svSegB)}
+.sv-q{fill:url(#quilt);stroke:none;opacity:.9}
+.sv-part.act>path:first-child{fill:url(#svAct);stroke:#9d8ff4}
+.sv-part.act .sv-q{fill:url(#quiltA)}
+.sv-st{stroke:#d8cfc1}
+.ss-lum{stroke:#b3a6ef;stroke-width:4}
+.ss-back{transform-origin:116px 164px}.ss-cush{transform-origin:132px 170px}.ss-leg{transform-origin:252px 162px}
+.tv-cush,.tv-back{stroke:#d6ccbd}
+.tv-bol{fill:#e2dace}.tv-head{fill:#ece5da;stroke:#d6ccbd;stroke-width:.8}
+.tv-q{fill:url(#tvQuilt)}
+.st-seat.on .tv-q{fill:url(#tvQuiltA)}
+.st-seat.on .tv-head{fill:#c8d4f6;stroke:#7a6bf2}

@@ -964,11 +964,11 @@
     q('.st-mass-s').textContent = v.mass ? `16-point hot stone · intensity ${v.mint} · speed ${v.mspd}` : '16-point hot stone · off';
   }
   const ADJ = {
-    basic: { parts: ['cush', 'back'], nodes: [{ k: 'fore', label: 'Fore and aft', unit: ' %', ax: 'h', x: 196, y: 222, gap: 26, lo: 0, hi: 100, st: 5 }, { k: 'height', label: 'Height', unit: ' %', ax: 'v', x: 300, y: 172, gap: 22, lo: 0, hi: 100, st: 5, flip: true }, { k: 'recline', label: 'Backrest recline', unit: '°', ax: 'h', x: 76, y: 86, gap: 22, lo: 0, hi: 45, st: 1, flip: true }] },
-    tilt: { parts: ['cush', 'back'], nodes: [{ k: 'tilt', label: 'Cushion tilt', unit: '°', ax: 'v', x: 292, y: 148, gap: 20, lo: -5, hi: 10, st: 1, flip: true }, { k: 'lumbar', label: 'Lumbar support', unit: ' %', ax: 'h', x: 176, y: 110, gap: 22, lo: 0, hi: 100, st: 5 }] },
-    side: { parts: ['cush', 'back'], nodes: [{ k: 'bolster', label: 'Side bolsters', unit: ' %', ax: 'h', x: 196, y: 108, gap: 24, lo: 0, hi: 100, st: 5 }] },
-    head: { parts: ['head'], nodes: [{ k: 'headh', label: 'Headrest height', unit: ' %', ax: 'v', x: 180, y: 28, gap: 18, lo: 0, hi: 100, st: 5, flip: true }, { k: 'headt', label: 'Headrest tilt', unit: ' %', ax: 'h', x: 80, y: 28, gap: 20, lo: 0, hi: 100, st: 5 }] },
-    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 286, y: 222, gap: 22, lo: 0, hi: 100, st: 5 }] } };
+    basic: { parts: ['cush', 'back'], nodes: [{ k: 'fore', label: 'Fore and aft', unit: ' %', ax: 'h', x: 190, y: 224, gap: 26, lo: 0, hi: 100, st: 5 }, { k: 'height', label: 'Height', unit: ' %', ax: 'v', x: 296, y: 184, gap: 22, lo: 0, hi: 100, st: 5, flip: true }, { k: 'recline', label: 'Backrest recline', unit: '°', ax: 'h', x: 52, y: 96, gap: 20, lo: 0, hi: 45, st: 1, flip: true }] },
+    tilt: { parts: ['cush', 'back'], nodes: [{ k: 'tilt', label: 'Cushion tilt', unit: '°', ax: 'v', x: 296, y: 148, gap: 20, lo: -5, hi: 10, st: 1, flip: true }, { k: 'lumbar', label: 'Lumbar support', unit: ' %', ax: 'h', x: 188, y: 104, gap: 22, lo: 0, hi: 100, st: 5 }] },
+    side: { parts: ['cush', 'back'], nodes: [{ k: 'bolster', label: 'Side bolsters', unit: ' %', ax: 'h', x: 200, y: 100, gap: 24, lo: 0, hi: 100, st: 5 }] },
+    head: { parts: ['head'], nodes: [{ k: 'headh', label: 'Headrest height', unit: ' %', ax: 'v', x: 192, y: 22, gap: 18, lo: 0, hi: 100, st: 5, flip: true }, { k: 'headt', label: 'Headrest tilt', unit: ' %', ax: 'h', x: 70, y: 22, gap: 20, lo: 0, hi: 100, st: 5 }] },
+    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 286, y: 224, gap: 22, lo: 0, hi: 100, st: 5 }] } };
   function stAdjust(w, k, sgn) {
     const S = stOf(w);
     const n = Object.values(ADJ).flatMap(m => m.nodes).find(x => x.k === k); if (!n) return;
