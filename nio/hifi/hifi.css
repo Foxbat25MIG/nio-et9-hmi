@@ -1008,3 +1008,13 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .st-side .ss-back.act .ss-head:not(.act) image{filter:none}
 .ss-back{transform-origin:110px 180px}.ss-cush{transform-origin:95px 225px}.ss-leg{transform-origin:209px 222px}.ss-head{transform-origin:60px 40px}
 .ss-back,.ss-cush,.ss-leg,.ss-head{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+/* steppers: drawn − and +, even spacing */
+.stp-c{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:8px}
+.stp-v{text-align:center;font:500 18px "Red Hat Display";color:var(--t1)}
+.stp-b{width:40px;height:40px;border-radius:12px;background:var(--s1);box-shadow:0 1px 2px rgba(36,30,72,.08)}
+.stp-b svg{width:20px;height:20px}
+.stp-b path{fill:none;stroke:var(--t1);stroke-width:2;stroke-linecap:round}
+.stp-b:active path{stroke:var(--on-sel)}
+.stp{padding:12px 14px;gap:8px}
+.ss-leg{transform-origin:209px 222px}
+.ss-back{transform-origin:92px 183px}
