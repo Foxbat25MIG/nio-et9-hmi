@@ -1297,3 +1297,46 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .dock .dvol .sl{width:150px}
 /* fan spins around its hub, not its bounding box */
 .fd-fan{transform-box:view-box;transform-origin:0 0}
+
+/* ---------- v77: airflow tiles (cabin glow + person + arrows) ---------- */
+.cl-mi{width:80px;height:62px}
+.mi-cab{fill:none;stroke:#d6d1e4;stroke-width:2;stroke-linecap:round}
+.mi-gl{fill:none;stroke:#c3cdee;stroke-width:3.5;stroke-linecap:round}
+.mi-p{fill:#a29db8;transition:fill .3s var(--ease)}
+.mi-g{fill:#a9bbef;opacity:.35;filter:blur(3px);transition:opacity .4s var(--ease),fill .4s var(--ease)}
+.mi-ar{fill:none;stroke:#8f8ba3;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s var(--ease)}
+.cl-mode.on .mi-g{fill:#7f9be6;opacity:.6;animation:miglow 2.4s var(--ease) infinite alternate}
+.cl-mode.on .mi-ar{stroke:#4f6fc8}
+.cl-mode.on .mi-p{fill:var(--on-sel)}
+.cl-mode.on .mi-gl{stroke:#8ea7e6}
+@keyframes miglow{from{opacity:.35}to{opacity:.75}}
+
+/* ---------- seat warm–cool control ---------- */
+.wc{display:flex;flex-direction:column;gap:8px}
+.wc-h{display:flex;justify-content:space-between;align-items:baseline}
+.wc-st{font-size:13px}
+.wc[data-v="cool"] .wc-st{color:#3e5f9e}.wc[data-v="warm"] .wc-st{color:#a8532a}
+.wc-row{display:flex;align-items:center;gap:10px}
+.wc-ic{display:flex}.wc-ic .ms{font-size:22px}.wc-ic.c .ms{color:#6f8fd8}.wc-ic.w .ms{color:#d77a52}
+.wc-seg{flex:1;display:grid;grid-template-columns:repeat(3,1fr) 1.4fr repeat(3,1fr);gap:4px;padding:4px;background:var(--s2);border-radius:16px}
+.wc-seg i{height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font:500 15px "Red Hat Text";font-style:normal;color:var(--t3);cursor:pointer;user-select:none;transition:background-color var(--dur-hover) var(--ease),color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.wc-seg i:hover{background:var(--s3)}.wc-seg i:active{transform:scale(.94)}
+.wc-seg i.cool.on{background:#dbe6fb;color:#3e5f9e}.wc-seg i.cool.on.cur{background:#a9c0f0;color:#1f3a73}
+.wc-seg i.warm.on{background:#fbe3d6;color:#a8532a}.wc-seg i.warm.on.cur{background:#f2b593;color:#6e2e0e}
+.wc-seg i.off.on{background:var(--s1);color:var(--t1);box-shadow:0 1px 4px rgba(36,30,72,.1)}
+
+/* bottom-bar seat state: orange when heating, blue when ventilating, hidden when off */
+.dk[data-seatq] .lv{transition:opacity var(--dur-hover) var(--ease)}
+.dk[data-seatq] .lv[data-v="off"]{opacity:0}
+.dk[data-seatq] .lv[data-v="cool"] b{background:#6f9be0}
+.dk[data-seatq] .lv[data-v="warm"] b{background:#e2895c}
+.dk[data-seatq] .lv b.off{background:var(--s3)!important}
+
+/* quick panel above the bottom bar */
+.seatq{position:absolute;bottom:132px;left:50%;margin-left:-40px;width:460px;z-index:40;background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);border:1px solid rgba(255,255,255,.8);border-radius:28px;padding:18px 20px 20px;box-shadow:0 18px 48px rgba(36,30,72,.18);display:flex;flex-direction:column;gap:16px;
+  opacity:0;transform:translateY(16px) scale(.97);transform-origin:60% 100%;pointer-events:none;transition:opacity var(--dur-panel) var(--ease),transform var(--dur-panel) var(--ease)}
+.seatq.on{opacity:1;transform:none;pointer-events:auto}
+.sq-h{display:flex;justify-content:space-between;align-items:center}
+.sq-x{width:40px;height:40px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sq-x:hover{background:var(--s3)}
+.sq-all{justify-content:space-between}

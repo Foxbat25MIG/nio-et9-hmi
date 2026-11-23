@@ -195,7 +195,7 @@
       let a = '';
       if (k === 'park') a = 'Parking Trois Glands is a 5 minute walk from Mudam and fits the ET9. Reserve a space from 13:55?<div class="acts" style="margin-top:10px"><div class="btn pri sm" data-ask="reserve">Reserve</div><div class="btn sec sm nomi-x">Not now</div></div>';
       if (k === 'reserve') a = 'Done. Level −2, bay 14, from 13:55 until 15:55. I’ve added it to your trip.';
-      if (k === 'seat') { a = 'Driver seat heat set to 2.'; fr.querySelectorAll('.dk .lv b').forEach((b, i) => b.classList.toggle('off', i >= 2)); }
+      if (k === 'seat') { a = 'Driver seat heat set to 2.'; const sw = fr.querySelector('.st-wrap'); if (sw) { const S = stOf(sw); S.s.Driver.heat = '2'; S.s.Driver.vent = 'Off'; stPaint(sw); } }
       if (k === 'calm') { a = 'Playing Memory Box by Peter Cat Recording Co.'; setSong(fr, songIndex('Memory Box', 'Peter Cat Recording Co.'), true); }
       if (k === 'air') { const q = document.querySelector('[data-live="aqi"]'), x = document.querySelector('[data-live="aqitext"]'); a = q && q.textContent.trim() && q.textContent !== 'AQI –' ? `Outside air is ${q.textContent}${x ? ', ' + x.textContent : ''}. Cabin filtering is on.` : 'Outside air quality is good today. Cabin filtering is on.'; }
       bubble(log, 'ai', a); say(null, a.replace(/<[^>]+>/g, ''));
@@ -927,6 +927,7 @@
   const stOf = w => w._st || (w._st = { sel: 'Driver', s: JSON.parse(JSON.stringify(SEATS0)), mem: {} });
   const parked = w => { const fr = frameOf(w), g = fr.querySelector('.gear .on'); return !g || g.textContent.trim() === 'P'; };
   function stPaint(w) {
+    try { wcPaint(frameOf(w)); } catch (e) {}
     const S = stOf(w), v = S.s[S.sel], rear = S.sel.startsWith('Rear');
     w.querySelectorAll('[data-seatpick]').forEach(g => { const n = g.dataset.seatpick, s = S.s[n]; g.classList.toggle('on', n === S.sel);
       g.querySelector('.b-heat').classList.toggle('lit', s.heat !== 'Off'); g.querySelector('.b-vent').classList.toggle('lit', s.vent !== 'Off'); g.querySelector('.b-mass').classList.toggle('lit', s.mass); });
@@ -1368,9 +1369,7 @@
   function clFollow(fr) {
     const C = clOf(fr); if (!C.follow) return;
     const lvl = v => v >= 24 ? '2' : v >= 23 ? '1' : 'Off';
-    const w = fr.querySelector('.st-wrap'); if (w) { const S = stOf(w); CZ.forEach(k => S.s[k].heat = lvl(C.t[k])); stPaint(w); }
-    const n = lvl(C.t.Driver) === 'Off' ? 0 : +lvl(C.t.Driver);
-    fr.querySelectorAll('.dk .lv b').forEach((b, i) => b.classList.toggle('off', i >= n));
+    const w = fr.querySelector('.st-wrap'); if (w) { const S = stOf(w); CZ.forEach(k => { S.s[k].heat = lvl(C.t[k]); if (S.s[k].heat !== 'Off') S.s[k].vent = 'Off'; }); stPaint(w); }
   }
   function clPaint(fr) {
     const C = clOf(fr), scr = fr.querySelector('[data-screen="climate"]'); if (!scr) return;
@@ -1423,7 +1422,28 @@
     fr._clpi = setInterval(() => { const goal = C.pur ? 5 : C.recirc ? 12 : 18; C.pm += (goal - C.pm) * 0.18; if (Math.abs(goal - C.pm) < 0.4) { C.pm = goal; clearInterval(fr._clpi); } clAir(fr); }, 400);
   }
   const KEEP = { off: 'Climate turns off when you lock the car.', pet: 'Holds 21° while you’re away and shows “My pet is fine” on the screen for passers-by.', camp: 'Keeps the cabin comfortable, lights and power on all night. Uses about 1 % of battery per hour.' };
+  /* ---------- seat warm–cool: one control, Cool 3 … Off … Warm 3; quick panel from the bottom bar ---------- */
+  const wcVal = s => s.heat !== 'Off' ? +s.heat : s.vent !== 'Off' ? -s.vent : 0;
+  function wcPaint(fr) {
+    const w = fr.querySelector('.st-wrap'); if (!w) return; const S = stOf(w);
+    fr.querySelectorAll('.wc').forEach(c => { const n = c.dataset.wc === 'sel' ? S.sel : c.dataset.wc, v = wcVal(S.s[n]);
+      c.querySelectorAll('[data-wcv]').forEach(i => { const x = +i.dataset.wcv; i.classList.toggle('on', v === 0 ? x === 0 : (v < 0 ? x < 0 && x >= v : x > 0 && x <= v)); i.classList.toggle('cur', x === v); });
+      c.dataset.v = v < 0 ? 'cool' : v > 0 ? 'warm' : 'off';
+      const st = c.querySelector('.wc-st'); if (st) st.textContent = v < 0 ? 'Ventilating · ' + -v : v > 0 ? 'Heating · ' + v : 'Off'; });
+    const d = wcVal(S.s.Driver);
+    fr.querySelectorAll('.dk[data-seatq] .lv').forEach(lv => { lv.dataset.v = d < 0 ? 'cool' : d > 0 ? 'warm' : 'off'; lv.querySelectorAll('b').forEach((b, i) => b.classList.toggle('off', i >= Math.abs(d))); });
+  }
+  function seatqClick(t) {
+    const fr = frameOf(t), q = fr.querySelector('.seatq'); if (!q) return false;
+    if (t.closest('[data-seatq]')) { q.classList.toggle('on'); fr.querySelector('[data-seatq]').classList.toggle('on', q.classList.contains('on')); wcPaint(fr); return true; }
+    if (t.closest('[data-sqx]') || t.closest('.sq-all') || (q.classList.contains('on') && !t.closest('.seatq'))) { q.classList.remove('on'); fr.querySelector('[data-seatq]').classList.remove('on'); if (t.closest('[data-sqx]')) return true; }
+    const wv = t.closest('[data-wcv]');
+    if (wv) { const w = fr.querySelector('.st-wrap'), S = stOf(w), c = wv.closest('.wc'), n = c.dataset.wc === 'sel' ? S.sel : c.dataset.wc, x = +wv.dataset.wcv;
+      S.s[n].heat = x > 0 ? String(x) : 'Off'; S.s[n].vent = x < 0 ? String(-x) : 'Off'; stPaint(w); return true; }
+    return false;
+  }
   function clClick(t) {
+    if (seatqClick(t)) return true;
     const scr = t.closest('[data-screen="climate"]'), fr = frameOf(t);
     const df = t.closest('.dk[data-cldef]');
     if (df) { const C = clOf(fr); C.deff = !C.deff; if (C.deff) { C.ac = true; } clPaint(fr); toast(fr, C.deff ? 'Front defrost on · full fan to the windscreen' : 'Front defrost off'); return true; }
@@ -1489,5 +1509,5 @@
   document.addEventListener('pointerdown', e => { const pad = e.target.closest('[data-vpad]'); if (!pad) return; vDrag = pad; pad.classList.add('drag'); pad.classList.remove('sweep'); vAim(e); });
   document.addEventListener('pointermove', e => { if (vDrag) vAim(e); });
   document.addEventListener('pointerup', () => { if (vDrag) { vDrag.classList.remove('drag'); vDrag = null; } });
-  document.querySelectorAll('.frame').forEach(fr => { if (fr.querySelector('[data-screen="climate"]')) { clPaint(fr); clPurify(fr); } });
+  document.querySelectorAll('.frame').forEach(fr => { if (fr.querySelector('[data-screen="climate"]')) { clPaint(fr); clPurify(fr); wcPaint(fr); } });
 })();
