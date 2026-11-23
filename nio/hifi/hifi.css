@@ -969,3 +969,12 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .st-nodriver{display:flex}.st-isdriver .st-nodriver{display:none!important}
 .ss-back{transform-origin:96px 180px}.ss-cush{transform-origin:103px 193px}.ss-leg{transform-origin:232px 173px}
 .ss-head{transform-origin:75px 40px}
+/* Seats v8: Adi's render, split into parts; Render / Silhouette */
+.st-side image{transition:opacity .4s var(--ease),filter .4s var(--ease)}
+.st-side .simg{opacity:0}
+.sv-sil .st-side .simg{opacity:1}.sv-sil .st-side .rimg{opacity:0}
+.st-side .sv-part.act>image{filter:drop-shadow(0 0 1.5px rgba(122,107,242,1)) drop-shadow(0 0 6px rgba(122,107,242,.45))}
+.ss-back.act .ss-head:not(.act) image{filter:none}
+.ss-back{transform-origin:90px 169px}.ss-cush{transform-origin:115px 169px}.ss-leg{transform-origin:214px 152px}
+.ss-all{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.sv-floor{fill:#e2deeb}

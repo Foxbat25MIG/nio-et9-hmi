@@ -941,19 +941,17 @@
     w.querySelectorAll('[data-seattog]').forEach(tg => tg.classList.toggle('on', !!v[tg.dataset.seattog]));
     // side view (adjustment view): parts follow the values, active parts and arrow nodes follow the chosen mode
     const q = s => w.querySelector(s);
-    q('.ss-all').style.transform = `translate(${(v.fore - 50) * .6}px, ${-(v.height - 50) * .25}px)`;
+    q('.ss-all').style.transform = `translate(${(v.fore - 50) * .4}px, ${-(v.height - 50) * .16}px)`;
     q('.ss-back').style.transform = `rotate(${-(v.recline - 12) * .7}deg)`;
     q('.ss-cush').style.transform = `rotate(${-(v.tilt - 2)}deg)`;
-    q('.ss-head').style.transform = `translate(${-(v.headt - 50) * .12}px, ${-(v.headh - 50) * .2}px)`;
+    q('.ss-head').style.transform = `translate(${-(v.headt - 50) * .08}px, ${-(v.headh - 50) * .14}px)`;
     // live recline readout: arc from upright to the backrest line, label in degrees
-    { const rot = (v.recline - 12) * .7 + 14, rad = (-90 - rot) * Math.PI / 180, R = 64, cx = 96, cy = 180;
+    { const rot = (v.recline - 12) * .7 + 10, rad = (-90 - rot) * Math.PI / 180, R = 64, cx = 90, cy = 169;
       const ex = cx + R * Math.cos(rad), ey = cy + R * Math.sin(rad);
       q('.ann-arc').setAttribute('d', `M${cx} ${cy - R}A${R} ${R} 0 0 0 ${ex.toFixed(1)} ${ey.toFixed(1)}`);
       q('.ann-r').setAttribute('x2', (cx + 128 * Math.cos(rad)).toFixed(1)); q('.ann-r').setAttribute('y2', (cy + 128 * Math.sin(rad)).toFixed(1));
     }
-    q('.ss-lum').style.strokeWidth = (2 + v.lumbar / 12).toFixed(1);
-    q('.ss-leg').style.transform = `rotate(${(1 - v.leg / 100) * 38}deg)`;
-    q('.ss-ext').style.transform = `translateX(${(v.ext || 0) * .25}px)`;
+        q('.ss-leg').style.transform = `rotate(${(1 - v.leg / 100) * 30}deg)`;
     q('.ss-leg').style.opacity = S.sel === 'Driver' ? 0 : 1;
     if (S.sel === 'Driver' && S.mode === 'leg') S.mode = 'cush'; w.classList.toggle('st-isdriver', S.sel === 'Driver');
     const M = ADJ[S.mode || 'cush'];
@@ -966,8 +964,8 @@
       q('.sv-nodes').innerHTML = M.nodes.map(n => {
         const g = n.gap || 22, h = n.ax === 'h';
         const arrow = (sgn, rot) => `<g class="nd-a" data-adj="${n.k}|${sgn}" data-tap transform="translate(${n.x + (h ? g * sgn : 0)} ${n.y + (h ? 0 : g * sgn)})"><g class="nd-ai"><circle r="14"/><path d="M-4.5 2.5L0 -2.5L4.5 2.5" transform="rotate(${rot})"/></g></g>`;
-        const lx = h ? n.x : n.lab === 'r' ? n.x + 22 : n.x - 22, ly = n.y + 4;
-        return `<g class="nd" data-node="${n.k}">${arrow(-1, h ? -90 : 0)}${arrow(1, h ? 90 : 180)}<text class="nd-v num" data-ndv="${n.k}" x="${lx}" y="${ly}" text-anchor="${h ? 'middle' : n.lab === 'r' ? 'start' : 'end'}"></text></g>`;
+        const lx = h || n.lab === 't' ? n.x : n.lab === 'r' ? n.x + 22 : n.x - 22, ly = n.lab === 't' ? n.y - g - 20 : n.y + 4;
+        return `<g class="nd" data-node="${n.k}">${arrow(-1, h ? -90 : 0)}${arrow(1, h ? 90 : 180)}<text class="nd-v num" data-ndv="${n.k}" x="${lx}" y="${ly}" text-anchor="${h || n.lab === 't' ? 'middle' : n.lab === 'r' ? 'start' : 'end'}"></text></g>`;
       }).join('');
     }
     q('.sv-nodes').querySelectorAll('[data-ndv]').forEach(tx => { const n = M.nodes.find(x => x.k === tx.dataset.ndv); tx.textContent = Math.round(v[n.k]) + n.unit; });
@@ -982,10 +980,10 @@
   }
   // four zones (industry naming): seat cushion, backrest, headrest, leg rest
   const ADJ = {
-    cush: { parts: ['cush'], nodes: [{ k: 'fore', label: 'Fore and aft', unit: ' %', ax: 'h', x: 170, y: 228, gap: 26, lo: 0, hi: 100, st: 5 }, { k: 'height', label: 'Seat height', unit: ' %', ax: 'v', x: 34, y: 190, gap: 20, lo: 0, hi: 100, st: 5, flip: true, lab: 'r' }, { k: 'tilt', label: 'Cushion tilt', unit: '°', ax: 'v', x: 300, y: 128, gap: 20, lo: -5, hi: 10, st: 1, flip: true }, { k: 'ext', label: 'Thigh support', unit: ' mm', ax: 'h', x: 196, y: 126, gap: 28, lo: 0, hi: 60, st: 5 }] },
-    back: { parts: ['back'], nodes: [{ k: 'recline', label: 'Backrest recline', unit: '°', ax: 'h', x: 30, y: 96, gap: 20, lo: 0, hi: 45, st: 1, flip: true }, { k: 'lumbar', label: 'Lumbar support', unit: ' %', ax: 'h', x: 160, y: 104, gap: 24, lo: 0, hi: 100, st: 5 }, { k: 'bolster', label: 'Side bolsters', unit: ' %', ax: 'h', x: 160, y: 58, gap: 24, lo: 0, hi: 100, st: 5 }] },
-    head: { parts: ['head'], nodes: [{ k: 'headh', label: 'Headrest height', unit: ' %', ax: 'v', x: 40, y: 26, gap: 18, lo: 0, hi: 100, st: 5, flip: true }, { k: 'headt', label: 'Headrest tilt', unit: ' %', ax: 'h', x: 124, y: 22, gap: 22, lo: 0, hi: 100, st: 5 }] },
-    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 272, y: 228, gap: 30, lo: 0, hi: 100, st: 5 }] } };
+    cush: { parts: ['cush'], nodes: [{ k: 'fore', label: 'Fore and aft', unit: ' %', ax: 'h', x: 160, y: 232, gap: 26, lo: 0, hi: 100, st: 5 }, { k: 'height', label: 'Seat height', unit: ' %', ax: 'v', x: 22, y: 168, gap: 20, lo: 0, hi: 100, st: 5, flip: true, lab: 't' }, { k: 'tilt', label: 'Cushion tilt', unit: '°', ax: 'v', x: 300, y: 104, gap: 20, lo: -5, hi: 10, st: 1, flip: true }, { k: 'ext', label: 'Thigh support', unit: ' mm', ax: 'h', x: 196, y: 92, gap: 28, lo: 0, hi: 60, st: 5 }] },
+    back: { parts: ['back'], nodes: [{ k: 'recline', label: 'Backrest recline', unit: '°', ax: 'h', x: 26, y: 80, gap: 16, lo: 0, hi: 45, st: 1, flip: true }, { k: 'lumbar', label: 'Lumbar support', unit: ' %', ax: 'h', x: 170, y: 104, gap: 24, lo: 0, hi: 100, st: 5 }, { k: 'bolster', label: 'Side bolsters', unit: ' %', ax: 'h', x: 170, y: 62, gap: 24, lo: 0, hi: 100, st: 5 }] },
+    head: { parts: ['head'], nodes: [{ k: 'headh', label: 'Headrest height', unit: ' %', ax: 'v', x: 30, y: 46, gap: 18, lo: 0, hi: 100, st: 5, flip: true, lab: 't' }, { k: 'headt', label: 'Headrest tilt', unit: ' %', ax: 'h', x: 150, y: 24, gap: 22, lo: 0, hi: 100, st: 5 }] },
+    leg: { parts: ['leg'], nodes: [{ k: 'leg', label: 'Leg rest', unit: ' mm', ax: 'h', x: 262, y: 206, gap: 30, lo: 0, hi: 100, st: 5 }] } };
   function stAdjust(w, k, sgn) {
     const S = stOf(w);
     const n = Object.values(ADJ).flatMap(m => m.nodes).find(x => x.k === k); if (!n) return;
@@ -1003,6 +1001,7 @@
     const w = t.closest('.st-wrap'); if (!w) return false; const S = stOf(w);
     const pk = t.closest('[data-seatpick]'); if (pk) { S.sel = pk.dataset.seatpick; S.node = null; S.last = null; w._ndMode = null; stPaint(w); return true; }
     if (t.closest('[data-adj]')) { suppressAdjClick = false; return true; }
+    const lk = t.closest('[data-seatlook]'); if (lk) { w.classList.toggle('sv-sil', lk.dataset.seatlook === 'sil'); lk.parentElement.querySelectorAll('div').forEach(x => x.classList.toggle('on', x === lk)); return true; }
     const am = t.closest('[data-adjmode]'); if (am) { S.mode = am.dataset.adjmode; S.node = null; stPaint(w); return true; }
     const nd = t.closest('[data-node]'); if (nd) { S.node = S.node === nd.dataset.node ? null : nd.dataset.node; stPaint(w); return true; }
     const o = t.closest('[data-seatopt] span'); if (o) { S.s[S.sel][o.parentElement.dataset.seatopt] = o.textContent; stPaint(w); return true; }
