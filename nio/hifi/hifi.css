@@ -1786,3 +1786,5 @@ details.man p{margin:10px 0 0 36px;font-size:14px;line-height:1.5}
 .art-bg,.art-fg{position:absolute;inset:0;background-repeat:no-repeat;background-position:center;font-style:normal;pointer-events:none}
 .art-bg{background-size:cover;filter:blur(18px) saturate(1.2);transform:scale(1.25);opacity:.75}
 .art-fg{background-size:contain;filter:drop-shadow(0 6px 16px rgba(20,16,40,.28))}
+
+.ph.cov.bk{position:relative;overflow:hidden;background:var(--s2)!important;flex:none}

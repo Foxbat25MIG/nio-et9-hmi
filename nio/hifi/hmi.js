@@ -214,6 +214,8 @@
     ['Get Lucky', 'Daft Punk', 369, CV('ram')], ['One More Time', 'Daft Punk', 320, CV('discovery')], ['Instant Crush', 'Daft Punk', 337, CV('ram')], ['Digital Love', 'Daft Punk', 298, CV('discovery')],
     ['Memory Box', 'Peter Cat Recording Co.', 312, CV('bismillah')], ['Floated By', 'Peter Cat Recording Co.', 305, CV('bismillah')], ['Soulless Friends', 'Peter Cat Recording Co.', 268, CV('bismillah')], ['People Never Change', 'Peter Cat Recording Co.', 241, CV('bismillah')],
     ['Last Nite', 'The Strokes', 193, CV('lastnite')], ['Reptilia', 'The Strokes', 221, CV('roomonfire')], 
+    ['Around the World in Eighty Days', 'Jules Verne · Chapter 9', 2520, CV('book-verne'), 'book'], ['The Adventures of Sherlock Holmes', 'Arthur Conan Doyle · A Scandal in Bohemia', 3060, CV('book-doyle'), 'book'],
+    ['Pride and Prejudice', 'Jane Austen · Chapter 3', 2280, CV('book-austen'), 'book'], ['The Time Machine', 'H. G. Wells · Chapter 1', 1980, CV('book-wells'), 'book'], ['Frankenstein', 'Mary Shelley · Letter 1', 1500, CV('book-shelley'), 'book'],
     ['60. Danny DeVito, Everybody', 'The Always Sunny Podcast', 4620, 'https://i.ytimg.com/vi/52c7vu7jfR8/hqdefault.jpg', 'pod'],
     ["The AI Tsunami is Here & Society Isn't Ready", 'People by WTF · Nikhil Kamath', 5640, 'https://i.ytimg.com/vi/68ylaeBbdsg/hqdefault.jpg', 'pod']];
   function songIndex(ti, ar) {
@@ -592,7 +594,7 @@
       const title = (p.querySelector('.h3') || {}).textContent || '', s = SONGS.find(x => x[0] === title);
       const atmosOn = !fr.querySelector('[data-atmos]') || fr.querySelector('[data-atmos]').classList.contains('on');
       const upmix = !fr.querySelector('[data-upmix]') || fr.querySelector('[data-upmix]').classList.contains('on');
-      const isMusic = s && s[4] !== 'pod' && !p.classList.contains('radio');
+      const isMusic = s && !s[4] && !p.classList.contains('radio');
       fr.querySelectorAll('.atmos-badge').forEach(b => {
         const mode = isMusic && atmosOn ? 'atmos' : upmix ? 'dirac' : 'stereo'; b.dataset.mode = mode;
         b.querySelector('b').textContent = mode === 'atmos' ? 'Dolby Atmos' : mode === 'dirac' ? 'Dirac upmix' : 'Stereo';
