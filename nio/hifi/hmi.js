@@ -1822,4 +1822,9 @@
   window.nioBrightRefresh = () => document.querySelectorAll('.frame').forEach(fr => { const s = fr.querySelector('[data-bright]'); const pct = fr._bright ?? (s ? parseFloat(s.style.getPropertyValue('--v')) || 100 : 100); brightApply(fr, pct); });
   new MutationObserver(() => window.nioBrightRefresh()).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   document.querySelectorAll('.frame').forEach(fr => { const s = fr.querySelector('[data-bright]'); const d = document.documentElement.dataset.theme === 'dark'; const pct = d ? 77 : 100; if (s) s.style.setProperty('--v', pct + '%'); brightApply(fr, pct); });
+
+  // no long-press menus inside the dashboard (text selection, copy/paste, assistant overlays)
+  document.addEventListener('contextmenu', e => { if (e.target.closest('.frame') && !e.target.closest('input, textarea')) e.preventDefault(); });
+  document.addEventListener('selectstart', e => { if (e.target.closest && e.target.closest('.frame') && !e.target.closest('input, textarea')) e.preventDefault(); });
+  document.querySelectorAll('.frame img').forEach(i => i.draggable = false);
 })();

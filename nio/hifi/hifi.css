@@ -1775,3 +1775,8 @@ details.man p{margin:10px 0 0 36px;font-size:14px;line-height:1.5}
 .podc .lrow{min-height:84px}
 .ph.pod16{background-size:cover;background-position:center}
 .player .art{background-size:cover!important;background-position:center!important}
+
+/* v96: holding a button on a touch screen must not open copy/paste or assistant menus */
+.frame,.frame *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.frame input,.frame textarea,.frame [contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+.frame img{-webkit-user-drag:none}
