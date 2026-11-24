@@ -181,7 +181,7 @@
 
   /* ---------- NOMI (scripted demo; actions really change the car) ---------- */
   function say(fr, text) {
-    try { if (!muted && window.speechSynthesis) { const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; speechSynthesis.cancel(); speechSynthesis.speak(u); } } catch (e) {}
+    try { if (!muted && window.speechSynthesis) { const u = new SpeechSynthesisUtterance(text); u.lang = (window.nioLang && window.nioLang() !== 'en') ? ({ fr: 'fr-FR', de: 'de-DE', lb: (speechSynthesis.getVoices().some(v => /^lb/.test(v.lang)) ? 'lb-LU' : 'de-LU') })[window.nioLang()] : 'en-GB'; if (window.nioTr) text = window.nioTr(text.replace(/<[^>]+>/g, '')); speechSynthesis.cancel(); speechSynthesis.speak(u); } } catch (e) {}
     const ov = fr && fr.querySelector('.nomiov'); if (!ov) return;
   }
   function openNomi(fr) {
@@ -1771,4 +1771,45 @@
   document.addEventListener('keydown', e => { const m = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[e.key]; if (!m) return;
     const w = [...document.querySelectorAll('.g2048')].find(x => x.offsetParent); if (!w) return; e.preventDefault(); g2048Move(w, m); });
   document.querySelectorAll('.frame').forEach(fr => rowsPaint(fr));
+
+  /* ---------- Language: English · Français · Deutsch · Lëtzebuergesch (Settings › System) ---------- */
+  const LANGS = { 'English': 'en', 'Français': 'fr', 'Deutsch': 'de', 'Lëtzebuergesch': 'lb' };
+  let LANG = 'en'; try { LANG = localStorage.getItem('nio-lang') || 'en'; } catch (e) {}
+  const ORIG = new WeakMap(), OUT = new WeakMap();
+  const PAT = (window.I18P || []).map(([re, m]) => [new RegExp(re), m]);
+  function tr1(k) {
+    const d = (window.I18N || {})[LANG] || {}; if (d[k] != null) return d[k];
+    for (const [re, m] of PAT) if (re.test(k)) return k.replace(re, m[LANG]);
+    return null;
+  }
+  function tr(s) {
+    if (LANG === 'en' || !s) return s; const k = s.replace(/\s+/g, ' ').trim(); if (!k || !/[A-Za-z]/.test(k)) return s;
+    let r = tr1(k);
+    if (r == null && k.includes(' · ')) { const parts = k.split(' · '), tp = parts.map(p => tr1(p) ?? p); if (tp.some((x, i) => x !== parts[i])) r = tp.join(' · '); }
+    return r == null ? s : s.replace(k, r);
+  }
+  window.nioTr = tr; window.nioLang = () => LANG;
+  const skip = n => { const p = n.parentElement; return !p || p.closest('.ms, script, style, [data-notr]'); };
+  function trNode(n) {
+    if (skip(n)) return; let o = ORIG.get(n);
+    if (o == null || (OUT.has(n) && n.nodeValue !== OUT.get(n))) { o = n.nodeValue; ORIG.set(n, o); }
+    const v = LANG === 'en' ? o : tr(o); OUT.set(n, v); if (n.nodeValue !== v) n.nodeValue = v;
+  }
+  function trAttr(el) { ['placeholder', 'aria-label', 'title'].forEach(a => { if (!el.hasAttribute || !el.hasAttribute(a)) return; const k = 'nioO' + a.replace('-', ''); if (el.dataset[k] == null) el.dataset[k] = el.getAttribute(a); el.setAttribute(a, LANG === 'en' ? el.dataset[k] : tr(el.dataset[k])); }); }
+  function trTree(root) {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) trNode(n);
+    if (root.querySelectorAll) root.querySelectorAll('[placeholder],[aria-label],[title]').forEach(trAttr);
+  }
+  const MO = new MutationObserver(ms => { for (const m of ms) {
+    if (m.type === 'characterData') { if (m.target.nodeValue !== OUT.get(m.target)) trNode(m.target); }
+    else m.addedNodes.forEach(n => n.nodeType === 3 ? trNode(n) : n.nodeType === 1 && trTree(n)); } });
+  function setLang(l, save) {
+    LANG = l; document.documentElement.lang = { en: 'en', fr: 'fr', de: 'de', lb: 'lb' }[l];
+    if (save) { try { localStorage.setItem('nio-lang', l); } catch (e) {} }
+    document.querySelectorAll('[data-langopt] span').forEach(s => s.classList.toggle('on', LANGS[(ORIG.get(s.firstChild) || s.textContent).trim()] === l));
+    document.querySelectorAll('.frame').forEach(trTree);
+  }
+  document.addEventListener('click', e => { const s = e.target.closest('[data-langopt] span'); if (!s) return; const l = LANGS[s.textContent.trim()]; if (l) setTimeout(() => setLang(l, true), 0); });
+  document.querySelectorAll('.frame').forEach(fr => MO.observe(fr, { childList: true, subtree: true, characterData: true }));
+  setLang(LANG);
 })();
