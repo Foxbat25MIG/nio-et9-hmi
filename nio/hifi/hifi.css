@@ -1727,3 +1727,43 @@ body{font-family:"Red Hat Text",sans-serif;color:var(--t1);-webkit-font-smoothin
 .theme-tg{display:flex;align-items:center;gap:6px;font:500 14px "Red Hat Text";color:#2a2833;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 10px;cursor:pointer;transition:background-color var(--dur-hover) var(--ease)}
 .theme-tg .ms{font-size:20px}
 html,body,.frame,.card,.dock,.pane{transition:background-color var(--dur-panel) var(--ease),color var(--dur-panel) var(--ease),border-color var(--dur-panel) var(--ease)}
+
+/* ---------- v90 ---------- */
+.favb{cursor:pointer;transition:color var(--dur-hover) var(--ease),transform var(--dur-press) var(--ease)}
+.favb.f{color:#e0605a!important;font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 0,"opsz" 24}
+.favb:active{transform:scale(.85)}
+.lrow.now .b2{color:var(--route)!important}
+.lrow[data-song] .ms:last-child{cursor:pointer}
+/* weather: big numbers follow the text colour */
+[data-live="temp"],.wcity .num,.wcity b{color:var(--t1)}
+/* owner's manual */
+details.man{border-top:1px solid var(--s2);padding:12px 0}
+details.man:first-of-type{border-top:none}
+details.man summary{list-style:none;cursor:pointer}details.man summary::-webkit-details-marker{display:none}
+details.man[open] summary .ms:last-child{transform:rotate(180deg)}
+details.man summary .ms:last-child{transition:transform var(--dur-panel) var(--ease)}
+details.man p{margin:10px 0 0 36px;font-size:14px;line-height:1.5}
+/* pet mode */
+.petw{height:100%;display:flex;flex-direction:column}
+.pet-ic{width:96px;height:96px;border-radius:50%;background:var(--route-soft);display:flex;align-items:center;justify-content:center}
+.pet-ic.big{width:150px;height:150px}
+.pet-on{display:none;flex:1;border-radius:var(--r-card);background:var(--s1);flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;animation:scrin var(--dur-panel) var(--ease)}
+.petw.on .pet-off{display:none}.petw.on .pet-on{display:flex}
+.pet-msg{font:400 34px/1.25 "Red Hat Display";color:var(--t1)}
+.pet-t{font:300 64px/1 "Red Hat Display";color:var(--t1)}
+/* calendar: event sheet with delete */
+.calw{position:relative}
+.cal-blk,.cal-li{cursor:pointer}
+.ev-sheet{position:absolute;right:16px;bottom:16px;width:320px;z-index:5;background:var(--s1);border:1px solid var(--line);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity var(--dur-panel) var(--ease),transform var(--dur-panel) var(--ease)}
+.ev-sheet.on{opacity:1;transform:none;pointer-events:auto}
+.ev-del{margin-top:8px;color:#b2403a!important;justify-content:center}.ev-del .ms{color:#b2403a!important}
+/* chess: bigger board */
+.chess{grid-template-columns:repeat(8,68px);grid-template-rows:repeat(8,68px)}
+.chess i{font-size:46px}
+/* 2048: tiles pop in and merges pulse; tidy arrow pad */
+.b2048 i.pop{animation:t2pop .24s var(--ease)}
+.b2048 i.merge{animation:t2merge .24s var(--ease)}
+@keyframes t2pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+@keyframes t2merge{50%{transform:scale(1.12)}}
+.g2048 .arrows{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,56px);gap:6px}
+.g2048 .arrows .key{width:56px;height:56px}

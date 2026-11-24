@@ -114,7 +114,10 @@
         setStation(fr0, ti, song.dataset.station);
         const sc = song.closest('.tp'); sc.querySelector('.radio-f').textContent = song.dataset.station; sc.querySelector('.radio-n').textContent = ti; sc.querySelector('.dial i').style.left = (((+song.dataset.station) - 87.5) / 20.5 * 100).toFixed(1) + '%';
       } else {
+        const curT = fr0.querySelector('.player .h3');
+        if (!song.dataset.pos && curT && curT.textContent === ti && song.classList.contains('lrow')) { const pl = fr0.querySelector('.ctx .player') || fr0.querySelector('.player'); fr0.querySelectorAll('.player').forEach(p => setPlaying(p, !pl.classList.contains('playing'))); closePicker(fr0); return; }
         setSong(fr0, songIndex(ti, ar), true);
+        setTimeout(() => rowsPaint(fr0), 0);
         if (song.dataset.pos) fr0.querySelectorAll('.player').forEach(p => { p._pos = Math.round(p._dur * song.dataset.pos / 100); paintTime(p); });
       }
       closePicker(fr0);
@@ -124,7 +127,7 @@
     if (t.closest('[data-next]')) { stepSong(fr0, 1); return; }
     if (t.closest('[data-pick]')) { openPicker(fr0); return; }
     if (t.closest('.picker-x') || t.classList.contains('pickerov')) { closePicker(fr0); return; }
-    const ytc = t.closest('[data-yt]'); if (ytc) { ytc.parentElement.querySelectorAll('[data-yt]').forEach(x => x.classList.toggle('on', x === ytc)); const box = ytc.closest('.yt').querySelector('.ytbox'); if (box.classList.contains('playing')) loadYT(box, ytc.dataset.yt); return; }
+    const ytc = t.closest('[data-yt]'); if (ytc) { ytc.parentElement.querySelectorAll('[data-yt]').forEach(x => x.classList.toggle('on', x === ytc)); const box = ytc.closest('.yt').querySelector('.ytbox'); box.classList.add('playing'); loadYT(box, ytc.dataset.yt); return; }
     const ytp = t.closest('[data-ytplay]'); if (ytp) { const yt = ytp.closest('.yt'); const box = yt.querySelector('.ytbox'); box.classList.add('playing'); loadYT(box, yt.querySelector('[data-yt].on').dataset.yt); return; }
     const cln = t.closest('[data-clean]'); if (cln) { cleaning(fr0); return; }
     if (t.closest('[data-chess-new]')) { chessNew(t.closest('.gamewrap')); return; }
@@ -278,7 +281,8 @@
   /* ---------- video (YouTube channels, uploads playlist on loop) ---------- */
   function loadYT(box, list) {
     const f = box.querySelector('iframe');
-    f.src = `https://www.youtube-nocookie.com/embed/videoseries?list=${list}&autoplay=1&mute=1&loop=1&rel=0&modestbranding=1`;
+    f.src = `https://www.youtube.com/embed/videoseries?list=${list}&autoplay=1&playsinline=1&rel=0&modestbranding=1&origin=${encodeURIComponent(location.origin)}`;
+    const fr = box.closest('.frame'); if (fr) { fr.querySelectorAll('.player.playing').forEach(p => { p.classList.remove('playing'); p.querySelectorAll('.play .ms').forEach(i => i.textContent = 'play_arrow'); }); rowsPaint(fr); toast(fr, 'Music paused while the video plays'); }
   }
   function isParked(fr) { const g = fr.querySelector('.gear .on'); return g && g.textContent.trim() === 'P'; }
 
@@ -693,7 +697,7 @@
       h = `<div class="cal-dv">${allDay.map(e => `<div class="cal-ad" style="background:${CAT[e.c]}">All day · ${e.n}</div>`).join('')}<div class="cal-tl" style="height:${(H1 - H0) * PX}px">`;
       for (let hh = H0; hh <= H1; hh++) h += `<div class="cal-hr" style="top:${(hh - H0) * PX}px"><span class="num">${String(hh).padStart(2, '0')}:00</span></div>`;
       ev.filter(e => /^\d/.test(e.t)).forEach(e => { const [a, b] = e.t.split(':').map(Number), y = (a + b / 60 - H0) * PX;
-        h += `<div class="cal-blk" style="top:${y + 2}px;height:${(e.len || 1) * PX - 4}px;background:${CAT[e.c]}"><b>${e.n}</b><span>${e.t} · ${e.w}</span></div>`; });
+        h += `<div class="cal-blk" data-evi="${EVENTS.indexOf(e)}" data-tap style="top:${y + 2}px;height:${(e.len || 1) * PX - 4}px;background:${CAT[e.c]}"><b>${e.n}</b><span>${e.t} · ${e.w}</span></div>`; });
       if (sameDay(sel, today)) { const nowH = today.getHours() + today.getMinutes() / 60; if (nowH >= H0 && nowH <= H1) h += `<div class="cal-now" style="top:${(nowH - H0) * PX}px"></div>`; }
       h += '</div></div>';
     } else if (cw._view === 'Month') {
@@ -726,10 +730,11 @@
     body.innerHTML = h;
     const ev = evOn(sel);
     cw.querySelector('.cal-day').textContent = sameDay(sel, today) ? 'Today' : sel.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-    cw.querySelector('.cal-list').innerHTML = ev.length ? ev.map(e => `<div class="cal-li"><i style="background:${CAT[e.c]}"></i><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">${e.n}</span><span class="bs">${e.t} · ${e.w}</span></div></div>`).join('') : '<span class="bs">Nothing planned.</span>';
+    cw.querySelector('.cal-list').innerHTML = ev.length ? ev.map(e => `<div class="cal-li" data-evi="${EVENTS.indexOf(e)}" data-tap><i style="background:${CAT[e.c]}"></i><div class="col" style="gap:0"><span class="b2" style="color:var(--t1)">${e.n}</span><span class="bs">${e.t} · ${e.w}</span></div></div>`).join('') : '<span class="bs">Nothing planned.</span>';
   }
   function calClick(t) {
     const cw = t.closest('.calw'); if (!cw) return false;
+    if (t.closest('[data-evi]') || t.closest('.ev-sheet')) return false;
     if (t.closest('.cal-sheetov')) { ceClick(cw, t); return true; }
     const vd = t.closest('.cal-view div'); if (vd) { cw._view = vd.textContent; calDraw(cw); return true; }
     const st = t.closest('[data-cal-step]');
@@ -1112,7 +1117,7 @@
   }
   function g2048Add(w) { const e = w._b.map((v, i) => v ? -1 : i).filter(i => i >= 0); if (e.length) w._b[e[Math.floor(Math.random() * e.length)]] = Math.random() < .9 ? 2 : 4; }
   function g2048Draw(w, fresh) {
-    w.querySelector('.b2048').innerHTML = w._b.map(v => `<i class="t${Math.min(v, 4096)}">${v || ''}</i>`).join('');
+    const prev = w._prev || []; w.querySelector('.b2048').innerHTML = w._b.map((v, i) => `<i class="t${Math.min(v, 4096)}${v && !prev[i] ? ' pop' : v && prev[i] && v > prev[i] ? ' merge' : ''}">${v || ''}</i>`).join(''); w._prev = w._b.slice();
     w.querySelector('.g-score').textContent = 'Score ' + w._sc;
   }
   function g2048Move(w, dir) {
@@ -1271,6 +1276,17 @@
   function setPlaying(p, on) {
     p.classList.toggle('playing', on);
     p.querySelectorAll('.play .ms').forEach(i => i.textContent = on ? 'pause' : 'play_arrow');
+    const fr = p.closest('.frame'); if (!fr) return;
+    if (on) fr.querySelectorAll('.ytbox.playing').forEach(b => { b.classList.remove('playing'); b.querySelector('iframe').src = 'about:blank'; });
+    setTimeout(() => rowsPaint(fr), 0);
+  }
+  function rowsPaint(fr) {
+    const cur = fr.querySelector('.player .h3'), ti = cur && cur.textContent, on = !!fr.querySelector('.ctx .player.playing, .player.playing');
+    fr.querySelectorAll('.lrow[data-song]').forEach(r => { const me = r.dataset.song.split('|')[0] === ti, ic = [...r.querySelectorAll('.ms')].pop();
+      r.classList.toggle('now', me); if (ic && /play_circle|pause_circle/.test(ic.textContent)) ic.textContent = me && on ? 'pause_circle' : 'play_circle'; });
+    const F = fr._fav || (fr._fav = new Set());
+    fr.querySelectorAll('.player .ms').forEach(h => { if (/^favorite$/.test(h.textContent.trim())) { h.classList.add('favb'); h.dataset.tap = ''; } });
+    fr.querySelectorAll('.favb').forEach(h => h.classList.toggle('f', F.has(ti)));
   }
   const players = [...document.querySelectorAll('.player')];
   players.forEach(p => { p._dur = 367; p._pos = 148; paintTime(p); });
@@ -1723,4 +1739,36 @@
     if (e.target.closest('[data-theme-tg]')) themeApply(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
   });
   themeApply(document.documentElement.dataset.pref || 'auto');
+
+  /* ---------- favourites, Pet Mode, calendar delete, 2048 keys, battery ---------- */
+  document.addEventListener('click', e => {
+    const fv = e.target.closest('.favb'); if (fv) { const fr = frameOf(fv), F = fr._fav || (fr._fav = new Set()), ti = fr.querySelector('.player .h3').textContent, ar = fr.querySelector('.player .b2').textContent;
+      const add = !F.has(ti); add ? F.add(ti) : F.delete(ti); favList(fr); rowsPaint(fr); toast(fr, add ? `Added “${ti}” to Favourites` : `Removed “${ti}” from Favourites`); return; }
+    const pt = e.target.closest('[data-pet]'); if (pt) { const fr = frameOf(pt), on = pt.dataset.pet === 'on'; pt.closest('.petw').classList.toggle('on', on);
+      if (on) { const Q = qcOf(fr); Q.open = {}; Q.port = false; Object.keys(Q.wins).forEach(n => Q.wins[n] = 0); Q.shade = { l: false, r: false }; Q.wcard = false; Q.lock = true; qcPaint(fr);
+        fr.querySelectorAll('.player').forEach(p => setPlaying(p, false)); fr.querySelectorAll('.ytbox.playing').forEach(b => { b.classList.remove('playing'); b.querySelector('iframe').src = 'about:blank'; });
+        const C = clOf(fr); C.keep = 'pet'; C.t.Driver = C.t.Passenger = C.t['Rear left'] = C.t['Rear right'] = 21; clPaint(fr);
+        toast(fr, 'Pet Mode on · everything closed and locked'); }
+      else toast(fr, 'Pet Mode off'); return; }
+    const ev = e.target.closest('[data-evi]'); if (ev) { const cw = ev.closest('.calw'); evSheet(cw, +ev.dataset.evi); return; }
+    const ed = e.target.closest('[data-evdel]'); if (ed) { const cw = ed.closest('.calw'), i = +ed.dataset.evdel, gone = EVENTS.splice(i, 1)[0]; cw._undo = [i, gone];
+      cw.querySelector('.ev-sheet').classList.remove('on'); calDraw(cw); toast(frameOf(cw), `Deleted “${gone.n}”`); return; }
+    if (e.target.closest('[data-evx]')) { e.target.closest('.ev-sheet').classList.remove('on'); return; }
+  });
+  function favList(fr) {
+    const F = fr._fav || new Set(); fr.querySelectorAll('[data-screen="media"] .favcard').forEach(c => c.remove());
+    if (!F.size) return; const up = [...fr.querySelectorAll('[data-screen="media"] .card.scard')].find(c => /Up next/.test(c.textContent)); if (!up) return;
+    const card = document.createElement('div'); card.className = 'card scard favcard';
+    card.innerHTML = '<span class="lbl">Favourites</span>' + [...F].map(ti => { const s = SONGS.find(x => x[0] === ti) || [ti, '']; return `<div class="lrow" data-song="${s[0]}|${s[1]}" data-tap><div class="ph cov" style="width:44px;height:44px;border-radius:9px;${s[3] ? `background-image:url(${s[3]})` : ''}"></div><div class="col" style="gap:0;flex:1"><span class="b2" style="color:var(--t1)">${s[0]}</span><span class="bs">${s[1]}</span></div><span class="ms" style="font-size:28px;color:var(--t2)">play_circle</span></div>`; }).join('');
+    up.parentElement.insertBefore(card, up); rowsPaint(fr);
+  }
+  function evSheet(cw, i) {
+    const e = EVENTS[i]; if (!e) return; let sh = cw.querySelector('.ev-sheet');
+    if (!sh) { sh = document.createElement('div'); sh.className = 'ev-sheet'; cw.appendChild(sh); }
+    sh.innerHTML = `<div class="row" style="justify-content:space-between;align-items:center"><span class="lbl">Event</span><div class="sq-x" data-evx data-tap><span class="ms" style="font-size:22px">close</span></div></div><span class="h3">${e.n}</span><span class="bs">${e.t}${e.w ? ' · ' + e.w : ''}</span><div class="btn sec ev-del" data-evdel="${i}" data-tap><span class="ms" style="font-size:22px">delete</span><span>Delete event</span></div>`;
+    sh.classList.add('on');
+  }
+  document.addEventListener('keydown', e => { const m = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[e.key]; if (!m) return;
+    const w = [...document.querySelectorAll('.g2048')].find(x => x.offsetParent); if (!w) return; e.preventDefault(); g2048Move(w, m); });
+  document.querySelectorAll('.frame').forEach(fr => rowsPaint(fr));
 })();
