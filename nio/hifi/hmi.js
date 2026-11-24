@@ -1230,7 +1230,7 @@
     if (drag.s.dataset.sync === 'vol') setVol(frameOf(drag.s), pct);
     else if (drag.s.hasAttribute('data-bright')) {
       drag.s.style.setProperty('--v', pct + '%');
-      const fr = frameOf(drag.s); if (fr.style) fr.style.filter = `brightness(${(0.45 + pct / 100 * 0.86).toFixed(3)})`;
+      brightApply(frameOf(drag.s), pct);
     }
     else if (drag.s.dataset.min !== undefined) {
       let pct2 = pct; const fl = +drag.s.dataset.floor || 0;
@@ -1812,4 +1812,14 @@
   document.addEventListener('click', e => { const s = e.target.closest('[data-langopt] span'); if (!s) return; const l = LANGS[s.textContent.trim()]; if (l) setTimeout(() => setLang(l, true), 0); });
   document.querySelectorAll('.frame').forEach(fr => MO.observe(fr, { childList: true, subtree: true, characterData: true }));
   setLang(LANG);
+
+  /* ---------- Brightness: Light only dims (50–100 %), Night has a little headroom (50–115 %) ---------- */
+  function brightApply(fr, pct) {
+    fr._bright = pct; const dark = document.documentElement.dataset.theme === 'dark';
+    const v = dark ? 0.5 + pct / 100 * 0.65 : 0.5 + pct / 100 * 0.5;
+    fr.style.filter = Math.abs(v - 1) < 0.005 ? '' : `brightness(${v.toFixed(3)})`;
+  }
+  window.nioBrightRefresh = () => document.querySelectorAll('.frame').forEach(fr => { const s = fr.querySelector('[data-bright]'); const pct = fr._bright ?? (s ? parseFloat(s.style.getPropertyValue('--v')) || 100 : 100); brightApply(fr, pct); });
+  new MutationObserver(() => window.nioBrightRefresh()).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  document.querySelectorAll('.frame').forEach(fr => { const s = fr.querySelector('[data-bright]'); const d = document.documentElement.dataset.theme === 'dark'; const pct = d ? 77 : 100; if (s) s.style.setProperty('--v', pct + '%'); brightApply(fr, pct); });
 })();
