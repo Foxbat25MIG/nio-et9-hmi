@@ -238,14 +238,14 @@
     p.querySelectorAll('.art').forEach(el => {
       if (el._ph == null) el._ph = el.innerHTML;
       el.classList.toggle('cov', !!(a && a.img)); el.classList.toggle('radioart', !!(a && a.radio));
-      el.style.backgroundImage = a && a.img ? `url(${a.img})` : '';
-      el.innerHTML = !a ? el._ph : a.img ? '' : `<span class="ra-l">DAB+ · Luxembourg</span><span class="ra-f">${a.f}</span><span class="ra-n">${a.radio}</span>`;
+      el.style.backgroundImage = '';
+      el.innerHTML = !a ? el._ph : a.img ? `<i class="art-bg" style="background-image:url(${a.img})"></i><i class="art-fg" style="background-image:url(${a.img})"></i>` : `<span class="ra-l">DAB+ · Luxembourg</span><span class="ra-f">${a.f}</span><span class="ra-n">${a.radio}</span>`;
     });
     p.querySelectorAll('.cart').forEach(el => {
       if (el._ph == null) el._ph = el.innerHTML;
       el.classList.toggle('cov', !!(a && a.img)); el.classList.toggle('radioart', !!(a && a.radio));
-      el.style.backgroundImage = a && a.img ? `url(${a.img})` : '';
-      el.innerHTML = !a ? el._ph : a.img ? '' : `<span class="ra-f">${a.f}</span>`;
+      el.style.backgroundImage = '';
+      el.innerHTML = !a ? el._ph : a.img ? `<i class="art-bg" style="background-image:url(${a.img})"></i><i class="art-fg" style="background-image:url(${a.img})"></i>` : `<span class="ra-f">${a.f}</span>`;
     });
   }
   function stepSong(fr, dir) {

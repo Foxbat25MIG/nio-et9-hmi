@@ -538,6 +538,7 @@ html[data-theme="dark"] .cz-pill rect{fill:hsla(var(--nh), var(--ns), calc(13% +
 html[data-theme="dark"] .favb.f{color:#e4756f!important}
 html[data-theme="dark"] .ev-del{color:#c24a44!important}
 html[data-theme="dark"] .ev-del .ms{color:#c24a44!important}
+html[data-theme="dark"] .art-fg{filter:drop-shadow(0 6px 16px rgba(4,3,10,0.60))}
 html[data-theme="dark"] [fill="#1f1c29"]{fill:hsl(var(--nh) var(--ns) calc(25% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d2840"]{fill:hsl(var(--nh) var(--ns) calc(27% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d6bb5"]{fill:#3277c9}
