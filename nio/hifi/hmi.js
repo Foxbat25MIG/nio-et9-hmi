@@ -1657,7 +1657,7 @@
   function wideUpdate() {
     document.querySelectorAll('.frame.proto').forEach(fr => {
       const scr = fr.querySelector('.scr.on'); if (!scr) return; const k = scr.dataset.screen;
-      const wide = k === 'climate' || k === 'car';
+      const wide = k === 'climate' || k === 'car' || k === 'settings';
       if (wide) fr.dataset.wide = ''; else delete fr.dataset.wide;
       { const pg = scr.querySelector('.pg.on'), page = pg && pg.dataset.page, set = (sel, on) => fr.querySelectorAll(sel).forEach(d => d.classList.toggle('on', !!on));
         const q = fr.querySelector('.seatq'), nv = fr.querySelector('.nomiov');

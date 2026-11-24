@@ -1767,3 +1767,11 @@ details.man p{margin:10px 0 0 36px;font-size:14px;line-height:1.5}
 @keyframes t2merge{50%{transform:scale(1.12)}}
 .g2048 .arrows{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,56px);gap:6px}
 .g2048 .arrows .key{width:56px;height:56px}
+
+/* ---------- v91 ---------- */
+.newsg{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:100%;overflow:auto;scrollbar-width:none;align-content:start}
+.newsg .lrow{align-items:center}
+.podc{height:100%}
+.podc .lrow{min-height:84px}
+.ph.pod16{background-size:cover;background-position:center}
+.player .art{background-size:cover!important;background-position:center!important}
