@@ -1803,3 +1803,70 @@ details.man p{margin:10px 0 0 36px;font-size:14px;line-height:1.5}
 .pt-sw i{display:block;width:100%;height:100%;border-radius:50%;box-shadow:inset 0 -6px 10px rgba(0,0,0,.22),inset 0 4px 8px rgba(255,255,255,.35)}
 .pt-sw:active{transform:scale(.94)}
 .pt-sw.on{border-color:var(--ink)}
+
+/* ---------- Mark 2 · Home: the 3D car in a lavender garden, glass widgets over it ---------- */
+.hm3{position:relative;padding:0!important;overflow:hidden;border-radius:28px;display:block!important}
+.hm-stage{position:absolute;inset:0;z-index:0}
+.hm-stage .c3d{cursor:grab}
+.hm-head{position:absolute;left:28px;right:28px;top:22px;z-index:2;pointer-events:none}
+.hm-head .drv,.hm-head [data-tap]{pointer-events:auto}
+.hm-w{position:relative;z-index:2;background:rgba(255,255,255,.56);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);border:1px solid rgba(255,255,255,.72);border-radius:24px;padding:18px 20px;box-shadow:0 12px 32px rgba(70,50,110,.12);overflow:hidden;transition:background-color 600ms cubic-bezier(.2,.8,.2,1)}
+.hm-next{position:absolute;left:28px;top:120px;width:380px;display:flex;flex-direction:column}
+.hm-next .row[style*="margin:10px 0 18px"]{margin:8px 0 12px!important}
+.hm-next.min .row ~ *{display:none}
+.hm-next.min .row{margin:6px 0 0!important}
+.hm-tg{position:absolute;right:12px;top:12px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.65);cursor:pointer;z-index:3;transition:transform 140ms cubic-bezier(.2,.8,.2,1),background-color 240ms cubic-bezier(.2,.8,.2,1)}
+.hm-tg:active{transform:scale(.92)}
+.hm-tg .ms{font-size:22px;color:var(--t2)}
+.hm-hint{position:absolute;left:50%;top:30px;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.45);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);pointer-events:none;white-space:nowrap}
+.hm-hint .ms{font-size:20px}
+.hm-dock{position:absolute;left:28px;right:28px;bottom:22px;display:flex;gap:16px;align-items:flex-end;z-index:2}
+.hm-places{width:290px;display:flex;flex-direction:column}
+.hm-places .hrow{transition:background-color 240ms cubic-bezier(.2,.8,.2,1)}
+.hm-places.min{width:auto;flex-direction:row;align-items:center;gap:10px;padding:12px 60px 12px 12px}
+.hm-places.min .lbl{display:none}
+.hm-places.min .hrow{width:56px;height:56px;border-radius:50%;justify-content:center;background:rgba(255,255,255,.75);border:0!important;padding:0!important;gap:0}
+.hm-places.min .hrow>:not(.ms){display:none}
+.hm-bat{display:flex;gap:14px;align-items:center;cursor:pointer;width:190px;padding:16px 18px}
+.hm-bat .icb{background:rgba(255,255,255,.7)}
+.hm-pod{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.hm-pod .ph{flex:none!important;height:74px;min-height:0!important}
+.hm-pod.min{flex:0 0 auto;padding:12px 60px 12px 12px}
+.hm-pod.min .lbl,.hm-pod.min .b2,.hm-pod.min .sl{display:none}
+.hm-pod.min .pod{flex:0 0 96px!important}
+.hm-pod.min .ph{height:54px}
+.hm-music{width:380px;padding:0}
+.hm-music .player{height:112px!important;width:100%;flex:none!important;background:transparent!important;box-shadow:none!important;border:0!important}
+.hm-music.min{width:118px}
+.hm-music.min .pc-txt,.hm-music.min [data-next]{display:none}
+.hm-music .hm-tg{top:38px}
+.hm-music.min .hm-tg{display:none}
+.hm-music.min .p-compact .cart{cursor:pointer}
+html[data-theme="dark"] .hm-w,html[data-theme="dark"] .hm-hint{background:rgba(36,28,48,.55);border-color:rgba(255,255,255,.08);box-shadow:0 12px 32px rgba(0,0,0,.35)}
+html[data-theme="dark"] .hm-tg,html[data-theme="dark"] .hm-places.min .hrow,html[data-theme="dark"] .hm-bat .icb{background:rgba(255,255,255,.1)}
+
+/* ---------- Mark 2 · lock screen ---------- */
+.lockov{position:absolute;inset:0;z-index:80;border-radius:inherit;overflow:hidden;display:none;background:#ece4f3;transition:transform 600ms cubic-bezier(.2,.8,.2,1),opacity 600ms cubic-bezier(.2,.8,.2,1);touch-action:none;cursor:pointer}
+.lockov.on{display:block}
+.lockov.out{transform:translateY(-100%)!important;opacity:.4}
+.lk-stage{position:absolute;inset:0}
+.lk-stage .c3d{cursor:pointer;touch-action:none}
+.lk-top{position:absolute;left:0;right:0;top:54px;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;z-index:2}
+.lk-time{font:300 128px/1 "Red Hat Display";color:#2a2340;letter-spacing:-3px}
+.lk-date{font:400 22px "Red Hat Text";color:#4a4160}
+.lk-info{position:absolute;left:50%;bottom:86px;transform:translateX(-50%);display:flex;gap:14px;align-items:center;padding:14px 26px;border-radius:999px;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);z-index:2;pointer-events:none;white-space:nowrap}
+.lk-info .b2{color:#2a2340}
+.lk-info i{width:4px;height:4px;border-radius:50%;background:#8a80a6}
+.lk-hint{position:absolute;left:0;right:0;bottom:22px;display:flex;flex-direction:column;align-items:center;color:#4a4160;font:400 15px "Red Hat Text";z-index:2;pointer-events:none;animation:lkb 2.4s cubic-bezier(.2,.8,.2,1) infinite}
+@keyframes lkb{0%,100%{transform:translateY(0);opacity:.75}50%{transform:translateY(-6px);opacity:1}}
+html[data-theme="dark"] .lockov{background:#1e1828}
+html[data-theme="dark"] .lk-time,html[data-theme="dark"] .lk-info .b2{color:#f3eefb}
+html[data-theme="dark"] .lk-date,html[data-theme="dark"] .lk-hint{color:#c9bfdc}
+html[data-theme="dark"] .lk-info{background:rgba(36,28,48,.55)}
+
+/* ---------- Mark 2 · Tyres: chips sit beside their wheel ---------- */
+.ty .qc-car.c3d-host{flex:0 0 560px}
+.ty .ty-chip{transition:top 600ms cubic-bezier(.2,.8,.2,1),left 600ms cubic-bezier(.2,.8,.2,1),opacity 600ms cubic-bezier(.2,.8,.2,1),background-color 600ms cubic-bezier(.2,.8,.2,1),border-color 600ms cubic-bezier(.2,.8,.2,1);z-index:2}
+.ty .qc-car.c3d-host:not(.ty-laid) .ty-chip{opacity:0}
+.hm-music .player .p-full{opacity:0!important;pointer-events:none!important}
+.hm-music .player .p-compact{opacity:1!important;pointer-events:auto!important}

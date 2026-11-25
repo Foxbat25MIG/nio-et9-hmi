@@ -540,6 +540,18 @@ html[data-theme="dark"] .ev-del{color:#c24a44!important}
 html[data-theme="dark"] .ev-del .ms{color:#c24a44!important}
 html[data-theme="dark"] .art-fg{filter:drop-shadow(0 6px 16px rgba(4,3,10,0.60))}
 html[data-theme="dark"] .pt-sw i{box-shadow:inset 0 -6px 10px rgba(4,3,10,0.53),inset 0 4px 8px hsla(var(--nh), var(--ns), calc(13% + var(--nl)), .35)}
+html[data-theme="dark"] .hm-w{background-color:hsla(var(--nh), var(--ns), calc(13% + var(--nl)), .56);border:1px solid hsla(var(--nh), var(--ns), calc(13% + var(--nl)), .72)}
+html[data-theme="dark"] .hm-tg{background-color:hsla(var(--nh), var(--ns), calc(13% + var(--nl)), .65)}
+html[data-theme="dark"] .hm-hint{background-color:hsla(var(--nh), var(--ns), calc(13% + var(--nl)), .45)}
+html[data-theme="dark"] .hm-places.min .hrow{background-color:hsla(var(--nh), var(--ns), calc(13% + var(--nl)), .75)}
+html[data-theme="dark"] .hm-bat .icb{background-color:hsla(var(--nh), var(--ns), calc(13% + var(--nl)), .7)}
+html[data-theme="dark"] .lockov{background-color:hsl(var(--nh) var(--ns) calc(13% + var(--nl)))}
+html[data-theme="dark"] .lk-time{color:#cac4df}
+html[data-theme="dark"] .lk-date{color:#cdc8da}
+html[data-theme="dark"] .lk-info{background-color:hsla(var(--nh), var(--ns), calc(13% + var(--nl)), .55)}
+html[data-theme="dark"] .lk-info .b2{color:#cac4df}
+html[data-theme="dark"] .lk-info i{background-color:#988fb1}
+html[data-theme="dark"] .lk-hint{color:#cdc8da}
 html[data-theme="dark"] [fill="#1f1c29"]{fill:hsl(var(--nh) var(--ns) calc(25% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d2840"]{fill:hsl(var(--nh) var(--ns) calc(27% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d6bb5"]{fill:#3277c9}

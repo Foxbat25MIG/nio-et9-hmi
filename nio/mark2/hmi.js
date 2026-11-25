@@ -1549,13 +1549,14 @@
     if (!host) return; host._st = st;
     const v = host._v3; if (v && v !== 'wait') { v.set(st); return; }
     if (v === 'wait') return;
-    if (!window.ET9) { if (!c3d.hooked) { c3d.hooked = true; window.addEventListener('et9-ready', () => document.querySelectorAll('.frame').forEach(f => { qcPaint(f); tyPaint(f); f.querySelectorAll('[data-drv2]').forEach(dmPaint); })); } return; }
+    if (!window.ET9) { if (!c3d.hooked) { c3d.hooked = true; window.addEventListener('et9-ready', () => document.querySelectorAll('.frame').forEach(f => { qcPaint(f); tyPaint(f); f.querySelectorAll('[data-drv2]').forEach(dmPaint); homePaint(f); lockPaint(f); })); } return; }
     if (!host.offsetParent) {   // not on screen yet: wait until it is
       if (!host._io) { host._io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { host._io.disconnect(); host._io = null; c3d(fr, kind, host, host._st, onPick); } }); host._io.observe(host); }
       return; }
     host._v3 = 'wait'; host.classList.add('c3d-host');
-    ET9.mount(host, { view: kind, orbit: kind !== 'ty', onPick }).then(v3 => { host._v3 = v3; v3.set(host._st); v3.snap(); requestAnimationFrame(() => host.classList.add('c3d-on')); })
+    ET9.mount(host, { view: kind, orbit: kind === 'home' ? 'free' : false, scene: { home: 'garden', lock: 'garden', side: 'drive' }[kind], drift: kind === 'lock', onPick, onResize: host._onResize }).then(v3 => { host._v3 = v3; v3.set(host._st); v3.snap(); requestAnimationFrame(() => host.classList.add('c3d-on')); })
       .catch(err => { host._v3 = null; console.warn('3D car not available', err); });
+    if (host._onResize) setTimeout(() => host._v3 && host._v3 !== 'wait' && host._onResize(host._v3), 900);
   }
   // Settings › Display › Car colour (stored in this browser; the 3D car repaints everywhere)
   const PAINTN = { ceramic: 'Midnight Ceramic Blue', lavender: 'Lavender silver', cloud: 'Cloud White', black: 'Deep Black', moon: 'New Moon Silver', southern: 'Southern Star Blue', gold: 'Sunlight Gold' };
@@ -1564,6 +1565,47 @@
   document.addEventListener('click', e => { const sw = e.target.closest('[data-paint]'); if (!sw) return; const k = sw.dataset.paint;
     try { localStorage.setItem('nio-paint', k); } catch (er) {} if (window.ET9) ET9.setPaint(k); paintSync(); toast(frameOf(sw), 'Car colour · ' + PAINTN[k]); });
   paintSync();
+  /* ---------- Mark 2 · Home: the car in a lavender garden; Places, Podcasts and Music fold away ---------- */
+  const isDark = () => document.documentElement.dataset.theme === 'dark';
+  const carState = fr => { const Q = qcOf(fr); return { open: { ...Q.open }, port: Q.port, wins: { ...Q.wins }, mir: Q.mir, shade: { ...Q.shade }, lights: Q.lights }; };
+  function homePaint(fr) {
+    const hm = fr.querySelector('.hm3'); if (!hm) return;
+    const on = !!hm.closest('.scr.on'), slot = hm.querySelector('.hm-mslot'), pl = fr._pl || (fr._pl = fr.querySelector('.ctx .player'));
+    if (pl && slot) {
+      if (on && pl.parentElement !== slot) { fr._plHome = { p: pl.parentElement, n: pl.nextSibling, compact: pl.classList.contains('compact') }; slot.appendChild(pl); pl.classList.add('compact'); }
+      else if (!on && fr._plHome && pl.parentElement === slot) { const h = fr._plHome; h.p.insertBefore(pl, h.n); pl.classList.toggle('compact', h.compact); fr._plHome = null; }
+    }
+    if (on || hm._v3) c3d(fr, 'home', hm.querySelector('.hm-stage'), { dark: isDark(), ...carState(fr) });
+  }
+  document.addEventListener('click', e => { const t = e.target.closest('[data-hmtg]'); if (!t) return; const w = t.closest('.hm-w');
+    const a = [w.offsetWidth, w.offsetHeight]; w.classList.toggle('min'); const b = [w.offsetWidth, w.offsetHeight];   // smooth: grow/shrink from the old size
+    w.animate([{ width: a[0] + 'px', height: a[1] + 'px' }, { width: b[0] + 'px', height: b[1] + 'px' }], { duration: 600, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    [...w.children].forEach(c => c.classList.contains('hm-tg') || c.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, delay: 160, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));
+    t.querySelector('.ms').textContent = w.classList.contains('min') ? 'expand_less' : 'expand_more'; t.title = w.classList.contains('min') ? 'Open' : 'Fold'; e.stopPropagation(); }, true);
+
+  /* ---------- Mark 2 · lock screen (on load, from the lock icon, and whenever the car locks) ---------- */
+  function lockPaint(fr) { const ov = fr.querySelector('[data-lockov]'); if (!ov) return;
+    const tm = fr.querySelector('.status .time'); if (tm) ov.querySelector('.lk-time').textContent = tm.textContent;
+    const st = ov.querySelector('.lk-stage'); if (ov.classList.contains('on') || st._v3) c3d(fr, 'lock', st, { dark: isDark(), ...carState(fr), lights: 'off' }); }
+  function lockShow(fr) { const ov = fr.querySelector('[data-lockov]'); if (!ov) return; ov.style.transform = ''; ov.classList.remove('out'); ov.classList.add('on'); lockPaint(fr); }
+  function lockHide(fr) { const ov = fr.querySelector('[data-lockov]'); if (!ov || !ov.classList.contains('on')) return;
+    ov.style.transform = ''; ov.classList.add('out'); setTimeout(() => ov.classList.remove('on', 'out'), 600);
+    const Q = qcOf(fr); Q.lock = false; Q.mir = 'out'; fr._lastLock = false; qcPaint(fr); setTimeout(() => toast(fr, 'Unlocked · welcome back, Emma'), 350); }
+  document.querySelectorAll('[data-lockov]').forEach(ov => { let y0 = null, dy = 0;
+    ov.addEventListener('pointerdown', e => { y0 = e.clientY; dy = 0; ov.style.transition = 'none'; });
+    ov.addEventListener('pointermove', e => { if (y0 === null) return; dy = Math.min(0, e.clientY - y0); ov.style.transform = `translateY(${dy}px)`; });
+    const up = () => { if (y0 === null) return; y0 = null; ov.style.transition = ''; if (dy < -50 || Math.abs(dy) < 6) lockHide(frameOf(ov)); else ov.style.transform = ''; };
+    ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up); });
+  document.addEventListener('click', e => { const b = e.target.closest('[data-lockscr]'); if (!b) return; const fr = frameOf(b), Q = qcOf(fr);
+    if (Object.values(Q.open).some(Boolean)) { toast(fr, 'Close the doors, frunk and boot to lock'); return; }
+    Q.lock = true; Q.mir = 'fold'; qcPaint(fr); toast(fr, 'Locked · mirrors fold'); });
+  setInterval(() => document.querySelectorAll('[data-lockov].on').forEach(ov => { const tm = frameOf(ov).querySelector('.status .time'); if (tm) ov.querySelector('.lk-time').textContent = tm.textContent; }), 1000);
+  new MutationObserver(() => document.querySelectorAll('.frame').forEach(fr => { homePaint(fr); lockPaint(fr); })).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  /* ---------- Mark 2 · the map's car marker is a top-down picture of the 3D car ---------- */
+  function egoPaint() { if (!window.ET9) return; ET9.snapshot(40).then(url => document.querySelectorAll('.cv-ego').forEach(im => {
+    im.setAttribute('href', url); im.setAttribute('opacity', '1'); const fb = im.parentElement.querySelector('.cv-egofb'); if (fb) fb.style.display = 'none'; })).catch(() => {}); }
+  if (window.ET9) { egoPaint(); ET9.onPaint(egoPaint); } else window.addEventListener('et9-ready', () => { egoPaint(); ET9.onPaint(egoPaint); }, { once: true });
   const c3dTap = el => el && el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   function qcPaint(fr) {
     const Q = qcOf(fr), qc = fr.querySelector('[data-screen="car"] .qc:not(.ty)'); if (!qc) return;
@@ -1607,6 +1649,9 @@
     { const sw = fr.querySelector('.st-wrap'), easy = sw && stOf(sw).easy !== false && ['dfl', 'dfr', 'drl', 'drr'].some(k => Q.open[k]);
       c3d(fr, 'qc', qc.querySelector('.qc-car'), { open: { ...Q.open }, port: Q.port, wins: { ...Q.wins }, mir: Q.mir, shade: { ...Q.shade }, lights: Q.lights, lift: easy ? -50 : 0 },
         k => { if (k.startsWith('wheel')) return; c3dTap(svg.querySelector(`[data-cp="${k}"]`)); }); }
+    if (Q.lock && fr._lastLock === false) { clearTimeout(fr._lkT); fr._lkT = setTimeout(() => { if (qcOf(fr).lock) lockShow(fr); }, 1500); }
+    fr._lastLock = Q.lock;
+    homePaint(fr); lockPaint(fr);
   }
   function qcClick(t) {
     const qc = t.closest('[data-screen="car"] .qc:not(.ty)'); if (!qc) return false;
@@ -1656,6 +1701,10 @@
     const st = ty.querySelector('.ty-st'); st.classList.toggle('warn', !!warn);
     if (!fr._tyMsg) { ty.querySelector('.ty-h').textContent = warn ? { fl: 'Front left', fr: 'Front right', rl: 'Rear left', rr: 'Rear right' }[warn] + ' is losing pressure' : 'All tyres OK';
       ty.querySelector('.ty-s').textContent = warn ? 'Slow down and check it at the next stop' : 'Checked today, 13:20'; }
+    { const host = ty.querySelector('.qc-car'); host._onResize = host._onResize || (v => { const L = v.layout(), G = 18;
+        ty.querySelectorAll('.ty-chip').forEach(c => { const k = c.dataset.ty, w = c.offsetWidth, h = c.offsetHeight, left = k[1] === 'l';
+          c.style.right = c.style.bottom = 'auto'; c.style.top = Math.round(L[k].y - h / 2) + 'px';
+          c.style.left = Math.round(left ? L.left - G - w : L.right + G) + 'px'; }); host.classList.add('ty-laid'); }); }
     c3d(fr, 'ty', ty.querySelector('.qc-car'), { warn }, k => { const c = k.startsWith('wheel-') && ty.querySelector(`[data-ty="${k.slice(6)}"]`); if (c) c.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' }); });
   }
   function tyClick(t) {
@@ -1684,8 +1733,9 @@
   function wideUpdate() {
     document.querySelectorAll('.frame.proto').forEach(fr => {
       const scr = fr.querySelector('.scr.on'); if (!scr) return; const k = scr.dataset.screen;
-      const wide = k === 'climate' || k === 'car' || k === 'settings';
+      const wide = k === 'climate' || k === 'car' || k === 'settings' || k === 'home';
       if (wide) fr.dataset.wide = ''; else delete fr.dataset.wide;
+      homePaint(fr);
       { const pg = scr.querySelector('.pg.on'), page = pg && pg.dataset.page, set = (sel, on) => fr.querySelectorAll(sel).forEach(d => d.classList.toggle('on', !!on));
         const q = fr.querySelector('.seatq'), nv = fr.querySelector('.nomiov');
         set('.dk[data-seatq]', (q && q.classList.contains('on')) || (k === 'car' && page === 'Seats'));
@@ -1724,7 +1774,7 @@
     root.querySelectorAll('.dm-stop').forEach(s => s.classList.toggle('on', s.dataset.dm === D.m));
     root.querySelector('.dm-n').textContent = D.m; root.querySelector('.dm-d').textContent = DMD[D.m];
     const car = root.querySelector('.dm-car'); car.style.setProperty('--dy', (-mm * .3) + 'px');
-    c3d(root.closest('.frame'), 'side', root.querySelector('.dm-c3d'), { lift: mm, lights: 'auto' });
+    c3d(root.closest('.frame'), 'side', root.querySelector('.dm-c3d'), { lift: mm, lights: 'auto', mode: D.m });
     root.querySelectorAll('[data-rhv]').forEach(d => d.classList.toggle('on', d.dataset.rhv === String(D.rh === undefined ? 'auto' : D.rh)));
     root.querySelector('.dm-h').textContent = h; root.querySelector('.dm-k').textContent = set.Suspension; root.querySelector('.dm-r').textContent = r;
     root.querySelector('.dm-st').textContent = D.m === 'Custom' ? 'Custom · tap to change' : D.m + ' settings';
