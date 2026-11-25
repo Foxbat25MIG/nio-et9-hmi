@@ -1788,3 +1788,18 @@ details.man p{margin:10px 0 0 36px;font-size:14px;line-height:1.5}
 .art-fg{background-size:contain;filter:drop-shadow(0 6px 16px rgba(20,16,40,.28))}
 
 .ph.cov.bk{position:relative;overflow:hidden;background:var(--s2)!important;flex:none}
+
+/* ---------- Mark 2: 3D car (et9-3d.js). The drawing shows until the model has loaded, then cross-fades ---------- */
+.c3d-host{position:relative}
+.c3d{position:absolute;inset:0;width:100%!important;height:100%!important;display:block;opacity:0;transition:opacity 600ms cubic-bezier(.2,.8,.2,1);touch-action:none;cursor:grab}
+.c3d:active{cursor:grabbing}
+.c3d-on .c3d{opacity:1}
+.c3d-host>.ct-box,.c3d-host>svg{transition:opacity 600ms cubic-bezier(.2,.8,.2,1)}
+.c3d-on>.ct-box,.c3d-on>svg{opacity:0;pointer-events:none}
+.dm-c3d{position:relative}
+.pt-card{display:flex;flex-direction:column;gap:14px}
+.pt-row{display:flex;gap:14px;flex-wrap:wrap}
+.pt-sw{width:52px;height:52px;border-radius:50%;padding:4px;border:2px solid transparent;transition:border-color 240ms cubic-bezier(.2,.8,.2,1),transform 140ms cubic-bezier(.2,.8,.2,1);cursor:pointer}
+.pt-sw i{display:block;width:100%;height:100%;border-radius:50%;box-shadow:inset 0 -6px 10px rgba(0,0,0,.22),inset 0 4px 8px rgba(255,255,255,.35)}
+.pt-sw:active{transform:scale(.94)}
+.pt-sw.on{border-color:var(--ink)}

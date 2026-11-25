@@ -539,6 +539,7 @@ html[data-theme="dark"] .favb.f{color:#e4756f!important}
 html[data-theme="dark"] .ev-del{color:#c24a44!important}
 html[data-theme="dark"] .ev-del .ms{color:#c24a44!important}
 html[data-theme="dark"] .art-fg{filter:drop-shadow(0 6px 16px rgba(4,3,10,0.60))}
+html[data-theme="dark"] .pt-sw i{box-shadow:inset 0 -6px 10px rgba(4,3,10,0.53),inset 0 4px 8px hsla(var(--nh), var(--ns), calc(13% + var(--nl)), .35)}
 html[data-theme="dark"] [fill="#1f1c29"]{fill:hsl(var(--nh) var(--ns) calc(25% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d2840"]{fill:hsl(var(--nh) var(--ns) calc(27% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d6bb5"]{fill:#3277c9}
@@ -573,8 +574,14 @@ html[data-theme="dark"] [stop-color="#ffffff"]{stop-color:hsl(var(--nh) var(--ns
 html[data-theme="dark"] [style*="background:#0f0e13"]{background-color:hsl(var(--nh) var(--ns) calc(22% + var(--nl)))!important}
 html[data-theme="dark"] [style*="background:#16151b"]{background-color:hsl(var(--nh) var(--ns) calc(23% + var(--nl)))!important}
 html[data-theme="dark"] [style*="background:#1a1820"]{background-color:hsl(var(--nh) var(--ns) calc(24% + var(--nl)))!important}
+html[data-theme="dark"] [style*="background:#1d2540"]{background-color:#c0c8e2!important}
+html[data-theme="dark"] [style*="background:#2a2930"]{background-color:hsl(var(--nh) var(--ns) calc(26% + var(--nl)))!important}
+html[data-theme="dark"] [style*="background:#33548c"]{background-color:#3a5f9f!important}
 html[data-theme="dark"] [style*="background:#9ed6c8"]{background-color:#2d6c5c!important}
+html[data-theme="dark"] [style*="background:#a3a5ac"]{background-color:hsl(var(--nh) var(--ns) calc(52% + var(--nl)))!important}
 html[data-theme="dark"] [style*="background:#a9c4f1"]{background-color:#264373!important}
+html[data-theme="dark"] [style*="background:#b89c6c"]{background-color:#c0a87d!important}
+html[data-theme="dark"] [style*="background:#b8b1d2"]{background-color:#413861!important}
 html[data-theme="dark"] [style*="background:#b9b0f2"]{background-color:#312673!important}
 html[data-theme="dark"] [style*="background:#cddcf7"]{background-color:#233657!important}
 html[data-theme="dark"] [style*="background:#d5ead8"]{background-color:hsl(var(--nh) var(--ns) calc(20% + var(--nl)))!important}
@@ -584,6 +591,7 @@ html[data-theme="dark"] [style*="background:#dcd9e7"]{background-color:hsl(var(-
 html[data-theme="dark"] [style*="background:#e5e3ec"]{background-color:hsl(var(--nh) var(--ns) calc(16% + var(--nl)))!important}
 html[data-theme="dark"] [style*="background:#e7e3fd"]{background-color:#2b2357!important}
 html[data-theme="dark"] [style*="background:#e7e5ef"]{background-color:hsl(var(--nh) var(--ns) calc(14% + var(--nl)))!important}
+html[data-theme="dark"] [style*="background:#e8e7ec"]{background-color:hsl(var(--nh) var(--ns) calc(14% + var(--nl)))!important}
 html[data-theme="dark"] [style*="background:#e9dcf3"]{background-color:hsl(var(--nh) var(--ns) calc(16% + var(--nl)))!important}
 html[data-theme="dark"] [style*="background:#eeedf4"]{background-color:hsl(var(--nh) var(--ns) calc(10% + var(--nl)))!important}
 html[data-theme="dark"] [style*="background:#efe9da"]{background-color:hsl(var(--nh) var(--ns) calc(17% + var(--nl)))!important}

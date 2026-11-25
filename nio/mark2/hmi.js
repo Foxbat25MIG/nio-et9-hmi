@@ -1544,6 +1544,27 @@
   const DOORN = { dfl: 'driver door', dfr: 'passenger door', drl: 'rear left door', drr: 'rear right door', frunk: 'frunk', boot: 'boot' };
   const qcOf = fr => fr._qc || (fr._qc = { doors: true, lock: true, open: {}, port: false, win: 'closed', wins: { fl: 0, rl: 0, fr: 0, rr: 0 }, wside: 'l', mir: 'out', shade: { l: false, r: false }, lights: 'auto' });
   const WV = { closed: 0, vent: .18, open: 1 };
+  /* ---------- Mark 2: the 3D car (et9-3d.js). Mounts when a car view is first on screen; the drawing stays until the model is ready ---------- */
+  function c3d(fr, kind, host, st, onPick) {
+    if (!host) return; host._st = st;
+    const v = host._v3; if (v && v !== 'wait') { v.set(st); return; }
+    if (v === 'wait') return;
+    if (!window.ET9) { if (!c3d.hooked) { c3d.hooked = true; window.addEventListener('et9-ready', () => document.querySelectorAll('.frame').forEach(f => { qcPaint(f); tyPaint(f); f.querySelectorAll('[data-drv2]').forEach(dmPaint); })); } return; }
+    if (!host.offsetParent) {   // not on screen yet: wait until it is
+      if (!host._io) { host._io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { host._io.disconnect(); host._io = null; c3d(fr, kind, host, host._st, onPick); } }); host._io.observe(host); }
+      return; }
+    host._v3 = 'wait'; host.classList.add('c3d-host');
+    ET9.mount(host, { view: kind, orbit: kind !== 'ty', onPick }).then(v3 => { host._v3 = v3; v3.set(host._st); v3.snap(); requestAnimationFrame(() => host.classList.add('c3d-on')); })
+      .catch(err => { host._v3 = null; console.warn('3D car not available', err); });
+  }
+  // Settings › Display › Car colour (stored in this browser; the 3D car repaints everywhere)
+  const PAINTN = { ceramic: 'Midnight Ceramic Blue', lavender: 'Lavender silver', cloud: 'Cloud White', black: 'Deep Black', moon: 'New Moon Silver', southern: 'Southern Star Blue', gold: 'Sunlight Gold' };
+  function paintSync() { let k = 'ceramic'; try { k = localStorage.getItem('nio-paint') || k; } catch (e) {} if (!PAINTN[k]) k = 'ceramic';
+    document.querySelectorAll('.pt-sw').forEach(s => s.classList.toggle('on', s.dataset.paint === k)); document.querySelectorAll('.pt-n').forEach(n => n.textContent = PAINTN[k]); }
+  document.addEventListener('click', e => { const sw = e.target.closest('[data-paint]'); if (!sw) return; const k = sw.dataset.paint;
+    try { localStorage.setItem('nio-paint', k); } catch (er) {} if (window.ET9) ET9.setPaint(k); paintSync(); toast(frameOf(sw), 'Car colour · ' + PAINTN[k]); });
+  paintSync();
+  const c3dTap = el => el && el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   function qcPaint(fr) {
     const Q = qcOf(fr), qc = fr.querySelector('[data-screen="car"] .qc:not(.ty)'); if (!qc) return;
     const svg = qc.querySelector('.ct');
@@ -1583,6 +1604,9 @@
     lk.querySelector('.qc-ls').textContent = sub;
     const cs = fr._csEl || (fr._csEl = [...fr.querySelectorAll('.ctx *')].find(e => !e.children.length && /doors closed/i.test(e.textContent)));
     if (cs) cs.textContent = (Q.lock ? 'Locked' : 'Unlocked') + ' · ' + (open.length ? open.length + ' open' : 'all doors closed');
+    { const sw = fr.querySelector('.st-wrap'), easy = sw && stOf(sw).easy !== false && ['dfl', 'dfr', 'drl', 'drr'].some(k => Q.open[k]);
+      c3d(fr, 'qc', qc.querySelector('.qc-car'), { open: { ...Q.open }, port: Q.port, wins: { ...Q.wins }, mir: Q.mir, shade: { ...Q.shade }, lights: Q.lights, lift: easy ? -50 : 0 },
+        k => { if (k.startsWith('wheel')) return; c3dTap(svg.querySelector(`[data-cp="${k}"]`)); }); }
   }
   function qcClick(t) {
     const qc = t.closest('[data-screen="car"] .qc:not(.ty)'); if (!qc) return false;
@@ -1632,6 +1656,7 @@
     const st = ty.querySelector('.ty-st'); st.classList.toggle('warn', !!warn);
     if (!fr._tyMsg) { ty.querySelector('.ty-h').textContent = warn ? { fl: 'Front left', fr: 'Front right', rl: 'Rear left', rr: 'Rear right' }[warn] + ' is losing pressure' : 'All tyres OK';
       ty.querySelector('.ty-s').textContent = warn ? 'Slow down and check it at the next stop' : 'Checked today, 13:20'; }
+    c3d(fr, 'ty', ty.querySelector('.qc-car'), { warn }, k => { const c = k.startsWith('wheel-') && ty.querySelector(`[data-ty="${k.slice(6)}"]`); if (c) c.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' }); });
   }
   function tyClick(t) {
     const ty = t.closest('.qc.ty'); if (!ty) return false; const fr = frameOf(t); tyPaint(fr); const P = fr._ty;
@@ -1699,6 +1724,7 @@
     root.querySelectorAll('.dm-stop').forEach(s => s.classList.toggle('on', s.dataset.dm === D.m));
     root.querySelector('.dm-n').textContent = D.m; root.querySelector('.dm-d').textContent = DMD[D.m];
     const car = root.querySelector('.dm-car'); car.style.setProperty('--dy', (-mm * .3) + 'px');
+    c3d(root.closest('.frame'), 'side', root.querySelector('.dm-c3d'), { lift: mm, lights: 'auto' });
     root.querySelectorAll('[data-rhv]').forEach(d => d.classList.toggle('on', d.dataset.rhv === String(D.rh === undefined ? 'auto' : D.rh)));
     root.querySelector('.dm-h').textContent = h; root.querySelector('.dm-k').textContent = set.Suspension; root.querySelector('.dm-r').textContent = r;
     root.querySelector('.dm-st').textContent = D.m === 'Custom' ? 'Custom · tap to change' : D.m + ' settings';
