@@ -669,7 +669,11 @@
 
   function toast(fr, msg) {
     let el = fr.querySelector('.htoast'); if (!el) { el = document.createElement('div'); el.className = 'htoast'; fr.appendChild(el); }
-    el.textContent = msg; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2200);
+    el.textContent = msg;
+    // centre it on what you're looking at: the car in Quick controls, otherwise the open page (not the side menu)
+    { const scr = fr.querySelector('.scr.on'), pg = scr && scr.querySelector('.pg.on'), t = (pg && pg.querySelector('.qc-car')) || (scr && scr.querySelector('.pages')), fb = fr.getBoundingClientRect();
+      if (t && t.offsetParent && fb.width) { const k = fb.width / fr.offsetWidth, b = t.getBoundingClientRect(); el.style.left = Math.round((b.left + b.width / 2 - fb.left) / k) + 'px'; } else el.style.left = ''; }
+    el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2200);
   }
   /* ---------- Calendar: week / month / year, Emma's plans, add a random event ---------- */
   const CY = new Date().getFullYear();
@@ -1600,12 +1604,13 @@
     if (Object.values(Q.open).some(Boolean)) { toast(fr, 'Close the doors, frunk and boot to lock'); return; }
     Q.lock = true; Q.mir = 'fold'; qcPaint(fr); toast(fr, 'Locked · mirrors fold'); });
   setInterval(() => document.querySelectorAll('[data-lockov].on').forEach(ov => { const tm = frameOf(ov).querySelector('.status .time'); if (tm) ov.querySelector('.lk-time').textContent = tm.textContent; }), 1000);
-  new MutationObserver(() => document.querySelectorAll('.frame').forEach(fr => { homePaint(fr); lockPaint(fr); })).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  new MutationObserver(() => document.querySelectorAll('.frame').forEach(fr => { homePaint(fr); lockPaint(fr); fr.querySelectorAll('[data-drv2]').forEach(r => r._dm && dmPaint(r)); })).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   /* ---------- Mark 2 · the map's car marker is a top-down picture of the 3D car ---------- */
   function egoPaint() { if (!window.ET9) return; ET9.snapshot(40).then(url => document.querySelectorAll('.cv-ego').forEach(im => {
     im.setAttribute('href', url); im.setAttribute('opacity', '1'); const fb = im.parentElement.querySelector('.cv-egofb'); if (fb) fb.style.display = 'none'; })).catch(() => {}); }
   if (window.ET9) { egoPaint(); ET9.onPaint(egoPaint); } else window.addEventListener('et9-ready', () => { egoPaint(); ET9.onPaint(egoPaint); }, { once: true });
+  document.addEventListener('click', e => { const b = e.target.closest('[data-hazard]'); if (!b) return; const fr = frameOf(b), Q = qcOf(fr); Q.hazard = !Q.hazard; qcPaint(fr); toast(fr, Q.hazard ? 'Hazard lights on' : 'Hazard lights off'); });
   const c3dTap = el => el && el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   function qcPaint(fr) {
     const Q = qcOf(fr), qc = fr.querySelector('[data-screen="car"] .qc:not(.ty)'); if (!qc) return;
@@ -1634,6 +1639,7 @@
       clearTimeout(fr._rgT); if (!any && recent) fr._rgT = setTimeout(() => qcPaint(fr), Q.rUntil - Date.now() + 20); }
     svg.classList.toggle('l-on', Q.lights === 'on'); svg.classList.toggle('l-drl', Q.lights === 'auto');
     qc.querySelectorAll('[data-pill]').forEach(p => p.classList.toggle('on', p.dataset.pill === 'port' ? Q.port : !!Q.open[p.dataset.pill]));
+    qc.querySelectorAll('[data-hazard]').forEach(b => b.classList.toggle('on', !!Q.hazard));
     qc.querySelectorAll('.qc-btns [data-cp]').forEach(b => b.classList.toggle('on', b.dataset.cp === 'port' ? Q.port : !!Q.open[b.dataset.cp]));
     const sh = Q.shade.l && Q.shade.r ? 'both' : Q.shade.l ? 'l' : Q.shade.r ? 'r' : 'closed';
     const seg = { win: Q.win, mir: Q.mir, shade: sh, lights: Q.lights };
@@ -1653,7 +1659,7 @@
         host._onResize = v => { const L = v.layout(); host.querySelectorAll('.qc-dico').forEach(d => { const k = d.dataset.cp, pt = L.doors[k];
           d.style.top = Math.round(pt.y - 22) + 'px'; d.style.left = Math.round(k[2] === 'l' ? L.left - 56 : L.right + 12) + 'px'; }); host.classList.add('qc-laid'); }; }
       host.querySelectorAll('.qc-dico').forEach(d => { const o = !!Q.open[d.dataset.cp]; d.classList.toggle('open', o); d.querySelector('.ms').textContent = o ? 'door_open' : 'door_front'; });
-      c3d(fr, 'qc', qc.querySelector('.qc-car'), { open: { ...Q.open }, port: Q.port, wins: { ...Q.wins }, mir: Q.mir, shade: { ...Q.shade }, lights: Q.lights, lift: easy ? -50 : 0 },
+      c3d(fr, 'qc', qc.querySelector('.qc-car'), { open: { ...Q.open }, port: Q.port, wins: { ...Q.wins }, mir: Q.mir, shade: { ...Q.shade }, lights: Q.lights, hazard: !!Q.hazard, lift: easy ? -50 : 0 },
         k => { if (k.startsWith('wheel')) return; c3dTap(svg.querySelector(`[data-cp="${k}"]`)); }); }
     if (Q.lock && fr._lastLock === false) { clearTimeout(fr._lkT); fr._lkT = setTimeout(() => { if (qcOf(fr).lock) lockShow(fr); }, 1500); }
     fr._lastLock = Q.lock;
@@ -1780,7 +1786,7 @@
     root.querySelectorAll('.dm-stop').forEach(s => s.classList.toggle('on', s.dataset.dm === D.m));
     root.querySelector('.dm-n').textContent = D.m; root.querySelector('.dm-d').textContent = DMD[D.m];
     const car = root.querySelector('.dm-car'); car.style.setProperty('--dy', (-mm * .3) + 'px');
-    c3d(root.closest('.frame'), 'side', root.querySelector('.dm-c3d'), { lift: mm, lights: 'auto', mode: D.m });
+    c3d(root.closest('.frame'), 'side', root.querySelector('.dm-c3d'), { lift: mm, lights: isDark() ? 'on' : 'auto', mode: D.m, dark: isDark() });
     root.querySelectorAll('[data-rhv]').forEach(d => d.classList.toggle('on', d.dataset.rhv === String(D.rh === undefined ? 'auto' : D.rh)));
     root.querySelector('.dm-h').textContent = h; root.querySelector('.dm-k').textContent = set.Suspension; root.querySelector('.dm-r').textContent = r;
     root.querySelector('.dm-st').textContent = D.m === 'Custom' ? 'Custom · tap to change' : D.m + ' settings';
