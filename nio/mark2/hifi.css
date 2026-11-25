@@ -1929,3 +1929,61 @@ html:not([data-theme="dark"]) .htoast{background:rgba(255,255,255,.9);color:var(
 .qc-btns{display:grid!important;grid-template-columns:1fr 1fr;gap:10px}
 .qc-btns .qbtn{height:64px;flex-direction:row;gap:10px}
 .qc-btns .qbtn .ms{font-size:24px}
+
+/* ---------- Mark 2 · Home widgets, round 3: Next sits right above Places; Battery card; every widget folds the same way ---------- */
+.hm-next{top:auto!important;bottom:214px}
+.hm-bat{width:176px;padding:16px 18px!important;display:block!important}
+.hb-full{height:100%;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}
+.hb-top{display:flex;align-items:center;gap:6px;height:24px}
+.hb-top .ms{font-size:20px;color:#3f9b62}
+.hb-big{font:400 44px/1 "Red Hat Display";color:var(--t1);letter-spacing:-1px}
+.hb-big small{font-size:20px;margin-left:2px;color:var(--t2)}
+.hb-bar{height:6px;border-radius:3px;background:rgba(36,30,72,.1);overflow:hidden}
+.hb-bar i{display:block;height:100%;width:78%;border-radius:3px;background:#3f9b62}
+.hb-mini{display:none;width:56px;height:56px;position:relative;place-items:center;cursor:pointer}
+.hb-mini svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.hb-tr{fill:none;stroke:rgba(36,30,72,.12);stroke-width:5}
+.hb-v{fill:none;stroke:#3f9b62;stroke-width:5;stroke-linecap:round;stroke-dasharray:78 100}
+.hb-mini b{position:relative;font:500 17px "Red Hat Text";color:var(--t1)}
+.hm-bat.min{width:auto}
+.hm-bat.min .hb-full{display:none}
+.hm-bat.min .hb-mini{display:grid}
+.hm-dock>.hm-w.min{height:88px;padding:12px 58px 12px 14px!important;display:flex!important;flex-direction:row;align-items:center;gap:10px}
+.hm-w.min>.hm-tg{top:50%;transform:translateY(-50%);display:grid!important}
+.hm-w.min>.hm-tg:active{transform:translateY(-50%) scale(.92)}
+.hm-music.min{width:206px}
+.hm-music.min .player .p-compact{left:12px;right:58px}
+.hm-music.min .play{display:flex!important}
+html[data-theme="dark"] .hb-bar,html[data-theme="dark"] .hb-tr{background:rgba(255,255,255,.12);stroke:rgba(255,255,255,.14)}
+
+/* ---------- Mark 2 · Quick controls: Windows menu sits over the right column, the car turns to show the glass ---------- */
+.qc-wcard{left:calc(100% + 18px)!important;right:auto;top:0;bottom:auto!important;width:340px!important;transform:translateX(14px) scale(.98)!important}
+.qc-wcard.on{transform:none!important}
+.qc.wv .qc-dico,.qc.wv .qc-hint{opacity:0!important;pointer-events:none!important}
+.qc-car{overflow:visible}
+
+/* ---------- Mark 2 · Driving: the scene has rounded corners ---------- */
+.dm-c3d.c3d-host{border-radius:16px;overflow:hidden}
+.dm-c3d .c3d{border-radius:16px}
+
+/* ---------- Mark 2 · Now playing sheet ---------- */
+.pk-now{display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;background:var(--s2)}
+.pk-big{width:72px;height:72px;border-radius:14px;flex:none;background:var(--s3) center/cover;display:grid;place-items:center}
+.pk-big .ms{font-size:32px;color:var(--t2)}
+.pk-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-pp{width:52px;height:52px;background:var(--ink)!important;flex:none}
+.pk-pp .ms{color:var(--on-ink);font-size:28px}
+.pk-tabs{padding:4px}
+.pk-tabs div{height:40px;font-size:15px}
+.pk-radio{display:grid;place-items:center}
+.pk-radio .ms{font-size:22px;color:var(--t2)}
+.pk-list{flex:1;overflow:auto}
+/* ---------- Mark 2 · vent pad, second style: air flow ---------- */
+.vp-style{padding:3px}
+.vp-style div{height:32px;font-size:14px;padding:0 12px}
+.vp-flow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;transition:opacity 600ms cubic-bezier(.2,.8,.2,1)}
+.vent-pad.flow .vp-flow{opacity:1}
+.vent-pad .vp-grid,.vent-pad .vp-blades,.vent-pad .vp-dot{transition:opacity 600ms cubic-bezier(.2,.8,.2,1)}
+.vent-pad.flow .vp-blades{opacity:.18}
+.vent-pad.flow .vp-dot{opacity:0}
+.vent-pad.flow .vp-grid{opacity:.25}

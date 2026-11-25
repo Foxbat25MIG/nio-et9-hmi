@@ -266,18 +266,36 @@
       p.querySelectorAll('.lb-s').forEach(x => x.textContent = 'DAB+ ' + f); setPlaying(p, true);
     });
   }
-  function openPicker(fr) {
-    let ov = fr.querySelector('.pickerov');
-    if (!ov) {
-      ov = document.createElement('div'); ov.className = 'pickerov';
-      const by = {}; SONGS.filter(s => s[4] !== 'pod' && s[2] < 1200).forEach(s => (by[s[1]] = by[s[1]] || []).push(s));
-      ov.innerHTML = `<div class="picker"><div class="row" style="justify-content:space-between;align-items:center"><span class="h2">Choose a song</span><div class="icb picker-x" style="background:var(--s2)"><span class="ms" style="color:var(--t1)">close</span></div></div><div class="pk-list">` +
-        Object.entries(by).map(([a, l]) => `<div class="pk-art"><span class="lbl">${a}</span>` + l.map(s => `<div class="pk-row" data-song="${s[0]}|${s[1]}" data-tap><span class="pk-cv"${s[3] ? ` style="background-image:url(${s[3]})"` : ''}></span><span class="b2" style="color:var(--t1);flex:1">${s[0]}</span><span class="bs num">${fmt(s[2])}</span></div>`).join('') + '</div>').join('') + '</div></div>';
-      fr.appendChild(ov);
-    }
-    const cur = fr.querySelector('.player .h3'); ov.querySelectorAll('[data-song]').forEach(r => r.classList.toggle('on', cur && r.dataset.song.split('|')[0] === cur.textContent));
-    requestAnimationFrame(() => ov.classList.add('on'));
+  /* Now playing: what is on now, at the top, then every source (Music, Podcasts, Radio, Audiobooks), opened on the one playing */
+  const STATIONS = [['Radio 100,7', '100.7'], ['RTL Radio Lëtzebuerg', '92.5'], ['Eldoradio', '105.0']];
+  function nowKind(fr) { const p = fr.querySelector('.ctx .player') || fr._pl || fr.querySelector('.player'); if (p && p.classList.contains('radio')) return 'radio';
+    const t = p && p.querySelector('.h3') && p.querySelector('.h3').textContent, s = SONGS.find(x => x[0] === t); return s && s[4] === 'pod' ? 'pod' : s && s[4] === 'book' ? 'book' : 'music'; }
+  function pkRender(fr, ov, tab) {
+    const p = fr.querySelector('.ctx .player') || fr._pl || fr.querySelector('.player'), t = p ? p.querySelector('.h3').textContent : '', sub = p ? p.querySelector('.b2').textContent : '';
+    const s = SONGS.find(x => x[0] === t), playing = p && p.classList.contains('playing'), kind = nowKind(fr);
+    const KN = { music: 'Music', pod: 'Podcasts', radio: 'Radio', book: 'Audiobooks' };
+    const row = x => `<div class="pk-row${x[0] === t ? ' on' : ''}" data-song="${x[0]}|${x[1]}" data-tap><span class="pk-cv"${x[3] ? ` style="background-image:url(${x[3]})"` : ''}></span><span class="col" style="flex:1;min-width:0;gap:0"><span class="b2" style="color:var(--t1)">${x[0]}</span><span class="bs">${x[1]}</span></span><span class="bs num">${fmt(x[2])}</span></div>`;
+    let list = '';
+    if (tab === 'music') { const by = {}; SONGS.filter(x => !x[4] && x[2] < 1200).forEach(x => (by[x[1]] = by[x[1]] || []).push(x)); list = Object.entries(by).map(([a, l]) => `<div class="pk-art"><span class="lbl">${a}</span>` + l.map(row).join('') + '</div>').join(''); }
+    else if (tab === 'radio') list = STATIONS.map(([n, f]) => `<div class="pk-row${n === t ? ' on' : ''}" data-pkst="${f}" data-pkn="${n}" data-tap><span class="pk-cv pk-radio"><span class="ms">radio</span></span><span class="col" style="flex:1;gap:0"><span class="b2" style="color:var(--t1)">${n}</span><span class="bs">DAB+ ${f}</span></span><span class="bs">Live</span></div>`).join('');
+    else list = SONGS.filter(x => x[4] === tab).map(row).join('');
+    ov.innerHTML = `<div class="picker"><div class="row" style="justify-content:space-between;align-items:center"><span class="h2">Now playing</span><div class="icb picker-x" style="background:var(--s2)"><span class="ms" style="color:var(--t1)">close</span></div></div>
+      <div class="pk-now"><span class="pk-big"${s && s[3] ? ` style="background-image:url(${s[3]})"` : ''}>${kind === 'radio' ? '<span class="ms">radio</span>' : ''}</span><span class="col" style="flex:1;min-width:0;gap:2px"><span class="lbl">${KN[kind]}</span><span class="h3 pk-t">${t}</span><span class="bs pk-t">${sub}</span></span><div class="icb pk-pp" data-pkpp data-tap><span class="ms f">${playing ? 'pause' : 'play_arrow'}</span></div></div>
+      <div class="segx pk-tabs">${Object.entries(KN).map(([k, n]) => `<div class="${k === tab ? 'on' : ''}" data-pktab="${k}" data-tap>${n}</div>`).join('')}</div>
+      <div class="pk-list">${list}</div></div>`;
+    ov.dataset.tab = tab;
   }
+  function openPicker(fr) {
+    let ov = fr.querySelector('.pickerov'); if (!ov) { ov = document.createElement('div'); ov.className = 'pickerov'; fr.appendChild(ov); }
+    pkRender(fr, ov, nowKind(fr)); requestAnimationFrame(() => ov.classList.add('on'));
+  }
+  document.addEventListener('click', e => {
+    const ov = e.target.closest('.pickerov'); if (!ov) return; const fr = frameOf(ov);
+    const tb = e.target.closest('[data-pktab]'); if (tb) { e.stopPropagation(); pkRender(fr, ov, tb.dataset.pktab); return; }
+    const st = e.target.closest('[data-pkst]'); if (st) { e.stopPropagation(); setStation(fr, st.dataset.pkn, st.dataset.pkst); setTimeout(() => pkRender(fr, ov, 'radio'), 0); return; }
+    const pp = e.target.closest('[data-pkpp]'); if (pp) { e.stopPropagation(); const pl = fr.querySelector('.ctx .player') || fr._pl; const b = pl && pl.querySelector('.play'); if (b) b.dispatchEvent(new MouseEvent('click', { bubbles: true })); setTimeout(() => pkRender(fr, ov, ov.dataset.tab), 30); return; }
+    if (e.target.closest('[data-song]')) setTimeout(() => pkRender(fr, ov, ov.dataset.tab), 30);
+  }, true);
   function closePicker(fr) { const ov = fr && fr.querySelector('.pickerov'); if (ov) ov.classList.remove('on'); }
 
   /* ---------- video (YouTube channels, uploads playlist on loop) ---------- */
@@ -1543,6 +1561,33 @@
   document.addEventListener('pointermove', e => { if (vDrag) vAim(e); });
   document.addEventListener('pointerup', () => { if (vDrag) { vDrag.classList.remove('drag'); vDrag = null; } });
   document.querySelectorAll('.frame').forEach(fr => { if (fr.querySelector('.cl-pane')) { clPaint(fr); clPurify(fr); wcPaint(fr); } });
+  /* Mark 2 · a second look for the vent pad: air streaming out of the vent towards where it is aimed (follows Focus / Diffuse / Sweep) */
+  const VFL = new Set(); let vflOn = false;
+  function vflowTick(now) {
+    VFL.forEach(pad => { if (!pad.isConnected || !pad.classList.contains('flow')) { VFL.delete(pad); return; } if (!pad.offsetParent) return;
+      const cv = pad.querySelector('.vp-flow'), w = pad.clientWidth, h = pad.clientHeight, pr = Math.min(2, devicePixelRatio || 1);
+      if (cv.width !== Math.round(w * pr) || cv.height !== Math.round(h * pr)) { cv.width = Math.round(w * pr); cv.height = Math.round(h * pr); }
+      const x = cv.getContext('2d'); x.setTransform(pr, 0, 0, pr, 0, 0); x.clearRect(0, 0, w, h);
+      const cs = getComputedStyle(pad), t = now / 1000; let ax = parseFloat(cs.getPropertyValue('--vx')) || 0, ay = parseFloat(cs.getPropertyValue('--vy')) || 0;
+      if (pad.classList.contains('sweep')) { ax = Math.sin(t * Math.PI / 3.4) * .85; ay = Math.sin(t * Math.PI / 5.1) * .22; }
+      const spread = pad.classList.contains('focus') ? .1 : pad.classList.contains('sweep') ? .26 : .42, dark = document.documentElement.dataset.theme === 'dark', C = dark ? '176,160,255' : '122,107,242';
+      const cx = w / 2, cy = h / 2, tx = cx + ax * w * .4, ty = cy + ay * h * .38, dx = tx - cx, dy = ty - cy, len = Math.hypot(dx, dy);
+      const g = x.createRadialGradient(tx, ty, 0, tx, ty, w * (.12 + spread * .4)); g.addColorStop(0, `rgba(${C},.3)`); g.addColorStop(1, `rgba(${C},0)`); x.fillStyle = g; x.fillRect(0, 0, w, h);
+      const P = pad._pp || (pad._pp = Array.from({ length: 80 }, () => ({ s: Math.random() * 2 - 1, v: Math.random(), l: Math.random() })));
+      x.lineCap = 'round';
+      P.forEach(p => { p.l += .011 + p.v * .009; if (p.l > 1) { p.l = 0; p.s = Math.random() * 2 - 1; p.v = Math.random(); }
+        const k = p.l; let ux, uy, px, py;
+        if (len < 10) { const a = p.s * Math.PI + p.v * 6.28; ux = Math.cos(a); uy = Math.sin(a) * .7; px = cx + ux * k * w * .42; py = cy + uy * k * h * .5; }
+        else { ux = dx / len; uy = dy / len; const off = p.s * spread * w * .55 * k; px = cx + dx * k * 1.25 - uy * off; py = cy + dy * k * 1.25 + ux * off; }
+        const tl = 8 + 16 * k; x.strokeStyle = `rgba(${C},${((1 - k) * .6 * Math.min(1, k * 6)).toFixed(3)})`; x.lineWidth = 1.2 + k * 1.8;
+        x.beginPath(); x.moveTo(px - ux * tl, py - uy * tl); x.lineTo(px, py); x.stroke(); });
+      x.fillStyle = `rgba(${C},.95)`; x.beginPath(); x.roundRect(cx - 22, cy - 4, 44, 8, 4); x.fill(); });
+    if (VFL.size) requestAnimationFrame(vflowTick); else vflOn = false;
+  }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-vstyle]'); if (!b) return; const fr = frameOf(b), flow = b.dataset.vstyle === 'flow';
+    fr.querySelectorAll('[data-vstyle]').forEach(d => d.classList.toggle('on', d.dataset.vstyle === b.dataset.vstyle));
+    fr.querySelectorAll('[data-vpad]').forEach(pad => { pad.classList.toggle('flow', flow); if (flow) VFL.add(pad); });
+    if (flow && !vflOn) { vflOn = true; requestAnimationFrame(vflowTick); } });
 
   /* ---------- Quick controls: doors, frunk, boot, windows, mirrors, charge port, sunshades, lights ---------- */
   const DOORN = { dfl: 'driver door', dfr: 'passenger door', drl: 'rear left door', drr: 'rear right door', frunk: 'frunk', boot: 'boot' };
@@ -1554,7 +1599,7 @@
     const v = host._v3; if (v && v !== 'wait') { v.set(st); return; }
     if (v === 'wait') return;
     if (!window.ET9) { if (!c3d.hooked) { c3d.hooked = true; window.addEventListener('et9-ready', () => document.querySelectorAll('.frame').forEach(f => { qcPaint(f); tyPaint(f); f.querySelectorAll('[data-drv2]').forEach(dmPaint); homePaint(f); lockPaint(f); })); } return; }
-    if (!host.offsetParent) {   // not on screen yet: wait until it is
+    if (false && !host.offsetParent) {   // (no longer waits until on screen: every view is built up front so pages open instantly)
       if (!host._io) { host._io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { host._io.disconnect(); host._io = null; c3d(fr, kind, host, host._st, onPick); } }); host._io.observe(host); }
       return; }
     host._v3 = 'wait'; host.classList.add('c3d-host');
@@ -1595,21 +1640,17 @@
   function lockHide(fr) { const ov = fr.querySelector('[data-lockov]'); if (!ov || !ov.classList.contains('on')) return;
     ov.style.transform = ''; ov.classList.add('out'); setTimeout(() => ov.classList.remove('on', 'out'), 600);
     const Q = qcOf(fr); Q.lock = false; Q.mir = 'out'; fr._lastLock = false; qcPaint(fr); setTimeout(() => toast(fr, 'Unlocked · welcome back, Emma'), 350); }
-  document.querySelectorAll('[data-lockov]').forEach(ov => { let y0 = null, dy = 0;
-    ov.addEventListener('pointerdown', e => { y0 = e.clientY; dy = 0; ov.style.transition = 'none'; });
-    ov.addEventListener('pointermove', e => { if (y0 === null) return; dy = Math.min(0, e.clientY - y0); ov.style.transform = `translateY(${dy}px)`; });
-    const up = () => { if (y0 === null) return; y0 = null; ov.style.transition = ''; if (dy < -50 || Math.abs(dy) < 6) lockHide(frameOf(ov)); else ov.style.transform = ''; };
-    ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up); });
+  document.querySelectorAll('[data-lockov]').forEach(ov => ov.addEventListener('click', () => lockHide(frameOf(ov))));   // tap anywhere to unlock
   document.addEventListener('click', e => { const b = e.target.closest('[data-lockscr]'); if (!b) return; const fr = frameOf(b), Q = qcOf(fr);
     if (Object.values(Q.open).some(Boolean)) { toast(fr, 'Close the doors, frunk and boot to lock'); return; }
     Q.lock = true; Q.mir = 'fold'; qcPaint(fr); toast(fr, 'Locked · mirrors fold'); });
   setInterval(() => document.querySelectorAll('[data-lockov].on').forEach(ov => { const tm = frameOf(ov).querySelector('.status .time'); if (tm) ov.querySelector('.lk-time').textContent = tm.textContent; }), 1000);
-  new MutationObserver(() => document.querySelectorAll('.frame').forEach(fr => { homePaint(fr); lockPaint(fr); fr.querySelectorAll('[data-drv2]').forEach(r => r._dm && dmPaint(r)); })).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  new MutationObserver(() => document.querySelectorAll('.frame').forEach(fr => { homePaint(fr); lockPaint(fr); fr.querySelectorAll('[data-drv2]').forEach(r => r._dm && dmPaint(r)); qcPaint(fr); })).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   /* ---------- Mark 2 · the map's car marker is a top-down picture of the 3D car ---------- */
   function egoPaint() { if (!window.ET9) return; ET9.snapshot(40).then(url => document.querySelectorAll('.cv-ego').forEach(im => {
     im.setAttribute('href', url); im.setAttribute('opacity', '1'); const fb = im.parentElement.querySelector('.cv-egofb'); if (fb) fb.style.display = 'none'; })).catch(() => {}); }
-  if (window.ET9) { egoPaint(); ET9.onPaint(egoPaint); } else window.addEventListener('et9-ready', () => { egoPaint(); ET9.onPaint(egoPaint); }, { once: true });
+  if (window.ET9) { egoPaint(); ET9.onPaint(egoPaint); ET9.preload(); } else window.addEventListener('et9-ready', () => { egoPaint(); ET9.onPaint(egoPaint); }, { once: true });
   document.addEventListener('click', e => { const b = e.target.closest('[data-hazard]'); if (!b) return; const fr = frameOf(b), Q = qcOf(fr); Q.hazard = !Q.hazard; qcPaint(fr); toast(fr, Q.hazard ? 'Hazard lights on' : 'Hazard lights off'); });
   const c3dTap = el => el && el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   function qcPaint(fr) {
@@ -1658,8 +1699,9 @@
         host.insertAdjacentHTML('beforeend', ['dfl', 'dfr', 'drl', 'drr'].map(k => `<div class="qc-dico" data-cp="${k}" data-tap title="${DOORN[k]}"><span class="ms">door_front</span></div>`).join('') + '<div class="qc-hint"><span class="ms">touch_app</span><span>Tap a door to open it</span></div>');
         host._onResize = v => { const L = v.layout(); host.querySelectorAll('.qc-dico').forEach(d => { const k = d.dataset.cp, pt = L.doors[k];
           d.style.top = Math.round(pt.y - 22) + 'px'; d.style.left = Math.round(k[2] === 'l' ? L.left - 56 : L.right + 12) + 'px'; }); host.classList.add('qc-laid'); }; }
+      qc.classList.toggle('wv', !!Q.wcard);
       host.querySelectorAll('.qc-dico').forEach(d => { const o = !!Q.open[d.dataset.cp]; d.classList.toggle('open', o); d.querySelector('.ms').textContent = o ? 'door_open' : 'door_front'; });
-      c3d(fr, 'qc', qc.querySelector('.qc-car'), { open: { ...Q.open }, port: Q.port, wins: { ...Q.wins }, mir: Q.mir, shade: { ...Q.shade }, lights: Q.lights, hazard: !!Q.hazard, lift: easy ? -50 : 0 },
+      c3d(fr, 'qc', qc.querySelector('.qc-car'), { open: { ...Q.open }, port: Q.port, wins: { ...Q.wins }, mir: Q.mir, shade: { ...Q.shade }, lights: Q.lights, hazard: !!Q.hazard, lift: easy ? -50 : 0, dark: isDark(), view: Q.wcard ? 'qcwin' : 'qc' },
         k => { if (k.startsWith('wheel')) return; c3dTap(svg.querySelector(`[data-cp="${k}"]`)); }); }
     if (Q.lock && fr._lastLock === false) { clearTimeout(fr._lkT); fr._lkT = setTimeout(() => { if (qcOf(fr).lock) lockShow(fr); }, 1500); }
     fr._lastLock = Q.lock;

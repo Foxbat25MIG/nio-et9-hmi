@@ -558,6 +558,11 @@ html[data-theme="dark"] .qc-dico.open .ms{color:#c94c59}
 html[data-theme="dark"] .qc-hint{box-shadow:0 6px 16px rgba(4,3,10,0.19)}
 html[data-theme="dark"] .qbtn.hz.on{background-color:#ffba48;border-color:#ffba48;color:#f1d9b1}
 html[data-theme="dark"] .qbtn.hz.on .ms{color:#f1d9b1}
+html[data-theme="dark"] .hb-top .ms{color:#bee4cc}
+html[data-theme="dark"] .hb-bar{background-color:rgba(4,3,10,0.24)}
+html[data-theme="dark"] .hb-bar i{background-color:#46ad6d}
+html[data-theme="dark"] .hb-tr{stroke:rgba(4,3,10,0.29)}
+html[data-theme="dark"] .hb-v{stroke:#46ad6d}
 html[data-theme="dark"] [fill="#1f1c29"]{fill:hsl(var(--nh) var(--ns) calc(25% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d2840"]{fill:hsl(var(--nh) var(--ns) calc(27% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d6bb5"]{fill:#3277c9}

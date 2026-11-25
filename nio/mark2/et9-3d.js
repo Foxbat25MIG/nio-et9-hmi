@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const BASE = new URL('.', import.meta.url).href;
 const EASE = t => 1 - Math.pow(1 - t, 3);          // close to the HMI's cubic-bezier(.2,.8,.2,1)
@@ -24,7 +25,7 @@ let paintKey = PAINTS[storedPaint()] ? storedPaint() : 'ceramic';
 
 /* ---------- shared materials ---------- */
 const M = {
-  paint: new THREE.MeshPhysicalMaterial({ clearcoat: 1, clearcoatRoughness: .06 }),
+  paint: new THREE.MeshPhysicalMaterial({ clearcoat: 1, clearcoatRoughness: .025, envMapIntensity: 1.25 }),
   glass: new THREE.MeshPhysicalMaterial({ color: '#191722', metalness: .1, roughness: .05, envMapIntensity: 1.4, transparent: true, opacity: .9 }),
   roof: new THREE.MeshPhysicalMaterial({ color: '#1d1a28', metalness: .1, roughness: .04, envMapIntensity: 1.5, transparent: true, opacity: .62, depthWrite: false }),
   lens: new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: .05, transparent: true, opacity: .18, depthWrite: false }),
@@ -59,6 +60,8 @@ function splitMesh(mesh, keyOf) {
   if (Object.keys(out).length) { const ng = new THREE.BufferGeometry(); Object.entries(g.attributes).forEach(([n, a]) => ng.setAttribute(n, a)); ng.setIndex(rest); mesh.geometry = ng; }
   return out;
 }
+const SMOOTH = new WeakMap();
+function smoothGeo(g) { if (!SMOOTH.has(g)) { const n = toCreasedNormals(g, Math.PI / 4.5); SMOOTH.set(g, n); } return SMOOTH.get(g); }
 function pivot(name, x, y, z) { const p = new THREE.Group(); p.name = name; p.position.set(x, y, z); return p; }
 
 /* ---------- build one prepared car from the loaded file ---------- */
@@ -157,7 +160,8 @@ async function buildCar() {
     haz: [halo('#ffa524', .88, .78, 2.44, .9), halo('#ffa524', -.88, .78, 2.44, .9), halo('#ffa524', .9, 1.04, -2.66, .9), halo('#ffa524', -.9, 1.04, -2.66, .9)],
     hazPool: [pool('#ffa524', .9, 2.5, 1.6, 1.6), pool('#ffa524', -.9, 2.5, 1.6, 1.6), pool('#ffa524', .9, -2.75, 1.6, 1.6), pool('#ffa524', -.9, -2.75, 1.6, 1.6)],
     headPool: pool('#fff0c4', 0, 4.9, 3.6, 4.8), tailPool: pool('#ff3048', 0, -3.35, 2.8, 1.5) };
-  car.traverse(o => { if (o.isMesh && o.name !== 'shadow' && o.name !== 'wglow' && o.name !== 'fx' && !o.material.transparent) o.castShadow = true; });
+  car.traverse(o => { if (o.isMesh && o.name !== 'shadow' && o.name !== 'wglow' && o.name !== 'fx' && !o.material.transparent) o.castShadow = true;
+    if (o.isMesh && o.material === M.paint && !o.userData.creased) { o.geometry = smoothGeo(o.geometry); o.userData.creased = true; } });
   return { car, body, P };
 }
 
@@ -375,10 +379,26 @@ function driveScene(scene) {
     const c = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 1), std(i % 3 ? '#8fc49a' : '#a7d4a2')); c.position.y = 2.2; g.add(c); return g; }, 26, [-18, -7.5]);
   add('neon', i => { const g = new THREE.Group(); const h = 2.5 + Math.random() * 5;
     const b = new THREE.Mesh(new THREE.BoxGeometry(.12, h, .12), std(i % 2 ? '#ff3d7f' : '#9b5cff', 2.2)); b.position.y = h / 2; g.add(b); return g; }, 34, [-16, -7]);
-  add('pines', i => { const g = new THREE.Group(), s = .9 + Math.random() * .9; g.scale.setScalar(s);
+  const ornM = ['#e0344b', '#ffc94d', '#6fa8ff', '#ffffff'].map(c => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: .9, roughness: .3 }));
+  const starM = new THREE.MeshStandardMaterial({ color: '#ffd76a', emissive: '#ffd76a', emissiveIntensity: 1.6 }), deerM = std('#8a6a55'), antM = std('#d9cbb8');
+  const deer = () => { const g = new THREE.Group(), b = (w, h, d, x, y, z, m = deerM) => { const k = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); k.position.set(x, y, z); g.add(k); return k; };
+    b(.28, .32, .95, 0, .78, 0); b(.14, .4, .14, 0, 1.08, .42).rotation.x = -.5; b(.16, .16, .3, 0, 1.3, .58);
+    [[.09, .32], [-.09, .32], [.09, -.32], [-.09, -.32]].forEach(([x, z]) => b(.07, .62, .07, x, .31, z));
+    [1, -1].forEach(sd => { b(.03, .3, .03, sd * .07, 1.5, .5, antM).rotation.z = -sd * .5; b(.03, .16, .03, sd * .14, 1.56, .54, antM).rotation.x = .6; }); g.rotation.y = Math.PI; return g; };
+  add('pines', i => { if (i % 9 === 4) { const d = deer(); d.scale.setScalar(.9 + Math.random() * .25); return d; }
+    const g = new THREE.Group(), s = .9 + Math.random() * .9; g.scale.setScalar(s);
+    if (i % 4 === 1) { for (let k = 0; k < 9; k++) { const a = k * 2.3, y = .7 + (k % 3) * .62, r = (1.05 - (k % 3) * .3) * .82;
+        const o = new THREE.Mesh(new THREE.SphereGeometry(.07, 8, 6), ornM[k % 4]); o.position.set(Math.cos(a) * r, y + .25, Math.sin(a) * r); g.add(o); }
+      const st = new THREE.Mesh(new THREE.OctahedronGeometry(.16), starM); st.position.y = 3.05; g.add(st); }
     const t = new THREE.Mesh(new THREE.CylinderGeometry(.08, .12, .8, 6), std('#6b5d58')); t.position.y = .4; g.add(t);
     [0, 1, 2].forEach(k => { const c = new THREE.Mesh(new THREE.ConeGeometry(1.1 - k * .3, 1.3, 7), std(k === 2 ? '#ffffff' : '#7f9c95')); c.position.y = 1.1 + k * .75; g.add(c); }); return g; }, 30, [-20, -7.5]);
   add('grid', () => { const g = new THREE.Group(); const b = new THREE.Mesh(new THREE.BoxGeometry(.9, .9, .9), new THREE.MeshStandardMaterial({ color: '#cfc6ec', roughness: .3, metalness: .2 })); b.position.y = .45 + Math.random() * 2; b.rotation.set(Math.random(), Math.random(), 0); g.add(b); return g; }, 10, [-16, -8]);
+  const sleigh = new THREE.Group(); sleigh.position.set(-24, 5.2, -40); scene.add(sleigh);
+  { const red = new THREE.MeshStandardMaterial({ color: '#c8263c', roughness: .5 }), gold = new THREE.MeshStandardMaterial({ color: '#e8b64a', metalness: .6, roughness: .3 });
+    const sb = new THREE.Mesh(new THREE.BoxGeometry(.7, .45, 1.2), red); sleigh.add(sb); const rn = new THREE.Mesh(new THREE.BoxGeometry(.75, .05, 1.5), gold); rn.position.y = -.3; sleigh.add(rn);
+    const sa = new THREE.Mesh(new THREE.SphereGeometry(.28, 12, 10), red); sa.position.set(0, .45, -.1); sleigh.add(sa); const hd = new THREE.Mesh(new THREE.SphereGeometry(.14, 10, 8), new THREE.MeshStandardMaterial({ color: '#f3dccb' })); hd.position.set(0, .8, -.05); sleigh.add(hd);
+    for (let k = 0; k < 4; k++) { const d = deer(); d.scale.setScalar(.55); d.rotation.y = 0; d.position.set((k % 2 ? .22 : -.22), -.35, 1.3 + Math.floor(k / 2) * 1.0); sleigh.add(d); } }
+  sleigh.rotation.y = 0;
   const grid = new THREE.GridHelper(160, 160, '#b9addf', '#d6cfec'); grid.material.transparent = true; grid.material.opacity = 0; grid.position.y = .002; scene.add(grid);
   // falling snow
   const SN = 700, sg = new THREE.BufferGeometry(), sp = new Float32Array(SN * 3);
@@ -387,6 +407,7 @@ function driveScene(scene) {
   const snow = new THREE.Points(sg, new THREE.PointsMaterial({ color: '#ffffff', size: .07, transparent: true, opacity: 0, depthWrite: false })); scene.add(snow);
   return {
     mode(m) { if (!P[m]) return; mode = m; vT = P[m].v; },
+    night: () => nf,
     theme(d) { dark = d; },
     speed: () => v,
     update(dt) {
@@ -398,6 +419,7 @@ function driveScene(scene) {
       edgeM.opacity += ((mode === 'Sport' ? .9 : 0) - edgeM.opacity) * k;
       grid.material.opacity += ((mode === 'Custom' ? .7 : 0) - grid.material.opacity) * k; grid.position.z = -(off % 1);
       snow.material.opacity += ((mode === 'Snow' ? .9 : 0) - snow.material.opacity) * k;
+      { const tt = (performance.now() / 1000) % 26; sleigh.visible = mode === 'Snow' && tt < 11; sleigh.position.z = -34 + tt * 6.5; sleigh.position.y = 5.2 + Math.sin(tt * 2.2) * .18; }
       if (snow.material.opacity > .01) { for (let i = 0; i < SN; i++) { sp[i * 3 + 1] -= dt * 1.1; sp[i * 3 + 2] -= dt * v * .85; if (sp[i * 3 + 1] < 0) sp[i * 3 + 1] += 7; if (sp[i * 3 + 2] < -15) sp[i * 3 + 2] += 30; } sg.attributes.position.needsUpdate = true; }
       nf += ((dark ? 1 : 0) - nf) * k; sceneryDim(1 - nf * .72); lampHaloM.opacity = nf; lampPoolM.opacity = nf * .6; bulbM.emissiveIntensity = 1.4 + nf * 2.5;
       Object.entries(sets).forEach(([kind, g]) => { const on = tar.kind === kind || (kind === 'lamps' && dark && mode !== 'Sport') ? 1 : 0; g.userData.k += (on - g.userData.k) * k; const s = g.userData.k;
@@ -411,9 +433,10 @@ function driveScene(scene) {
 /* ---------- viewers ---------- */
 const VIEWS = {   // camera position, target, field of view
   qc:   { p: [0, 16.2, -.001], t: [0, 0, .25], fov: 26, up: [0, 0, 1] },   // straight down, nose up (locked)
+  qcwin: { p: [6.9, 4.4, -9.4], t: [0, .55, .15], fov: 40, up: [0, 1, 0] },  // while the Windows menu is open: three-quarter rear view, so the glass is seen going down
   ty:   { p: [0, 15.5, -.001], t: [0, 0, -.05], fov: 26, up: [0, 0, 1] },   // straight down, nose up
   side: { p: [7.4, 1.05, .1], t: [-.4, .72, .1], fov: 27, ls: 2.4 },        // driver's side, whole car (ride height shown 2.4× so it reads)
-  home: { p: [-6.45, 1.7, 7.5], t: [-1.7, .6, -.95], fov: 32 },             // front three-quarter, like a showroom; car sits right of the Next card
+  home: { p: [-4.9, 1.85, 8.6], t: [0, .72, 0], fov: 32, shift: [.17, .07] },   // front three-quarter; orbits the car itself, drawn right of centre (clear of the Next card)
   lock: { p: [7.3, 2.2, 7.7], t: [0, 1.45, .2], fov: 28 },                   // car in the lower half, under the clock
 };
 const viewers = new Set();
@@ -435,7 +458,25 @@ function shared() {
   R.setPixelRatio(PR); R.localClippingEnabled = true; R.autoClear = false;
   R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05; R.outputColorSpace = THREE.SRGBColorSpace;
   R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap;
-  ENV = new THREE.PMREMGenerator(R).fromScene(new RoomEnvironment(), .04).texture;
+  ENV = studioEnv(R);
+  return R;
+}
+/* a photo-studio light set baked into the reflection map: soft gradient dome, long overhead soft boxes and side strips.
+   These are what draw the clean highlight lines along the paint and glass. */
+function studioEnv(r) {
+  const s = new THREE.Scene(), dome = new THREE.SphereGeometry(60, 48, 24), col = [], p = dome.attributes.position, c = new THREE.Color();
+  const top = new THREE.Color('#f6f4fb'), hor = new THREE.Color('#b8b2c9'), bot = new THREE.Color('#2e2a39');
+  for (let i = 0; i < p.count; i++) { const y = p.getY(i) / 60; if (y > 0) c.copy(hor).lerp(top, Math.pow(y, .6)); else c.copy(hor).lerp(bot, Math.pow(-y, .45)); col.push(c.r, c.g, c.b); }
+  dome.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  s.add(new THREE.Mesh(dome, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide })));
+  const box = (w, h, x, y, z, rx, ry, k) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(k, k, k * 1.02), side: THREE.DoubleSide })); m.position.set(x, y, z); m.rotation.set(rx, ry, 0); s.add(m); };
+  box(8, 36, 0, 22, 0, Math.PI / 2, 0, 5.5);                // long overhead soft box
+  box(3, 30, -9, 18, 0, Math.PI / 2, 0, 3); box(3, 30, 9, 18, 0, Math.PI / 2, 0, 3);
+  box(30, 2.2, 0, 7, -26, 0, 0, 3.2); box(30, 2.2, 0, 7, 26, 0, Math.PI, 3.2);    // horizon strips front and back
+  box(2.2, 24, -28, 6, 0, 0, Math.PI / 2, 2.6); box(2.2, 24, 28, 6, 0, 0, -Math.PI / 2, 2.6);   // side strips
+  const t = new THREE.PMREMGenerator(r).fromScene(s, .015).texture; return t;
+}
+function _unused() {
   return R;
 }
 function drawTo(ctx, scene, cam, w, h, clear = true) {
@@ -470,6 +511,7 @@ export async function mount(el, opt = {}) {
       else if (o.material.side !== THREE.DoubleSide) { if (!dbl.has(o.material)) { const m = o.material.clone(); m.side = THREE.DoubleSide; dbl.set(o.material, m); } o.material = dbl.get(o.material); } }); });
   [P.frunk, P.boot].forEach(g => g.traverse(o => { if (o.isMesh && o.material === M.paint) o.material = M.paintD; }));
   const tyreMats = {}; Object.entries(P.wheels).forEach(([k, w]) => w.spin.traverse(o => { if (o.isMesh && /tire/i.test(o.material.name || '')) { const m = tyreMats[k] || (tyreMats[k] = o.material.clone()); o.material = m; } }));
+  let va = null, vname = opt.view || 'qc';
   let spin = !!opt.spin, wheelA = 0, last = performance.now(), dirty = true, W = 0, H = 0, t0 = performance.now();
   const step = (cur, tar, dt, rate) => { const d = tar - cur; return Math.abs(d) < .0005 ? tar : cur + d * Math.min(1, dt * rate); };
   function apply(now) {
@@ -491,17 +533,30 @@ export async function mount(el, opt = {}) {
     M.head.emissiveIntensity = S.head * 2.2 + S.beam * 1.6; M.tail.emissiveIntensity = S.tail * 2 + S.beam;
     { const hh = smooth(.1, 1, S.head) * .55 + S.beam * .45, blink = S.haz * Math.pow(Math.max(0, Math.sin(now / 1000 * Math.PI * 1.5)), .35);
       P.fx.head.forEach(h => h.material.opacity = hh); P.fx.tail.forEach(h => h.material.opacity = smooth(.1, 1, S.tail) * .5 + S.beam * .4);
-      P.fx.headPool.material.opacity = S.beam * .55; P.fx.tailPool.material.opacity = S.beam * .3;
+      P.fx.headPool.material.opacity = S.beam * .6; P.fx.tailPool.material.opacity = S.beam * .3;
+      if (beams) { const nt = world.night ? world.night() : 0; beams.mat.opacity = S.beam * nt * .75; P.fx.head.forEach(h => { h.material.opacity = hh * .45; h.scale.setScalar(.6); }); P.fx.headPool.material.opacity = S.beam * .35; }
       P.fx.haz.forEach(h => h.material.opacity = blink); P.fx.hazPool.forEach(h => h.material.opacity = blink * .45); }
     Object.entries(P.wglow).forEach(([k, m]) => { m.material.opacity = (S.warn[k] || 0) * (.6 + .3 * Math.sin(now / 260)); });
     Object.entries(tyreMats).forEach(([k, m]) => { m.emissive.set('#e0303f'); m.emissiveIntensity = (S.warn[k] || 0) * (.35 + .25 * Math.sin(now / 260)); });
   }
+  function fxTint(dark) { P.fx.head.forEach(h => { h.material.color.set(dark ? '#fff7e2' : '#ffc94d'); h.scale.setScalar(dark ? 1.2 : 1.55); });
+    P.fx.headPool.material.color.set(dark ? '#fff0c4' : '#ffd36a'); P.fx.tail.forEach(h => h.material.color.set(dark ? '#ff2f48' : '#ff1f3d')); }
+  fxTint(false);
+  // night driving: straight, soft beams reaching forward along the road (not a round glow)
+  let beams = null;
+  if (opt.scene === 'drive') { const c = document.createElement('canvas'); c.width = 512; c.height = 64; const x = c.getContext('2d');
+    const gh = x.createLinearGradient(0, 0, 512, 0); gh.addColorStop(0, 'rgba(255,248,226,.95)'); gh.addColorStop(.25, 'rgba(255,244,214,.55)'); gh.addColorStop(1, 'rgba(255,240,200,0)'); x.fillStyle = gh; x.fillRect(0, 0, 512, 64);
+    x.globalCompositeOperation = 'destination-in'; const gv = x.createLinearGradient(0, 0, 0, 64); gv.addColorStop(0, 'rgba(0,0,0,0)'); gv.addColorStop(.5, 'rgba(0,0,0,1)'); gv.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gv; x.fillRect(0, 0, 512, 64);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    const bm = new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+    beams = [.75, -.75].map(xx => { const m = new THREE.Mesh(new THREE.PlaneGeometry(11, 1.1), bm); m.rotation.set(0, -Math.PI / 2, -.035); m.position.set(xx, .62, 2.45 + 5.5); m.name = 'fx'; body.add(m); return m; });
+    beams.mat = bm; }
   const proj = new THREE.Vector3();
   const v = {
     el, canvas: cv, P,
     tick(now) {
       const w = el.clientWidth, h = el.clientHeight; if (!w || !h || !cv.isConnected) return false;
-      if (w !== W || h !== H) { W = w; H = h; cam.aspect = w / h; cam.updateProjectionMatrix(); dirty = true; if (opt.onResize) setTimeout(() => opt.onResize(v), 0); }
+      if (w !== W || h !== H) { W = w; H = h; cam.aspect = w / h; if (V.shift) cam.setViewOffset(w, h, -V.shift[0] * w, V.shift[1] * h, w, h); cam.updateProjectionMatrix(); dirty = true; if (opt.onResize) setTimeout(() => opt.onResize(v), 0); }
       const dt = Math.min(.05, (now - last) / 1000); last = now; let moving = false;
       const walk = (a, b, rate) => { Object.keys(b).forEach(k => { if (typeof b[k] === 'object') { moving = walk(a[k], b[k], rate) || moving; } else { const n = step(a[k], b[k], dt, rate); if (n !== a[k]) { a[k] = n; moving = true; } } }); return moving; };
       const lin = (a, b, dur) => { const d = b - a; if (!d) return a; const st = dt / dur; return Math.abs(d) <= st ? b : a + Math.sign(d) * st; };
@@ -517,6 +572,9 @@ export async function mount(el, opt = {}) {
       if (drag || inertia) { if (!drag) { sph.theta += vel * dt; vel *= Math.pow(.04, dt); if (Math.abs(vel) < .02) inertia = false; } moving = true; }
       else if (back) { const k = Math.min(1, dt * 3); sph.theta += (sph0.theta - sph.theta) * k; sph.phi += (sph0.phi - sph.phi) * k;
         if (Math.abs(sph.theta - sph0.theta) + Math.abs(sph.phi - sph0.phi) < 1e-4) { sph.theta = sph0.theta; sph.phi = sph0.phi; back = false; } moving = true; }
+      if (va) { const k = Math.min(1, (now - va.t0) / 900), e = IO(k); tgt.lerpVectors(va.t1, va.t2, e); cam.up.lerpVectors(va.u1, va.u2, e).normalize();
+        cam.fov = va.f1 + (va.f2 - va.f1) * e; cam.updateProjectionMatrix(); const pp = new THREE.Vector3().lerpVectors(va.p1, va.p2, e).sub(tgt); sph.setFromVector3(pp); sph0.copy(sph);
+        if (k >= 1) { va = null; if (opt.onResize) setTimeout(() => opt.onResize(v), 0); } moving = true; }
       if (moving || dirty) { apply(now); cam.position.setFromSpherical(sph).add(tgt); cam.lookAt(tgt); drawTo(ctx, scene, cam, w, h); dirty = false; }
       return moving;
     },
@@ -533,6 +591,9 @@ export async function mount(el, opt = {}) {
       if ('warn' in st) { ['fl', 'fr', 'rl', 'rr'].forEach(k => T.warn[k] = st.warn === k ? 1 : 0); }
       if ('mode' in st && world && world.mode) world.mode(st.mode);
       if ('dark' in st && world && world.theme) world.theme(st.dark);
+      if ('dark' in st) fxTint(st.dark);
+      if ('view' in st && st.view !== vname && VIEWS[st.view]) { const N = VIEWS[st.view]; vname = st.view;
+        va = { t0: performance.now(), p1: cam.position.clone(), p2: new THREE.Vector3(...N.p), t1: tgt.clone(), t2: new THREE.Vector3(...N.t), u1: cam.up.clone(), u2: new THREE.Vector3(...(N.up || [0, 1, 0])), f1: cam.fov, f2: N.fov }; }
       dirty = true; kick();
     },
     snap() { Object.assign(S, JSON.parse(JSON.stringify(T))); dirty = true; kick(); },
