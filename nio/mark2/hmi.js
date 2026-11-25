@@ -1598,7 +1598,7 @@
     if (!host) return; host._st = st;
     const v = host._v3; if (v && v !== 'wait') { v.set(st); return; }
     if (v === 'wait') return;
-    if (!window.ET9) { if (!c3d.hooked) { c3d.hooked = true; window.addEventListener('et9-ready', () => document.querySelectorAll('.frame').forEach(f => { lockPaint(f); homePaint(f); qcPaint(f); tyPaint(f); f.querySelectorAll('[data-drv2]').forEach(dmPaint); }));   // lock screen first, then Home, then the car pages } return; }
+    if (!window.ET9) { if (!c3d.hooked) { c3d.hooked = true; window.addEventListener('et9-ready', () => document.querySelectorAll('.frame').forEach(f => { lockPaint(f); homePaint(f); qcPaint(f); tyPaint(f); f.querySelectorAll('[data-drv2]').forEach(dmPaint); }));   /* lock screen first, then Home, then the car pages */ } return; }
     if (false && !host.offsetParent) {   // (no longer waits until on screen: every view is built up front so pages open instantly)
       if (!host._io) { host._io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { host._io.disconnect(); host._io = null; c3d(fr, kind, host, host._st, onPick); } }); host._io.observe(host); }
       return; }
@@ -1648,9 +1648,9 @@
     const done = () => document.querySelectorAll('[data-lockov]').forEach(ov => ov.classList.add('ready'));
     const t0 = performance.now(), check = () => { const hosts = [...document.querySelectorAll('.hm-stage, .lk-stage, .qc:not(.ty) .qc-car, .ty .qc-car, .dm-c3d')];
       if (hosts.length && hosts.every(h => h._v3 && h._v3 !== 'wait')) return setTimeout(done, 250); if (performance.now() - t0 > 8000) return done(); setTimeout(check, 120); };
-    (window.ET9 ? ET9.ready() : Promise.resolve()).then(check, done); }
+    try { (window.ET9 && ET9.ready ? ET9.ready() : Promise.resolve()).then(check, done); } catch (e) { done(); } }
   if (window.ET9) whenAllReady(); else window.addEventListener('et9-ready', whenAllReady, { once: true });
-  setTimeout(() => { if (!window.ET9) document.querySelectorAll('[data-lockov]').forEach(ov => ov.classList.add('ready')); }, 9000);
+  setTimeout(() => document.querySelectorAll('[data-lockov]').forEach(ov => ov.classList.add('ready')), 8000);   // hard limit: never keep anyone on the lock screen longer than 8 s
   document.addEventListener('click', e => { const b = e.target.closest('[data-lockscr]'); if (!b) return; const fr = frameOf(b), Q = qcOf(fr);
     if (Object.values(Q.open).some(Boolean)) { toast(fr, 'Close the doors, frunk and boot to lock'); return; }
     Q.lock = true; Q.mir = 'fold'; qcPaint(fr); toast(fr, 'Locked · mirrors fold'); });
