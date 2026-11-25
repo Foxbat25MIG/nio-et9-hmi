@@ -1987,3 +1987,40 @@ html[data-theme="dark"] .hb-bar,html[data-theme="dark"] .hb-tr{background:rgba(2
 .vent-pad.flow .vp-blades{opacity:.18}
 .vent-pad.flow .vp-dot{opacity:0}
 .vent-pad.flow .vp-grid{opacity:.25}
+
+/* ---------- Mark 2 · Windows: opens in place in the right column, like the lock card and the Home widgets ---------- */
+.qc-side{overflow:auto;scrollbar-width:none}
+.qc-wsec .qc-wchev{display:grid;transition:transform 600ms cubic-bezier(.2,.8,.2,1)}
+.qc-wsec.on .qc-wchev{transform:rotate(180deg)}
+.qc-wbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows 600ms cubic-bezier(.2,.8,.2,1)}
+.qc-wsec.on .qc-wbody{grid-template-rows:1fr}
+.qc-wl{min-height:0;overflow:hidden}
+.qc-wsec.on .qc-wl{padding:2px 0 10px}
+.qc-wl .wi-row{display:grid;grid-template-columns:1fr auto;align-items:center;row-gap:2px;padding:8px 0;border-top:1px solid var(--line)}
+.qc-wl .wi-row .wi-n{color:var(--t1)}
+.qc-wl .wi-row .wi-v{font:400 15px "Red Hat Text";color:var(--t2);text-align:right}
+.qc-wl .wi-row .wi-sl{grid-column:1/-1;height:26px}
+.qc-wl .wi-seg{grid-column:1/-1;margin-top:6px;padding:3px}
+.qc-wl .wi-seg div{height:36px;font-size:15px}
+/* ---------- Mark 2 · Podcasts widget: folds like Music (one cover + play); fold button lines up with the label ---------- */
+.hm-pod{padding-top:14px!important}
+.hm-pod>.lbl{height:24px;display:flex;align-items:center;padding-right:44px}
+.hm-pod:not(.min)>.hm-tg{top:10px}
+.hm-podplay{display:none!important;width:56px!important;height:56px!important;flex:none}
+.hm-pod.min .hm-podplay{display:flex!important}
+.hm-pod.min>.row{flex:0 0 auto!important}
+.hm-pod.min .pod{flex:0 0 64px!important}
+.hm-pod.min .pod:not(:first-child){display:none!important}
+.hm-pod.min .pod .ph{width:64px;height:64px!important;flex:none!important;border-radius:12px}
+.hm-pod.min .pod .ell,.hm-pod.min .pod .sl{display:none}
+/* ---------- Mark 2 · lock screen: wait until everything is ready, then "Tap to unlock" ---------- */
+.lk-hint{gap:6px}
+.lk-go{display:none}
+.lockov.ready .lk-go{display:block}
+.lockov.ready .lk-wait,.lockov.ready .lk-bar{display:none}
+.lockov:not(.ready){cursor:progress}
+.lockov:not(.ready) .lk-hint>.ms{display:none}
+.lockov:not(.ready) .lk-hint{animation:none}
+.lk-bar{display:block;width:120px;height:3px;border-radius:2px;background:rgba(74,65,96,.18);overflow:hidden;position:relative}
+.lk-bar::after{content:"";position:absolute;inset:0;width:40%;border-radius:2px;background:#7a6bf2;animation:lkload 1.2s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes lkload{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}

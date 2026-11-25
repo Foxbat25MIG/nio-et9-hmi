@@ -1598,7 +1598,7 @@
     if (!host) return; host._st = st;
     const v = host._v3; if (v && v !== 'wait') { v.set(st); return; }
     if (v === 'wait') return;
-    if (!window.ET9) { if (!c3d.hooked) { c3d.hooked = true; window.addEventListener('et9-ready', () => document.querySelectorAll('.frame').forEach(f => { qcPaint(f); tyPaint(f); f.querySelectorAll('[data-drv2]').forEach(dmPaint); homePaint(f); lockPaint(f); })); } return; }
+    if (!window.ET9) { if (!c3d.hooked) { c3d.hooked = true; window.addEventListener('et9-ready', () => document.querySelectorAll('.frame').forEach(f => { lockPaint(f); homePaint(f); qcPaint(f); tyPaint(f); f.querySelectorAll('[data-drv2]').forEach(dmPaint); }));   // lock screen first, then Home, then the car pages } return; }
     if (false && !host.offsetParent) {   // (no longer waits until on screen: every view is built up front so pages open instantly)
       if (!host._io) { host._io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { host._io.disconnect(); host._io = null; c3d(fr, kind, host, host._st, onPick); } }); host._io.observe(host); }
       return; }
@@ -1624,7 +1624,7 @@
       if (on && pl.parentElement !== slot) { fr._plHome = { p: pl.parentElement, n: pl.nextSibling, compact: pl.classList.contains('compact') }; slot.appendChild(pl); pl.classList.add('compact'); }
       else if (!on && fr._plHome && pl.parentElement === slot) { const h = fr._plHome; h.p.insertBefore(pl, h.n); pl.classList.toggle('compact', h.compact); fr._plHome = null; }
     }
-    if (on || hm._v3) c3d(fr, 'home', hm.querySelector('.hm-stage'), { dark: isDark(), lights: 'auto' });   // Home shows the car parked and closed, whatever Quick controls is doing
+    c3d(fr, 'home', hm.querySelector('.hm-stage'), { dark: isDark(), lights: 'auto' });   // Home shows the car parked and closed, whatever Quick controls is doing
   }
   document.addEventListener('click', e => { const t = e.target.closest('[data-hmtg]'); if (!t) return; const w = t.closest('.hm-w');
     const a = [w.offsetWidth, w.offsetHeight]; w.classList.toggle('min'); const b = [w.offsetWidth, w.offsetHeight];   // smooth: grow/shrink from the old size
@@ -1639,8 +1639,18 @@
   function lockShow(fr) { const ov = fr.querySelector('[data-lockov]'); if (!ov) return; ov.style.transform = ''; ov.classList.remove('out'); ov.classList.add('on'); lockPaint(fr); }
   function lockHide(fr) { const ov = fr.querySelector('[data-lockov]'); if (!ov || !ov.classList.contains('on')) return;
     ov.style.transform = ''; ov.classList.add('out'); setTimeout(() => ov.classList.remove('on', 'out'), 600);
-    const Q = qcOf(fr); Q.lock = false; Q.mir = 'out'; fr._lastLock = false; qcPaint(fr); setTimeout(() => toast(fr, 'Unlocked · welcome back, Emma'), 350); }
-  document.querySelectorAll('[data-lockov]').forEach(ov => ov.addEventListener('click', () => lockHide(frameOf(ov))));   // tap anywhere to unlock
+    const Q = qcOf(fr); Q.lock = false; Q.mir = 'out'; fr._lastLock = false; qcPaint(fr);
+    const hb = fr.querySelector('.dk[data-go="home"]'); if (hb) hb.click();
+    setTimeout(() => toast(fr, 'Unlocked · welcome back, Emma'), 350); }
+  document.querySelectorAll('[data-lockov]').forEach(ov => ov.addEventListener('click', () => { if (ov.classList.contains('ready')) lockHide(frameOf(ov)); }));   // tap anywhere to unlock, once ready
+  // ready = the car, the HDRIs and every car view built (Home, lock, Quick controls, Tyres, Driving); never wait more than 8 s
+  function whenAllReady() {
+    const done = () => document.querySelectorAll('[data-lockov]').forEach(ov => ov.classList.add('ready'));
+    const t0 = performance.now(), check = () => { const hosts = [...document.querySelectorAll('.hm-stage, .lk-stage, .qc:not(.ty) .qc-car, .ty .qc-car, .dm-c3d')];
+      if (hosts.length && hosts.every(h => h._v3 && h._v3 !== 'wait')) return setTimeout(done, 250); if (performance.now() - t0 > 8000) return done(); setTimeout(check, 120); };
+    (window.ET9 ? ET9.ready() : Promise.resolve()).then(check, done); }
+  if (window.ET9) whenAllReady(); else window.addEventListener('et9-ready', whenAllReady, { once: true });
+  setTimeout(() => { if (!window.ET9) document.querySelectorAll('[data-lockov]').forEach(ov => ov.classList.add('ready')); }, 9000);
   document.addEventListener('click', e => { const b = e.target.closest('[data-lockscr]'); if (!b) return; const fr = frameOf(b), Q = qcOf(fr);
     if (Object.values(Q.open).some(Boolean)) { toast(fr, 'Close the doors, frunk and boot to lock'); return; }
     Q.lock = true; Q.mir = 'fold'; qcPaint(fr); toast(fr, 'Locked · mirrors fold'); });
@@ -1664,13 +1674,14 @@
     svg.querySelector('.ct-frunk').classList.toggle('open', !!Q.open.frunk); svg.querySelector('.ct-boot').classList.toggle('open', !!Q.open.boot);
     svg.querySelector('.ct-port').classList.toggle('open', Q.port);
     svg.querySelectorAll('.ct-win').forEach(w => { const v = Q.wins[w.dataset.win]; w.classList.remove('v', 'o', 'vent', 'open'); w.style.fillOpacity = (1 - v * .85).toFixed(2); w.classList.toggle('o', v > .02); });
-    { const wc = qc.querySelector('.qc-wcard'), lab = v => v <= .02 ? 'Closed' : v >= .98 ? 'Open' : Math.abs(v - .18) < .02 ? 'Vent' : Math.round(v * 100) + ' %';
+    { const wc = qc.querySelector('.qc-wsec'), lab = v => v <= .02 ? 'Closed' : v >= .98 ? 'Open' : Math.abs(v - .18) < .02 ? 'Vent' : Math.round(v * 100) + ' %';
       wc.classList.toggle('on', !!Q.wcard);
       const vals = Object.values(Q.wins), same = vals.every(v => Math.abs(v - vals[0]) < .01);
       wc.querySelectorAll('[data-wi]').forEach(r => { const k = r.dataset.wi, v = k === 'all' ? (same ? vals[0] : null) : Q.wins[k];
         const sl = r.querySelector('.wi-sl'); if (document.activeElement !== sl) sl.value = Math.round((v === null ? vals.reduce((a, b) => a + b) / 4 : v) * 100);
         sl.style.setProperty('--p', sl.value + '%');
-        r.querySelector('.wi-v').textContent = v === null ? 'Mixed' : lab(v); });
+        r.querySelector('.wi-v').textContent = v === null ? 'Mixed' : lab(v);
+        r.querySelectorAll('.wi-seg [data-wset]').forEach(b => b.classList.toggle('on', v !== null && Math.abs(v - b.dataset.wset / 100) < .02)); });
       const open = vals.filter(v => v > .02).length;
       qc.querySelector('.qc-wst').textContent = open === 0 ? 'All closed' : same ? 'All ' + lab(vals[0]).toLowerCase() : open + ' open'; }
     svg.querySelectorAll('.ct-mir').forEach((m, i) => m.style.transform = Q.mir === 'fold' ? `rotate(${i ? 70 : -70}deg)` : '');
@@ -1701,7 +1712,7 @@
           d.style.top = Math.round(pt.y - 22) + 'px'; d.style.left = Math.round(k[2] === 'l' ? L.left - 56 : L.right + 12) + 'px'; }); host.classList.add('qc-laid'); }; }
       qc.classList.toggle('wv', !!Q.wcard);
       host.querySelectorAll('.qc-dico').forEach(d => { const o = !!Q.open[d.dataset.cp]; d.classList.toggle('open', o); d.querySelector('.ms').textContent = o ? 'door_open' : 'door_front'; });
-      c3d(fr, 'qc', qc.querySelector('.qc-car'), { open: { ...Q.open }, port: Q.port, wins: { ...Q.wins }, mir: Q.mir, shade: { ...Q.shade }, lights: Q.lights, hazard: !!Q.hazard, lift: easy ? -50 : 0, dark: isDark(), view: Q.wcard ? 'qcwin' : 'qc' },
+      c3d(fr, 'qc', qc.querySelector('.qc-car'), { open: Q.wcard ? {} : { ...Q.open }, port: Q.wcard ? false : Q.port, wins: { ...Q.wins }, mir: Q.mir, shade: { ...Q.shade }, lights: Q.lights, hazard: !!Q.hazard, lift: easy && !Q.wcard ? -50 : 0, dark: isDark(), view: Q.wcard ? 'qcwin' + (Q.wview || 'L') : 'qc' },   // while windows are being set, the car is shown with its doors shut, turned to the side being set
         k => { if (k.startsWith('wheel')) return; c3dTap(svg.querySelector(`[data-cp="${k}"]`)); }); }
     if (Q.lock && fr._lastLock === false) { clearTimeout(fr._lkT); fr._lkT = setTimeout(() => { if (qcOf(fr).lock) lockShow(fr); }, 1500); }
     fr._lastLock = Q.lock;
@@ -1733,8 +1744,8 @@
     if (t.closest('[data-wopen]')) { Q.wcard = !Q.wcard; qcPaint(fr); return true; }
     if (t.closest('[data-wclose]')) { Q.wcard = false; qcPaint(fr); return true; }
     const wb = t.closest('[data-wset]'); if (wb) { const k = wb.closest('[data-wi]').dataset.wi, v = +wb.dataset.wset / 100;
-      (k === 'all' ? Object.keys(Q.wins) : [k]).forEach(n => Q.wins[n] = v); qcPaint(fr); return true; }
-    if (t.closest('.qc-wcard')) return true;
+      if (k !== 'all') Q.wview = k[1] === 'l' ? 'L' : 'R'; (k === 'all' ? Object.keys(Q.wins) : [k]).forEach(n => Q.wins[n] = v); qcPaint(fr); return true; }
+    if (t.closest('.qc-wsec')) return true;
     const ws = t.closest('[data-wside]'); if (ws) { Q.wside = ws.dataset.wside; Q.wUntil = Date.now() + 3500; qcPaint(fr); return true; }
     const sw = t.closest('[data-sw]'); if (sw) { const n = sw.dataset.sw + Q.wside; Q.wins[n] = Q.wins[n] >= 1 ? 0 : 1; Q.wUntil = Date.now() + 3500; qcPaint(fr); return true; }
     const sg = t.closest('[data-qc] div');
@@ -1854,7 +1865,7 @@
   document.querySelectorAll('[data-drv2]').forEach(dmPaint);
 
   document.addEventListener('input', e => { const sl = e.target.closest('.wi-sl'); if (!sl) return; const fr = frameOf(sl), Q = qcOf(fr), k = sl.closest('[data-wi]').dataset.wi, v = +sl.value / 100;
-    (k === 'all' ? Object.keys(Q.wins) : [k]).forEach(n => Q.wins[n] = v); sl.style.setProperty('--p', sl.value + '%'); qcPaint(fr); });
+    if (k !== 'all') Q.wview = k[1] === 'l' ? 'L' : 'R'; (k === 'all' ? Object.keys(Q.wins) : [k]).forEach(n => Q.wins[n] = v); sl.style.setProperty('--p', sl.value + '%'); qcPaint(fr); });
 
   /* ---------- Appearance: Auto (device setting) · Light · Dark; portfolio toggle above the frame ---------- */
   const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;

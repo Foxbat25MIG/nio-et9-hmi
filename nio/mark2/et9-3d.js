@@ -7,6 +7,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { GroundedSkybox } from 'three/addons/objects/GroundedSkybox.js';
 
 const BASE = new URL('.', import.meta.url).href;
 const EASE = t => 1 - Math.pow(1 - t, 3);          // close to the HMI's cubic-bezier(.2,.8,.2,1)
@@ -25,7 +27,7 @@ let paintKey = PAINTS[storedPaint()] ? storedPaint() : 'ceramic';
 
 /* ---------- shared materials ---------- */
 const M = {
-  paint: new THREE.MeshPhysicalMaterial({ clearcoat: 1, clearcoatRoughness: .025, envMapIntensity: 1.25 }),
+  paint: new THREE.MeshPhysicalMaterial({ clearcoat: 1, clearcoatRoughness: .05, envMapIntensity: 1.9 }),
   glass: new THREE.MeshPhysicalMaterial({ color: '#191722', metalness: .1, roughness: .05, envMapIntensity: 1.4, transparent: true, opacity: .9 }),
   roof: new THREE.MeshPhysicalMaterial({ color: '#1d1a28', metalness: .1, roughness: .04, envMapIntensity: 1.5, transparent: true, opacity: .62, depthWrite: false }),
   lens: new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: .05, transparent: true, opacity: .18, depthWrite: false }),
@@ -61,7 +63,7 @@ function splitMesh(mesh, keyOf) {
   return out;
 }
 const SMOOTH = new WeakMap();
-function smoothGeo(g) { if (!SMOOTH.has(g)) { const n = toCreasedNormals(g, Math.PI / 4.5); SMOOTH.set(g, n); } return SMOOTH.get(g); }
+function smoothGeo(g) { if (!SMOOTH.has(g)) { const n = toCreasedNormals(g, Math.PI / 2.6); SMOOTH.set(g, n); } return SMOOTH.get(g); }
 function pivot(name, x, y, z) { const p = new THREE.Group(); p.name = name; p.position.set(x, y, z); return p; }
 
 /* ---------- build one prepared car from the loaded file ---------- */
@@ -137,6 +139,21 @@ async function buildCar() {
   P.shades = {};
   ['l', 'r'].forEach(s => { const g2 = new THREE.PlaneGeometry(.6, 1.72); g2.rotateX(-Math.PI / 2); g2.translate(0, 0, -.86);
     const sh = new THREE.Mesh(g2, M.fabric); sh.position.set((s === 'l' ? 1 : -1) * .31, 1.47, .22); body.add(sh); P.shades[s] = sh; });
+  // dark matte liners in the wheel arches, so no light inner panels show around the tyres
+  { const linM = new THREE.MeshStandardMaterial({ color: '#141218', roughness: .95, side: THREE.DoubleSide });
+    Object.values(P.wheels).forEach(w => { const g = new THREE.CylinderGeometry(.47, .47, .3, 40, 1, true, Math.PI * .04, Math.PI * .92); g.rotateZ(Math.PI / 2);   // top half only: never shows under the tyre
+      const m = new THREE.Mesh(g, linM); m.position.copy(w.hub.position); m.position.x *= .93; body.add(m); }); }
+  // a soft, blurred hint of the cabin (seats, console) under the glass roof: seen when the sunshades open, no detail
+  { const c = document.createElement('canvas'); c.width = 256; c.height = 512; const x = c.getContext('2d');
+    x.fillStyle = '#4a4458'; x.fillRect(0, 0, 256, 512); x.filter = 'blur(10px)';
+    const seat = (cx, cy, w, h) => { x.fillStyle = '#b9b2cc'; x.beginPath(); x.roundRect(cx - w / 2, cy - h / 2, w, h, 18); x.fill(); x.fillStyle = '#d6d0e3'; x.beginPath(); x.roundRect(cx - w / 2 + 8, cy + h / 2 - 34, w - 16, 26, 10); x.fill(); };
+    x.fillStyle = '#2c2836'; x.fillRect(0, 0, 256, 70);                       // dashboard
+    seat(76, 168, 82, 118); seat(180, 168, 82, 118);                         // front seats
+    x.fillStyle = '#6a6380'; x.beginPath(); x.roundRect(112, 120, 32, 160, 12); x.fill();   // console
+    seat(76, 340, 86, 124); seat(180, 340, 86, 124);                         // rear seats
+    x.fillStyle = '#3a3546'; x.fillRect(0, 440, 256, 72);                     // boot floor
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 2.7), new THREE.MeshBasicMaterial({ map: t })); pl.rotation.x = -Math.PI / 2; pl.rotation.z = Math.PI; pl.position.set(0, 1.275, -.38); body.add(pl); }
   // charge port flap on the left rear quarter (green glow when open)
   const flapG = new THREE.BoxGeometry(.012, .13, .16); flapG.translate(0, 0, -.08);
   P.port = pivot('port', .975, 1.0, -2.06); const flap = new THREE.Mesh(flapG, M.paint); P.port.add(flap); body.add(P.port);
@@ -263,75 +280,38 @@ function archScene(scene) {
 }
 
 /* Lock screen: rolling meadow at golden hour, pale rocks, far peaks with snow, pink clouds, a low sun casting long shadows (day) or a violet dusk (night) */
+/* Lock screen: Adi's meadow HDRI (Poly Haven, CC0), projected onto the ground so the car stands in the grass; it also lights the car */
 function meadowScene(scene) {
-  const PAL = {
-    day:   palOf({ top: '#7aa8df', mid: '#bfd3ee', bot: '#f6cbd6', fog: '#e9d5e4', g1: '#2f7a3a', g2: '#87c05a', g3: '#c9d96e', rock: '#d8cfd4', peak: '#a69bb6', snow: '#f6f1f8', cloud: '#ffd2de', cloudB: '#c9b8e2', sky: '#eef0ff', gnd: '#4d6d45', sun: '#ffd2b4', flower: '#b58cef' }),
-    night: palOf({ top: '#0a0e28', mid: '#232554', bot: '#6c4675', fog: '#2f2950', g1: '#122617', g2: '#2d4a2c', g3: '#475a33', rock: '#5d5770', peak: '#3c3656', snow: '#8d88ad', cloud: '#a26c98', cloudB: '#4a4277', sky: '#5a5d99', gnd: '#0f1512', sun: '#b8a6ff', flower: '#7b5cc8' }),
-  };
-  const cur = Object.fromEntries(Object.entries(PAL.day).map(([k, v]) => [k, v.clone()]));
-  let tar = PAL.day, L = 1, LT = 1;
-  const G = gradCanvas(); scene.background = G.t; scene.fog = new THREE.Fog(cur.fog, 60, 260);
-  const hemi = new THREE.HemisphereLight(cur.sky, cur.gnd, 1); scene.add(hemi);
-  const sun = sunLight(cur.sun, [-26, 13, -30], 36); sun.intensity = 2.6; scene.add(sun); scene.add(sun.target);
-  // terrain: rolling hills, flat where the car stands; coloured by height, slope and patches of flowers
-  const hgt = (x, z) => { const r = Math.hypot(x, z); return (fbm(x * .028 + 3, z * .028 + 7, 5) * 7 - 2.6) * smooth(7, 22, r) * (1 + smooth(45, 110, r) * 1.6); };
-  const tg = new THREE.PlaneGeometry(320, 320, 220, 220); tg.rotateX(-Math.PI / 2);
-  const pos = tg.attributes.position, cols = new Float32Array(pos.count * 3), MIX = [];
-  for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), z = pos.getZ(i); pos.setY(i, hgt(x, z)); }
-  tg.computeVertexNormals(); const nrm = tg.attributes.normal;
-  for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), z = pos.getZ(i);
-    MIX.push([fbm(x * .09, z * .09, 3), 1 - nrm.getY(i), smooth(.62, .74, fbm(x * .05 + 11, z * .05 - 4, 3))]); }
-  tg.setAttribute('color', new THREE.BufferAttribute(cols, 3));
-  const gtex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.fillStyle = '#bdbdbd'; x.fillRect(0, 0, 256, 256);
-    for (let i = 0; i < 2600; i++) { const v = 150 + Math.random() * 105 | 0; x.strokeStyle = `rgba(${v},${v},${v},.55)`; x.lineWidth = 1 + Math.random(); const px = Math.random() * 256, py = Math.random() * 256; x.beginPath(); x.moveTo(px, py); x.lineTo(px + (Math.random() - .5) * 3, py - 3 - Math.random() * 6); x.stroke(); }
-    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(110, 110); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; })();
-  const tm = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .95, map: gtex }), terrain = new THREE.Mesh(tg, tm); terrain.receiveShadow = true; scene.add(terrain);
-  const tc = new THREE.Color();
-  const paintTerrain = () => { for (let i = 0; i < pos.count; i++) { const [n, slope, fl] = MIX[i];
-      tc.copy(cur.g1).lerp(cur.g2, Math.min(1, n * 1.25)); if (n > .62) tc.lerp(cur.g3, (n - .62) * 1.6); tc.lerp(cur.rock, smooth(.28, .55, slope) * .7); tc.lerp(cur.flower, fl * .45);
-      cols[i * 3] = tc.r; cols[i * 3 + 1] = tc.g; cols[i * 3 + 2] = tc.b; } tg.attributes.color.needsUpdate = true; };
-  // grass blades near the car
-  const B = 15000, grassM = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .9, side: THREE.DoubleSide });
-  const grass = new THREE.InstancedMesh(bladeGeo(.018, 1), grassM, B), d = new THREE.Object3D(), GB = [], gc = new THREE.Color();
-  while (GB.length < B) { const a = Math.random() * Math.PI * 2, r = 3.2 + Math.pow(Math.random(), 1.4) * 22, x = Math.cos(a) * r, z = Math.sin(a) * r;
-    if (Math.hypot(x - 7.3, z - 7.7) < 3) continue; GB.push({ x, z, y: hgt(x, z), h: .12 + Math.random() * .24, ry: Math.random() * 6.3, lean: (Math.random() - .5) * .4, ph: Math.random() * 6.3, c: Math.random() }); }
-  scene.add(grass); grass.receiveShadow = true;
-  const paintGrass = () => { GB.forEach((b, i) => { gc.copy(cur.g1).lerp(cur.g2, .35 + b.c * .65); if (b.c > .93) gc.copy(cur.flower); grass.setColorAt(i, gc); }); grass.instanceColor.needsUpdate = true; };
-  const sway = t => { for (let i = 0; i < B; i++) { const b = GB[i]; d.position.set(b.x, b.y - .02, b.z); d.rotation.set(b.lean + Math.sin(t * 1.6 + b.ph + b.x * .2) * .08, b.ry, 0); d.scale.set(1, b.h, 1); d.updateMatrix(); grass.setMatrixAt(i, d.matrix); } grass.instanceMatrix.needsUpdate = true; };
-  sway(0); let lastSway = 0;
-  // rocks: lumpy, weathered
-  const rockM = new THREE.MeshStandardMaterial({ color: cur.rock, roughness: .9 });
-  for (let i = 0; i < 34; i++) { const a = i * 2.399 + .4, r = 9 + (i * 41 % 70), x = Math.cos(a) * r, z = Math.sin(a) * r, s = .35 + (i % 6) * .24;
-    const g = new THREE.IcosahedronGeometry(1, 2), p = g.attributes.position; for (let k = 0; k < p.count; k++) { const vx = p.getX(k), vy = p.getY(k), vz = p.getZ(k), f = .72 + fbm(vx * 2 + i, vz * 2 + vy, 3) * .6; p.setXYZ(k, vx * f, vy * f, vz * f); } g.computeVertexNormals();
-    const m = new THREE.Mesh(g, rockM); m.position.set(x, hgt(x, z) - s * .25, z); m.scale.set(s * 1.7, s * .75, s * 1.3); m.rotation.y = a; m.castShadow = m.receiveShadow = true; scene.add(m); }
-  // far peaks with snow on top
-  const peakM = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }), PK = [];
-  [[-112, -128, 30, 40], [-70, -160, 22, 34], [-160, -92, 20, 30], [-30, -180, 18, 34]].forEach(([x, z, h, r], j) => { const g = new THREE.ConeGeometry(r, h, 28, 10), p = g.attributes.position, c = new Float32Array(p.count * 3);
-    for (let k = 0; k < p.count; k++) { const vx = p.getX(k), vy = p.getY(k), vz = p.getZ(k), f = 1 + (fbm(vx * .15 + j * 9, vz * .15 + vy * .1, 4) - .5) * .5; p.setXYZ(k, vx * f, vy, vz * f); }
-    g.computeVertexNormals(); g.setAttribute('color', new THREE.BufferAttribute(c, 3)); const m = new THREE.Mesh(g, peakM); m.position.set(x, h / 2 - 2, z); scene.add(m); PK.push([g, h]); });
-  const paintPeaks = () => PK.forEach(([g, h]) => { const p = g.attributes.position, c = g.attributes.color; for (let k = 0; k < p.count; k++) { const s = smooth(.12, .3, (p.getY(k) / h) + (hash2(k, h) - .5) * .12); tc.copy(cur.peak).lerp(cur.snow, s); c.setXYZ(k, tc.r, tc.g, tc.b); } c.needsUpdate = true; });
-  // clouds: soft billboard puffs, lit pink on top and lavender underneath
-  const pt = puffTex(), clouds = new THREE.Group(), puffs = []; scene.add(clouds);
-  [[-80, 12, -96, 1.2], [-48, 9, -112, .9], [-110, 9, -66, .85], [-26, 14, -126, .7], [-96, 18, -110, .8]].forEach(([x, y, z, s]) => {
-    for (let i = 0; i < 18; i++) { const top = Math.random(); const m = new THREE.SpriteMaterial({ map: pt, transparent: true, depthWrite: false, fog: false, opacity: .9 });
-      const sp = new THREE.Sprite(m); const w = (9 + Math.random() * 10) * s; sp.scale.set(w, w * .7, 1);
-      sp.position.set(x + (Math.random() - .5) * 26 * s, y + top * 7 * s, z + (Math.random() - .5) * 8); sp.userData.top = top; clouds.add(sp); puffs.push(sp); } });
-  const paintClouds = () => puffs.forEach(p => p.material.color.copy(cur.cloudB).lerp(cur.cloud, .35 + p.userData.top * .65));
+  const A = ASSETS || {};
+  if (!A.meadowBg) return null;
+  const sky = new GroundedSkybox(A.meadowBg, 1.9, 90, 128); sky.position.y = 1.9 - .01; sky.material.toneMapped = false; scene.add(sky);
+  scene.environment = A.meadow; scene.environmentIntensity = .9;
+  // the sun in this HDRI sits high, a little to the side: match it so the car's shadow falls the right way
+  const el = (.5 - .12) * Math.PI, lon = (.426 - .5) * Math.PI * 2, sun = sunLight('#fff3e2', [Math.cos(el) * Math.cos(lon) * 30, Math.sin(el) * 30, Math.cos(el) * Math.sin(lon) * 30], 10);
+  sun.intensity = 1.6; scene.add(sun); scene.add(sun.target);
+  const catcher = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.ShadowMaterial({ opacity: .32 })); catcher.rotation.x = -Math.PI / 2; catcher.position.y = .002; catcher.receiveShadow = true; scene.add(catcher);
+  const day = new THREE.Color('#ffffff'), night = new THREE.Color('#5e5490'); let L = 1, LT = 1;
   return {
     shadows: true,
-    theme(dark) { tar = dark ? PAL.night : PAL.day; LT = dark ? 0 : 1; },
-    update(dt, now) {
-      let moving = lerpPal(cur, tar, Math.min(1, dt * 2.5));
-      if (Math.abs(LT - L) > .002) { L += (LT - L) * Math.min(1, dt * 2.5); moving = true; } else L = LT;
-      if (moving || !G.done) { G.done = true; paintGrad(G, cur.top, cur.mid, cur.bot, { x: .22, y: .66, r: .5, c: cur.sun, a: .35 + .45 * L });
-        scene.fog.color.copy(cur.fog); hemi.color.copy(cur.sky); hemi.groundColor.copy(cur.gnd); sun.color.copy(cur.sun); sun.intensity = .5 + 2.6 * L;
-        paintTerrain(); paintGrass(); paintPeaks(); paintClouds(); rockM.color.copy(cur.rock);
-        scene.environmentIntensity = .25 + .4 * L; hemi.intensity = .35 + .45 * L; }
-      clouds.position.x = Math.sin(now / 50000) * 4;
-      if (now - lastSway > 33) { sway(now / 1000); lastSway = now; } return true;
-    },
+    theme(dark) { LT = dark ? 0 : 1; },
+    update(dt) { if (Math.abs(LT - L) < .002) { if (L !== LT) { L = LT; } else return false; } else L += (LT - L) * Math.min(1, dt * 2.5);
+      sky.material.color.copy(night).lerp(day, L).multiplyScalar(.32 + .68 * L); scene.environmentIntensity = .3 + .6 * L; sun.intensity = .3 + 1.3 * L; catcher.material.opacity = .15 + .17 * L; return true; },
   };
 }
+
+/* HDRI assets, loaded once and shared: the studio light set for the car's reflections, the meadow for the lock screen */
+let ASSETS = null, assetsP = null;
+function loadAssets() {
+  return assetsP || (assetsP = (async () => {
+    const r = shared(), pm = new THREE.PMREMGenerator(r), hl = new RGBELoader();
+    const [st, mh, mj] = await Promise.all([hl.loadAsync(BASE + 'env/studio.hdr'), hl.loadAsync(BASE + 'env/meadow.hdr'), new THREE.TextureLoader().loadAsync(BASE + 'env/meadow.jpg')]);
+    st.mapping = mh.mapping = THREE.EquirectangularReflectionMapping; mj.mapping = THREE.EquirectangularReflectionMapping; mj.colorSpace = THREE.SRGBColorSpace; mj.anisotropy = 8;
+    ASSETS = { studio: pm.fromEquirectangular(st).texture, meadow: pm.fromEquirectangular(mh).texture, meadowBg: mj };
+    st.dispose(); mh.dispose(); pm.dispose(); ENV = ASSETS.studio; return ASSETS;
+  })().catch(e => { console.warn('HDRI not loaded, using the built-in studio', e); ASSETS = {}; return ASSETS; }));
+}
+/* everything the dashboard needs before the lock screen lets you in */
+export function ready() { return Promise.all([loadRaw(), loadAssets()]); }
 
 const DRIVE = {   // sky top / middle / horizon, fog, ground, road, line colour, speed (m/s shown), scenery
   Comfort: { top: '#d9cfee', mid: '#f0dde9', bot: '#f5ecf2', fog: '#efe4f0', ground: '#ddd2e6', road: '#a9a1b8', line: '#ffffff', v: 11, kind: 'lamps' },
@@ -433,7 +413,8 @@ function driveScene(scene) {
 /* ---------- viewers ---------- */
 const VIEWS = {   // camera position, target, field of view
   qc:   { p: [0, 16.2, -.001], t: [0, 0, .25], fov: 26, up: [0, 0, 1] },   // straight down, nose up (locked)
-  qcwin: { p: [6.9, 4.4, -9.4], t: [0, .55, .15], fov: 40, up: [0, 1, 0] },  // while the Windows menu is open: three-quarter rear view, so the glass is seen going down
+  qcwinL: { p: [6.9, 4.4, -9.4], t: [0, .55, .15], fov: 40, up: [0, 1, 0] },   // left windows: seen from the left rear
+  qcwinR: { p: [-6.9, 4.4, -9.4], t: [0, .55, .15], fov: 40, up: [0, 1, 0] },  // right windows: seen from the right rear  // while the Windows menu is open: three-quarter rear view, so the glass is seen going down
   ty:   { p: [0, 15.5, -.001], t: [0, 0, -.05], fov: 26, up: [0, 0, 1] },   // straight down, nose up
   side: { p: [7.4, 1.05, .1], t: [-.4, .72, .1], fov: 27, ls: 2.4 },        // driver's side, whole car (ride height shown 2.4× so it reads)
   home: { p: [-4.9, 1.85, 8.6], t: [0, .72, 0], fov: 32, shift: [.17, .07] },   // front three-quarter; orbits the car itself, drawn right of centre (clear of the Next card)
@@ -487,6 +468,8 @@ function drawTo(ctx, scene, cam, w, h, clear = true) {
   if (clear) ctx.clearRect(0, 0, pw, ph); ctx.drawImage(r.domElement, 0, RH - ph, pw, ph, 0, 0, pw, ph);
 }
 
+let queue = Promise.resolve();
+const turn = () => (queue = queue.then(() => new Promise(r => setTimeout(r, 16))));
 export async function mount(el, opt = {}) {
   const cv = document.createElement('canvas'); cv.className = 'c3d'; el.appendChild(cv); const ctx = cv.getContext('2d');
   shared();
@@ -497,8 +480,11 @@ export async function mount(el, opt = {}) {
   const LS = V.ls || 1.6;
   const tgt = new THREE.Vector3(...V.t), home = new THREE.Vector3(...V.p).sub(tgt);
   const sph = new THREE.Spherical().setFromVector3(home), sph0 = sph.clone();
+  await loadAssets(); scene.environment = ENV;
+  await turn();   // views are built one at a time, letting the page draw in between
   const { car, body, P } = await buildCar(); scene.add(car);
-  const world = opt.scene === 'arches' ? archScene(scene) : opt.scene === 'meadow' ? meadowScene(scene) : opt.scene === 'drive' ? driveScene(scene) : null;
+  await turn();
+  const world = opt.scene === 'arches' ? archScene(scene) : opt.scene === 'meadow' ? (meadowScene(scene) || archScene(scene)) : opt.scene === 'drive' ? driveScene(scene) : null;
   if (world) { scene.environmentIntensity = .9; }
   // state, animated values
   const S = { door: { dfl: 0, dfr: 0, drl: 0, drr: 0 }, frunk: 0, boot: 0, port: 0, win: { fl: 0, fr: 0, rl: 0, rr: 0 }, mir: 0, shade: { l: 0, r: 0 }, lift: 0, head: .55, tail: .5, beam: 0, haz: 0, warn: {} };
@@ -534,7 +520,7 @@ export async function mount(el, opt = {}) {
     { const hh = smooth(.1, 1, S.head) * .55 + S.beam * .45, blink = S.haz * Math.pow(Math.max(0, Math.sin(now / 1000 * Math.PI * 1.5)), .35);
       P.fx.head.forEach(h => h.material.opacity = hh); P.fx.tail.forEach(h => h.material.opacity = smooth(.1, 1, S.tail) * .5 + S.beam * .4);
       P.fx.headPool.material.opacity = S.beam * .6; P.fx.tailPool.material.opacity = S.beam * .3;
-      if (beams) { const nt = world.night ? world.night() : 0; beams.mat.opacity = S.beam * nt * .75; P.fx.head.forEach(h => { h.material.opacity = hh * .45; h.scale.setScalar(.6); }); P.fx.headPool.material.opacity = S.beam * .35; }
+      if (beams) { const nt = world.night ? world.night() : 0; beams.mat.opacity = S.beam * nt * .6; P.fx.head.forEach(h => { h.material.opacity = hh * .45; h.scale.setScalar(.6); }); P.fx.headPool.material.opacity = S.beam * .35; }
       P.fx.haz.forEach(h => h.material.opacity = blink); P.fx.hazPool.forEach(h => h.material.opacity = blink * .45); }
     Object.entries(P.wglow).forEach(([k, m]) => { m.material.opacity = (S.warn[k] || 0) * (.6 + .3 * Math.sin(now / 260)); });
     Object.entries(tyreMats).forEach(([k, m]) => { m.emissive.set('#e0303f'); m.emissiveIntensity = (S.warn[k] || 0) * (.35 + .25 * Math.sin(now / 260)); });
@@ -544,12 +530,13 @@ export async function mount(el, opt = {}) {
   fxTint(false);
   // night driving: straight, soft beams reaching forward along the road (not a round glow)
   let beams = null;
-  if (opt.scene === 'drive') { const c = document.createElement('canvas'); c.width = 512; c.height = 64; const x = c.getContext('2d');
-    const gh = x.createLinearGradient(0, 0, 512, 0); gh.addColorStop(0, 'rgba(255,248,226,.95)'); gh.addColorStop(.25, 'rgba(255,244,214,.55)'); gh.addColorStop(1, 'rgba(255,240,200,0)'); x.fillStyle = gh; x.fillRect(0, 0, 512, 64);
-    x.globalCompositeOperation = 'destination-in'; const gv = x.createLinearGradient(0, 0, 0, 64); gv.addColorStop(0, 'rgba(0,0,0,0)'); gv.addColorStop(.5, 'rgba(0,0,0,1)'); gv.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gv; x.fillRect(0, 0, 512, 64);
+  if (opt.scene === 'drive') { const c = document.createElement('canvas'); c.width = 512; c.height = 128; const x = c.getContext('2d');
+    // a cone of light: narrow at the lamp, widening ahead, soft all round
+    const gh = x.createLinearGradient(0, 0, 512, 0); gh.addColorStop(0, 'rgba(255,247,226,.55)'); gh.addColorStop(.08, 'rgba(255,246,222,.75)'); gh.addColorStop(.45, 'rgba(255,242,212,.32)'); gh.addColorStop(1, 'rgba(255,238,200,0)');
+    x.filter = 'blur(14px)'; x.fillStyle = gh; x.beginPath(); x.moveTo(6, 58); x.lineTo(506, 12); x.lineTo(506, 116); x.lineTo(6, 70); x.closePath(); x.fill(); x.filter = 'none';
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
     const bm = new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
-    beams = [.75, -.75].map(xx => { const m = new THREE.Mesh(new THREE.PlaneGeometry(11, 1.1), bm); m.rotation.set(0, -Math.PI / 2, -.035); m.position.set(xx, .62, 2.45 + 5.5); m.name = 'fx'; body.add(m); return m; });
+    beams = [.75, -.75].map(xx => { const m = new THREE.Mesh(new THREE.PlaneGeometry(10, 2.6), bm); m.rotation.set(0, -Math.PI / 2, -.05); m.position.set(xx, .5, 2.5 + 5); m.name = 'fx'; body.add(m); return m; });
     beams.mat = bm; }
   const proj = new THREE.Vector3();
   const v = {
@@ -639,6 +626,8 @@ export async function mount(el, opt = {}) {
     return opt.onPick('dr' + s);
   }
   viewers.add(v); v.render();
+  await turn();
+  try { apply(performance.now()); cam.position.setFromSpherical(sph).add(tgt); cam.lookAt(tgt); cam.aspect = 1.6; cam.updateProjectionMatrix(); R.compile(scene, cam); } catch (e) {}   // build the shaders now, not on first view
   return v;
 }
 
@@ -665,5 +654,5 @@ export function setPaint(k) {
 export const paint = () => paintKey;
 export const preload = () => loadRaw();
 
-window.ET9 = { mount, setPaint, paint, PAINTS, preload, snapshot, onPaint };
+window.ET9 = { mount, setPaint, paint, PAINTS, preload, snapshot, onPaint, ready };
 window.dispatchEvent(new Event('et9-ready'));
