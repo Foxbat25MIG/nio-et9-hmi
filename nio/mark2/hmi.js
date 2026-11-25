@@ -1554,7 +1554,7 @@
       if (!host._io) { host._io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { host._io.disconnect(); host._io = null; c3d(fr, kind, host, host._st, onPick); } }); host._io.observe(host); }
       return; }
     host._v3 = 'wait'; host.classList.add('c3d-host');
-    ET9.mount(host, { view: kind, orbit: kind === 'home' ? 'free' : false, scene: { home: 'garden', lock: 'garden', side: 'drive' }[kind], drift: kind === 'lock', onPick, onResize: host._onResize }).then(v3 => { host._v3 = v3; v3.set(host._st); v3.snap(); requestAnimationFrame(() => host.classList.add('c3d-on')); })
+    ET9.mount(host, { view: kind, orbit: kind === 'home' ? 'free' : false, scene: { home: 'arches', lock: 'meadow', side: 'drive' }[kind], drift: kind === 'lock', onPick, onResize: host._onResize }).then(v3 => { host._v3 = v3; v3.set(host._st); v3.snap(); requestAnimationFrame(() => host.classList.add('c3d-on')); })
       .catch(err => { host._v3 = null; console.warn('3D car not available', err); });
     if (host._onResize) setTimeout(() => host._v3 && host._v3 !== 'wait' && host._onResize(host._v3), 900);
   }
@@ -1575,7 +1575,7 @@
       if (on && pl.parentElement !== slot) { fr._plHome = { p: pl.parentElement, n: pl.nextSibling, compact: pl.classList.contains('compact') }; slot.appendChild(pl); pl.classList.add('compact'); }
       else if (!on && fr._plHome && pl.parentElement === slot) { const h = fr._plHome; h.p.insertBefore(pl, h.n); pl.classList.toggle('compact', h.compact); fr._plHome = null; }
     }
-    if (on || hm._v3) c3d(fr, 'home', hm.querySelector('.hm-stage'), { dark: isDark(), ...carState(fr) });
+    if (on || hm._v3) c3d(fr, 'home', hm.querySelector('.hm-stage'), { dark: isDark(), lights: 'auto' });   // Home shows the car parked and closed, whatever Quick controls is doing
   }
   document.addEventListener('click', e => { const t = e.target.closest('[data-hmtg]'); if (!t) return; const w = t.closest('.hm-w');
     const a = [w.offsetWidth, w.offsetHeight]; w.classList.toggle('min'); const b = [w.offsetWidth, w.offsetHeight];   // smooth: grow/shrink from the old size
@@ -1586,7 +1586,7 @@
   /* ---------- Mark 2 · lock screen (on load, from the lock icon, and whenever the car locks) ---------- */
   function lockPaint(fr) { const ov = fr.querySelector('[data-lockov]'); if (!ov) return;
     const tm = fr.querySelector('.status .time'); if (tm) ov.querySelector('.lk-time').textContent = tm.textContent;
-    const st = ov.querySelector('.lk-stage'); if (ov.classList.contains('on') || st._v3) c3d(fr, 'lock', st, { dark: isDark(), ...carState(fr), lights: 'off' }); }
+    const st = ov.querySelector('.lk-stage'); if (ov.classList.contains('on') || st._v3) c3d(fr, 'lock', st, { dark: isDark(), mir: 'fold', lights: 'off' }); }
   function lockShow(fr) { const ov = fr.querySelector('[data-lockov]'); if (!ov) return; ov.style.transform = ''; ov.classList.remove('out'); ov.classList.add('on'); lockPaint(fr); }
   function lockHide(fr) { const ov = fr.querySelector('[data-lockov]'); if (!ov || !ov.classList.contains('on')) return;
     ov.style.transform = ''; ov.classList.add('out'); setTimeout(() => ov.classList.remove('on', 'out'), 600);
@@ -1647,6 +1647,12 @@
     const cs = fr._csEl || (fr._csEl = [...fr.querySelectorAll('.ctx *')].find(e => !e.children.length && /doors closed/i.test(e.textContent)));
     if (cs) cs.textContent = (Q.lock ? 'Locked' : 'Unlocked') + ' · ' + (open.length ? open.length + ' open' : 'all doors closed');
     { const sw = fr.querySelector('.st-wrap'), easy = sw && stOf(sw).easy !== false && ['dfl', 'dfr', 'drl', 'drr'].some(k => Q.open[k]);
+      const host = qc.querySelector('.qc-car');
+      if (!host._dico) { host._dico = true;   // a door button beside each door (shows open / closed) and a floating hint
+        host.insertAdjacentHTML('beforeend', ['dfl', 'dfr', 'drl', 'drr'].map(k => `<div class="qc-dico" data-cp="${k}" data-tap title="${DOORN[k]}"><span class="ms">door_front</span></div>`).join('') + '<div class="qc-hint"><span class="ms">touch_app</span><span>Tap a door to open it</span></div>');
+        host._onResize = v => { const L = v.layout(); host.querySelectorAll('.qc-dico').forEach(d => { const k = d.dataset.cp, pt = L.doors[k];
+          d.style.top = Math.round(pt.y - 22) + 'px'; d.style.left = Math.round(k[2] === 'l' ? L.left - 56 : L.right + 12) + 'px'; }); host.classList.add('qc-laid'); }; }
+      host.querySelectorAll('.qc-dico').forEach(d => { const o = !!Q.open[d.dataset.cp]; d.classList.toggle('open', o); d.querySelector('.ms').textContent = o ? 'door_open' : 'door_front'; });
       c3d(fr, 'qc', qc.querySelector('.qc-car'), { open: { ...Q.open }, port: Q.port, wins: { ...Q.wins }, mir: Q.mir, shade: { ...Q.shade }, lights: Q.lights, lift: easy ? -50 : 0 },
         k => { if (k.startsWith('wheel')) return; c3dTap(svg.querySelector(`[data-cp="${k}"]`)); }); }
     if (Q.lock && fr._lastLock === false) { clearTimeout(fr._lkT); fr._lkT = setTimeout(() => { if (qcOf(fr).lock) lockShow(fr); }, 1500); }

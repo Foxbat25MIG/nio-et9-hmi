@@ -1870,3 +1870,41 @@ html[data-theme="dark"] .lk-info{background:rgba(36,28,48,.55)}
 .ty .qc-car.c3d-host:not(.ty-laid) .ty-chip{opacity:0}
 .hm-music .player .p-full{opacity:0!important;pointer-events:none!important}
 .hm-music .player .p-compact{opacity:1!important;pointer-events:auto!important}
+
+/* ---------- Mark 2 · Quick controls: door buttons beside the 3D car, floating hint ---------- */
+.qc-dico{position:absolute;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--s1);border:1px solid var(--line);box-shadow:0 6px 16px rgba(36,30,72,.1);z-index:3;cursor:pointer;transition:background-color 240ms cubic-bezier(.2,.8,.2,1),border-color 240ms cubic-bezier(.2,.8,.2,1),transform 140ms cubic-bezier(.2,.8,.2,1),opacity 600ms cubic-bezier(.2,.8,.2,1),top 600ms cubic-bezier(.2,.8,.2,1),left 600ms cubic-bezier(.2,.8,.2,1)}
+.qc-dico .ms{font-size:24px;color:var(--t2)}
+.qc-dico:active{transform:scale(.92)}
+.qc-dico.open{background:#fdebee;border-color:#efb3bc}
+.qc-dico.open .ms{color:#c23a48}
+.qc-car:not(.qc-laid) .qc-dico{opacity:0;pointer-events:none}
+.qc-car:not(.c3d-on) .qc-hint{opacity:0}
+.qc-hint{position:absolute;left:50%;top:14px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;background:var(--s1);border:1px solid var(--line);box-shadow:0 6px 16px rgba(36,30,72,.08);font:400 15px "Red Hat Text";color:var(--t2);white-space:nowrap;z-index:3;pointer-events:none;transition:opacity 600ms cubic-bezier(.2,.8,.2,1)}
+.qc-hint .ms{font-size:20px}
+html[data-theme="dark"] .qc-dico.open{background:#4a2430;border-color:#7a3a4a}
+html[data-theme="dark"] .qc-dico.open .ms{color:#ff9aa8}
+
+/* ---------- Mark 2 · Home widgets: one height for the bottom row, Places as wide as Next ---------- */
+.hm-next>.hm-tg{display:none}
+.hm-next{width:380px}
+.hm-dock{align-items:flex-end}
+.hm-dock>.hm-w{height:176px;box-sizing:border-box}
+.hm-dock>.hm-w.min{height:88px}
+.hm-tg{top:10px;right:10px;width:32px;height:32px}
+.hm-places{width:380px;padding:16px 20px}
+.hm-places .hrow{height:40px;min-height:0;padding:0!important}
+.hm-places.min{width:auto}
+.hm-bat{width:176px;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:18px 20px}
+.hm-bat .b1{font-size:30px}
+.hm-pod{padding:16px 20px;gap:8px}
+.hm-pod .ph{height:86px}
+.hm-pod.min{padding:12px 56px 12px 12px}
+.hm-pod.min .ph{height:62px}
+.hm-music{width:420px}
+.hm-music .player .p-compact{top:50%;transform:translateY(-50%);height:96px}
+.hm-music .player .p-compact .cart{width:96px!important;height:96px!important;border-radius:16px!important}
+.hm-music .hm-tg{top:10px}
+.hm-music.min{width:136px}
+.hm-music.min .player .p-compact{height:64px}
+.hm-music.min .player .p-compact .cart{width:64px!important;height:64px!important}
+.hm-music.min .play{display:none}
