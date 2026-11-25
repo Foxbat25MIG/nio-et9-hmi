@@ -469,7 +469,9 @@ function drawTo(ctx, scene, cam, w, h, clear = true) {
 }
 
 let queue = Promise.resolve();
-const turn = () => (queue = queue.then(() => new Promise(r => setTimeout(r, 16))));
+const mc = new MessageChannel(), waiting = []; mc.port1.onmessage = () => { const f = waiting.shift(); if (f) f(); };
+const yieldNow = () => new Promise(r => { waiting.push(r); mc.port2.postMessage(0); });   // lets the page draw; unlike setTimeout it isn't slowed down in background tabs
+const turn = () => (queue = queue.then(yieldNow));
 export async function mount(el, opt = {}) {
   const cv = document.createElement('canvas'); cv.className = 'c3d'; el.appendChild(cv); const ctx = cv.getContext('2d');
   shared();
@@ -654,5 +656,6 @@ export function setPaint(k) {
 export const paint = () => paintKey;
 export const preload = () => loadRaw();
 
+loadRaw(); setTimeout(() => loadAssets(), 0);   // start every download straight away, in parallel
 window.ET9 = { mount, setPaint, paint, PAINTS, preload, snapshot, onPaint, ready };
 window.dispatchEvent(new Event('et9-ready'));
