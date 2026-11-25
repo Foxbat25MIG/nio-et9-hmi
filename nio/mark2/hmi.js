@@ -1646,7 +1646,7 @@
   // ready = the car, the HDRIs and every car view built (Home, lock, Quick controls, Tyres, Driving); never wait more than 8 s
   function whenAllReady() {
     const done = () => document.querySelectorAll('[data-lockov]').forEach(ov => ov.classList.add('ready'));
-    const t0 = performance.now(), check = () => { const hosts = [...document.querySelectorAll('.hm-stage, .lk-stage, .qc:not(.ty) .qc-car, .ty .qc-car, .dm-c3d')];
+    const t0 = performance.now(), check = () => { const hosts = [...document.querySelectorAll('.hm-stage, .lk-stage')];   // lock screen and Home are enough to let you in; the car pages finish building in the background
       if (hosts.length && hosts.every(h => h._v3 && h._v3 !== 'wait')) return setTimeout(done, 250); if (performance.now() - t0 > 8000) return done(); setTimeout(check, 120); };
     try { (window.ET9 && ET9.ready ? ET9.ready() : Promise.resolve()).then(check, done); } catch (e) { done(); } }
   if (window.ET9) whenAllReady(); else window.addEventListener('et9-ready', whenAllReady, { once: true });

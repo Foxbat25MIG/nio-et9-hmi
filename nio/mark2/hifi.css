@@ -2024,3 +2024,17 @@ html[data-theme="dark"] .hb-bar,html[data-theme="dark"] .hb-tr{background:rgba(2
 .lk-bar{display:block;width:120px;height:3px;border-radius:2px;background:rgba(74,65,96,.18);overflow:hidden;position:relative}
 .lk-bar::after{content:"";position:absolute;inset:0;width:40%;border-radius:2px;background:#7a6bf2;animation:lkload 1.2s cubic-bezier(.45,0,.55,1) infinite}
 @keyframes lkload{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+
+/* ---------- Mark 2 · Quick controls, new layout: the car on the left, every control on the right ---------- */
+.qc.qc2{gap:24px;align-items:stretch}
+.qc2 .qc-car{flex:1 1 auto!important;align-self:stretch}
+.qc2 .qc-side{width:380px;align-self:stretch;justify-content:flex-start;max-height:100%}
+.qc2 .qc-left{display:grid;grid-template-columns:1fr 132px;gap:10px;width:auto;flex:none}
+.qc2 .qc-doors,.qc2 .qc-dchev{display:none!important}
+.qc2 .qc-lockw{border:0;background:transparent;border-radius:22px}
+.qc2 .qc-lock{height:100%;box-sizing:border-box}
+.qc2 .qc-all{flex-direction:column;justify-content:center;gap:4px;height:auto;min-height:76px;padding:10px 12px;border-radius:22px;text-align:center;font-size:14px;line-height:1.2;white-space:normal}
+.qc2 .qc-all .ms{font-size:24px}
+/* Podcasts widget open: the covers stop before the fold button's column */
+.hm-pod:not(.min){padding-right:56px!important}
+.hm-pod:not(.min)>.hm-tg{right:12px}

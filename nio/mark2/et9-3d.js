@@ -7,34 +7,32 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-import { GroundedSkybox } from 'three/addons/objects/GroundedSkybox.js';
 
 const BASE = new URL('.', import.meta.url).href;
 const EASE = t => 1 - Math.pow(1 - t, 3);          // close to the HMI's cubic-bezier(.2,.8,.2,1)
 
 export const PAINTS = {
-  ceramic:  { name: 'Midnight Ceramic Blue', c: '#1d2540', m: .55, r: .3 },
-  lavender: { name: 'Lavender silver',       c: '#b8b1d2', m: .7,  r: .3 },
-  cloud:    { name: 'Cloud White',           c: '#e8e7ec', m: .05, r: .28 },
-  black:    { name: 'Deep Black',            c: '#18171d', m: .5,  r: .26 },
-  moon:     { name: 'New Moon Silver',       c: '#a3a5ac', m: .85, r: .3 },
-  southern: { name: 'Southern Star Blue',    c: '#33548c', m: .6,  r: .3 },
-  gold:     { name: 'Sunlight Gold',         c: '#b89c6c', m: .8,  r: .3 },
+  ceramic:  { name: 'Midnight Ceramic Blue', c: '#1d2540', m: .55, r: .32 },
+  lavender: { name: 'Lavender silver',       c: '#b8b1d2', m: .7,  r: .32 },
+  cloud:    { name: 'Cloud White',           c: '#e8e7ec', m: .05, r: .3 },
+  black:    { name: 'Deep Black',            c: '#18171d', m: .5,  r: .28 },
+  moon:     { name: 'New Moon Silver',       c: '#a3a5ac', m: .85, r: .32 },
+  southern: { name: 'Southern Star Blue',    c: '#33548c', m: .6,  r: .32 },
+  gold:     { name: 'Sunlight Gold',         c: '#b89c6c', m: .8,  r: .32 },
 };
 const storedPaint = () => { try { return localStorage.getItem('nio-paint'); } catch (e) { return null; } };
 let paintKey = PAINTS[storedPaint()] ? storedPaint() : 'ceramic';
 
 /* ---------- shared materials ---------- */
 const M = {
-  paint: new THREE.MeshPhysicalMaterial({ clearcoat: 1, clearcoatRoughness: .05, envMapIntensity: 1.9 }),
+  paint: new THREE.MeshPhysicalMaterial({ clearcoat: 1, clearcoatRoughness: .03, envMapIntensity: 1.15 }),   // glossy clear coat over a smooth, subdivided body
   glass: new THREE.MeshPhysicalMaterial({ color: '#191722', metalness: .1, roughness: .05, envMapIntensity: 1.4, transparent: true, opacity: .9 }),
   roof: new THREE.MeshPhysicalMaterial({ color: '#1d1a28', metalness: .1, roughness: .04, envMapIntensity: 1.5, transparent: true, opacity: .62, depthWrite: false }),
   lens: new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: .05, transparent: true, opacity: .18, depthWrite: false }),
   redLens: new THREE.MeshPhysicalMaterial({ color: '#5a1018', roughness: .1, transparent: true, opacity: .85 }),
   head: new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: '#ffffff', emissiveIntensity: 1 }),
   tail: new THREE.MeshStandardMaterial({ color: '#3a0a10', emissive: '#ff2236', emissiveIntensity: 1 }),
-  cabin: new THREE.MeshStandardMaterial({ color: '#2a2534', roughness: .9 }),
+  cabin: new THREE.MeshStandardMaterial({ color: '#7d7690', roughness: .95 }),   // lighter: with a window down you see a soft interior, not a black hole
   fabric: new THREE.MeshStandardMaterial({ color: '#cfc9dc', roughness: .95, side: THREE.DoubleSide }),
   glow: new THREE.MeshBasicMaterial({ color: '#7fcf96', transparent: true, opacity: 0, depthWrite: false }),
 };
@@ -63,11 +61,42 @@ function splitMesh(mesh, keyOf) {
   return out;
 }
 const SMOOTH = new WeakMap();
-function smoothGeo(g) { if (!SMOOTH.has(g)) { const n = toCreasedNormals(g, Math.PI / 2.6); SMOOTH.set(g, n); } return SMOOTH.get(g); }
+function smoothGeo(g) { if (!SMOOTH.has(g)) SMOOTH.set(g, pnSubdivide(toCreasedNormals(g, Math.PI / 3), 2)); return SMOOTH.get(g); }
+/* Make the painted panels genuinely smooth: every triangle is split into four, and the new points are pushed out onto a
+   curved surface (PN triangles) worked out from the normals, twice over. Flat facets become a continuous curve, so the
+   reflections flow along the body instead of breaking at every facet. Positions use one smooth normal per point, so
+   neighbouring panels still meet without gaps; shading keeps the crisp creases. */
+function pnSubdivide(geo, levels) {
+  let P = geo.attributes.position.array, N = geo.attributes.normal.array;
+  const key = (a, i) => Math.round(a[i] * 2e4) + ',' + Math.round(a[i + 1] * 2e4) + ',' + Math.round(a[i + 2] * 2e4);
+  for (let l = 0; l < levels; l++) {
+    const sm = new Map();
+    for (let i = 0; i < P.length; i += 9) {
+      const ax = P[i + 3] - P[i], ay = P[i + 4] - P[i + 1], az = P[i + 5] - P[i + 2], bx = P[i + 6] - P[i], by = P[i + 7] - P[i + 1], bz = P[i + 8] - P[i + 2];
+      const fx = ay * bz - az * by, fy = az * bx - ax * bz, fz = ax * by - ay * bx;
+      for (let k = 0; k < 9; k += 3) { const id = key(P, i + k), v = sm.get(id) || [0, 0, 0]; v[0] += fx; v[1] += fy; v[2] += fz; sm.set(id, v); } }
+    sm.forEach(v => { const d = Math.hypot(v[0], v[1], v[2]) || 1; v[0] /= d; v[1] /= d; v[2] /= d; });
+    const np = new Float32Array(P.length * 4), nn = new Float32Array(N.length * 4); let o = 0;
+    const mid = (i, j, out, on) => {
+      const si = sm.get(key(P, i)), sj = sm.get(key(P, j)), dx = P[j] - P[i], dy = P[j + 1] - P[i + 1], dz = P[j + 2] - P[i + 2];
+      const wi = dx * si[0] + dy * si[1] + dz * si[2], wj = -(dx * sj[0] + dy * sj[1] + dz * sj[2]);
+      for (let c = 0; c < 3; c++) { const c1 = (2 * P[i + c] + P[j + c] - wi * si[c]) / 3, c2 = (2 * P[j + c] + P[i + c] - wj * sj[c]) / 3; out[c] = (P[i + c] + 3 * c1 + 3 * c2 + P[j + c]) / 8; }
+      const ax = N[i] + N[j], ay = N[i + 1] + N[j + 1], az = N[i + 2] + N[j + 2], d = Math.hypot(ax, ay, az) || 1; on[0] = ax / d; on[1] = ay / d; on[2] = az / d; };
+    const m01 = [0, 0, 0], m12 = [0, 0, 0], m20 = [0, 0, 0], n01 = [0, 0, 0], n12 = [0, 0, 0], n20 = [0, 0, 0];
+    const put = (p, n) => { np[o] = p[0]; np[o + 1] = p[1]; np[o + 2] = p[2]; nn[o] = n[0]; nn[o + 1] = n[1]; nn[o + 2] = n[2]; o += 3; };
+    for (let i = 0; i < P.length; i += 9) {
+      const v0 = [P[i], P[i + 1], P[i + 2]], v1 = [P[i + 3], P[i + 4], P[i + 5]], v2 = [P[i + 6], P[i + 7], P[i + 8]];
+      const w0 = [N[i], N[i + 1], N[i + 2]], w1 = [N[i + 3], N[i + 4], N[i + 5]], w2 = [N[i + 6], N[i + 7], N[i + 8]];
+      mid(i, i + 3, m01, n01); mid(i + 3, i + 6, m12, n12); mid(i + 6, i, m20, n20);
+      put(v0, w0); put(m01, n01); put(m20, n20);  put(m01, n01); put(v1, w1); put(m12, n12);
+      put(m20, n20); put(m12, n12); put(v2, w2);  put(m01, n01); put(m12, n12); put(m20, n20); }
+    P = np; N = nn; }
+  const out = new THREE.BufferGeometry(); out.setAttribute('position', new THREE.BufferAttribute(P, 3)); out.setAttribute('normal', new THREE.BufferAttribute(N, 3)); return out;
+}
 function pivot(name, x, y, z) { const p = new THREE.Group(); p.name = name; p.position.set(x, y, z); return p; }
 
 /* ---------- build one prepared car from the loaded file ---------- */
-const DOOR_SRC = new Set([27, 39, 40, 41, 72, 44]), MIRROR = new Set([0, 45, 46]), HOOD = new Set([22]), BOOT = new Set([30, 50]);
+const DOOR_SRC = new Set([27, 39, 40, 41, 72, 44, 56]), MIRROR = new Set([0, 45, 46]), HOOD = new Set([22]), BOOT = new Set([30, 50]);
 const ROOFG = 29, GLASS_SIDE = 40;
 const WZ = 1.62;                               // wheel centres, ±z
 function doorKey(c) {
@@ -123,8 +152,9 @@ async function buildCar() {
     if (HOOD.has(mi)) { P.frunk.attach(o); return; }
     if (BOOT.has(mi)) { P.boot.attach(o); return; }
     if (DOOR_SRC.has(mi)) {
-      const parts = splitMesh(o, doorKey);
-      Object.entries(parts).forEach(([k, m]) => (mi === GLASS_SIDE ? P.panes[k] : P.doors[k]).attach(m));
+      // the black panel behind the side glass (mesh 56) goes down with the glass, or the window still looks shut
+      const parts = splitMesh(o, mi === 56 ? (c => { const k = doorKey(c); return k && c.y > 1.12 && Math.abs(c.x) < .93 ? 'p' + k : null; }) : doorKey);
+      Object.entries(parts).forEach(([k, m]) => (mi === GLASS_SIDE ? P.panes[k] : k[0] === 'p' ? P.panes[k.slice(1)] : P.doors[k]).attach(m));
       if (mi === 27 || mi === 39) { o.removeFromParent(); return; }
     }
     if (mi === ROOFG) P.roofGlass = o;
@@ -280,38 +310,85 @@ function archScene(scene) {
 }
 
 /* Lock screen: rolling meadow at golden hour, pale rocks, far peaks with snow, pink clouds, a low sun casting long shadows (day) or a violet dusk (night) */
-/* Lock screen: Adi's meadow HDRI (Poly Haven, CC0), projected onto the ground so the car stands in the grass; it also lights the car */
+/* Lock screen: a painted summer meadow in the spirit of Studio Ghibli. Big soft cumulus clouds on a deep blue sky,
+   rolling hills in smooth bands of green, round trees, flowers dotted through soft grass. Day, or a violet dusk at night. */
 function meadowScene(scene) {
-  const A = ASSETS || {};
-  if (!A.meadowBg) return null;
-  const sky = new GroundedSkybox(A.meadowBg, 1.9, 90, 128); sky.position.y = 1.9 - .01; sky.material.toneMapped = false; scene.add(sky);
-  scene.environment = A.meadow; scene.environmentIntensity = .9;
-  // the sun in this HDRI sits high, a little to the side: match it so the car's shadow falls the right way
-  const el = (.5 - .12) * Math.PI, lon = (.426 - .5) * Math.PI * 2, sun = sunLight('#fff3e2', [Math.cos(el) * Math.cos(lon) * 30, Math.sin(el) * 30, Math.cos(el) * Math.sin(lon) * 30], 10);
-  sun.intensity = 1.6; scene.add(sun); scene.add(sun.target);
-  const catcher = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.ShadowMaterial({ opacity: .32 })); catcher.rotation.x = -Math.PI / 2; catcher.position.y = .002; catcher.receiveShadow = true; scene.add(catcher);
-  const day = new THREE.Color('#ffffff'), night = new THREE.Color('#5e5490'); let L = 1, LT = 1;
+  const PAL = {
+    day:   palOf({ top: '#2f7fd0', mid: '#7fb9ea', bot: '#dceff3', fog: '#cfe6ee', h1: '#3f8f3c', h2: '#7fbf4a', h3: '#c4dc6a', far: '#7fa7c9', far2: '#a9c6dc', tree: '#3d7f3a', tree2: '#5fa54a', trunk: '#6b4f3a', cloud: '#ffffff', cloudB: '#c6d6ea', sky: '#e8f4ff', gnd: '#5b8a3e', sun: '#fff1d6', flower: '#ffffff', flower2: '#ffd84d', flower3: '#b994ef' }),
+    night: palOf({ top: '#0d1236', mid: '#2c2f6b', bot: '#6a5387', fog: '#3a3766', h1: '#16301f', h2: '#25452b', h3: '#3a5a36', far: '#2c335c', far2: '#3c4472', tree: '#14281a', tree2: '#1f3a24', trunk: '#2a2230', cloud: '#b3a6d6', cloudB: '#4a4580', sky: '#6870b0', gnd: '#101a14', sun: '#b9b2ff', flower: '#cfc6ff', flower2: '#e6cf7a', flower3: '#9a7fe0' }),
+  };
+  const cur = Object.fromEntries(Object.entries(PAL.day).map(([k, v]) => [k, v.clone()]));
+  let tar = PAL.day, L = 1, LT = 1;
+  const G = gradCanvas(); scene.background = G.t; scene.fog = new THREE.Fog(cur.fog, 70, 300);
+  const hemi = new THREE.HemisphereLight(cur.sky, cur.gnd, 1.25); scene.add(hemi);
+  const sun = sunLight(cur.sun, [-24, 26, -18], 24); sun.intensity = 1.6; sun.shadow.radius = 9; scene.add(sun); scene.add(sun.target);
+  // hills: only long, low swells (no small bumps), painted in soft bands
+  const hgt = (x, z) => { const r = Math.hypot(x, z); return (Math.sin(x * .045 + .6) * Math.cos(z * .038) * 3.2 + Math.sin(x * .021 - z * .017) * 4 + 2.2) * smooth(8, 30, r) * (1 + smooth(60, 160, r) * 1.8); };
+  const tg = new THREE.PlaneGeometry(420, 420, 200, 200); tg.rotateX(-Math.PI / 2);
+  const pos = tg.attributes.position, cols = new Float32Array(pos.count * 3), MIX = [];
+  for (let i = 0; i < pos.count; i++) pos.setY(i, hgt(pos.getX(i), pos.getZ(i)));
+  tg.computeVertexNormals(); const nrm = tg.attributes.normal;
+  for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), z = pos.getZ(i); MIX.push([smooth(-.5, 7, pos.getY(i)), nrm.getY(i), fbm(x * .04, z * .04, 3)]); }
+  tg.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+  // a faint brush texture so the grass reads as painted, not plastic
+  const brush = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.fillStyle = '#d8d8d8'; x.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 900; i++) { const v = 200 + Math.random() * 55 | 0; x.strokeStyle = `rgba(${v},${v},${v},.5)`; x.lineWidth = 2 + Math.random() * 3; x.lineCap = 'round';
+      const px = Math.random() * 256, py = Math.random() * 256, a = -1.2 + Math.random() * .5; x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo(px + 4, py - 6, px + Math.cos(a) * 14, py + Math.sin(a) * 14); x.stroke(); }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(70, 70); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; })();
+  const terrain = new THREE.Mesh(tg, new THREE.MeshLambertMaterial({ vertexColors: true, map: brush })); terrain.receiveShadow = true; scene.add(terrain);
+  const tc = new THREE.Color();
+  const paintTerrain = () => { for (let i = 0; i < pos.count; i++) { const [h, ny, n] = MIX[i];
+      tc.copy(cur.h1).lerp(cur.h2, Math.min(1, h * .9 + n * .35)); tc.lerp(cur.h3, smooth(.55, 1, h + (n - .5) * .3) * .6 * ny); cols[i * 3] = tc.r; cols[i * 3 + 1] = tc.g; cols[i * 3 + 2] = tc.b; } tg.attributes.color.needsUpdate = true; };
+  // distant blue ridges, layered for depth
+  const farM = new THREE.MeshLambertMaterial({ color: cur.far }), far2M = new THREE.MeshLambertMaterial({ color: cur.far2 });
+  [[far2M, 230, 26], [farM, 190, 18]].forEach(([m, R, H], j) => { const g = new THREE.CylinderGeometry(R, R, 1, 160, 8, true), p = g.attributes.position;
+    for (let k = 0; k < p.count; k++) { const a = Math.atan2(p.getZ(k), p.getX(k)), top = p.getY(k) > 0; p.setY(k, top ? H * (.45 + .55 * fbm(a * 3 + j * 7, j, 3)) : -2); }
+    g.computeVertexNormals(); const ms = new THREE.Mesh(g, m); ms.material.side = THREE.BackSide; scene.add(ms); });
+  // big round trees on the hills
+  const treeM = new THREE.MeshLambertMaterial({ color: cur.tree }), tree2M = new THREE.MeshLambertMaterial({ color: cur.tree2 }), trunkM = new THREE.MeshLambertMaterial({ color: cur.trunk });
+  [[-62, -40, 1.5], [-48, -72, 1.2], [-90, -30, 1.3], [-30, -96, 1.6], [-110, -70, 1.4], [8, -88, 1.1]].forEach(([x, z, s], j) => { const t = new THREE.Group(); t.position.set(x, hgt(x, z) - .2, z); t.scale.setScalar(s); scene.add(t);
+    const tr = new THREE.Mesh(new THREE.CylinderGeometry(.22, .32, 2.6, 8), trunkM); tr.position.y = 1.3; tr.castShadow = true; t.add(tr);
+    for (let i = 0; i < 9; i++) { const b = new THREE.Mesh(new THREE.SphereGeometry(1.2 + (i % 3) * .35, 18, 14), i % 3 ? treeM : tree2M); b.position.set(Math.cos(i * 2.3 + j) * 1.2, 3 + (i % 4) * .45, Math.sin(i * 2.3 + j) * 1.2); b.castShadow = true; t.add(b); } });
+  // soft grass tufts and flowers near the car
+  const B = 1500, grassM = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+  const grass = new THREE.InstancedMesh(bladeGeo(.09, 1), grassM, B), d = new THREE.Object3D(), GB = [], gc = new THREE.Color();
+  while (GB.length < B) { const a = Math.random() * Math.PI * 2, r = 3.4 + Math.pow(Math.random(), 1.3) * 24, x = Math.cos(a) * r, z = Math.sin(a) * r;
+    if (Math.hypot(x - 7.3, z - 7.7) < 3.5) continue; GB.push({ x, z, y: hgt(x, z), h: .07 + Math.random() * .1, ry: Math.random() * 6.3, lean: (Math.random() - .5) * .3, ph: Math.random() * 6.3, c: Math.random() }); }
+  scene.add(grass);
+  const paintGrass = () => { GB.forEach((b, i) => { gc.copy(cur.h2).lerp(cur.h3, .15 + b.c * .35); if (b.c > .9) gc.copy(b.c > .985 ? cur.flower3 : b.c > .97 ? cur.flower2 : cur.flower); grass.setColorAt(i, gc); }); grass.instanceColor.needsUpdate = true; };
+  const sway = t => { for (let i = 0; i < B; i++) { const b = GB[i]; d.position.set(b.x, b.y - .02, b.z); d.rotation.set(b.lean + Math.sin(t * 1.2 + b.x * .15 + b.z * .1) * .12, b.ry, 0); d.scale.set(1, b.h, 1); d.updateMatrix(); grass.setMatrixAt(i, d.matrix); } grass.instanceMatrix.needsUpdate = true; };
+  sway(0); let lastSway = 0;
+  // cumulus: towers of soft puffs, bright tops, cooler shaded bellies
+  const pt = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.55, 'rgba(255,255,255,.9)'); g.addColorStop(.8, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  const clouds = new THREE.Group(), puffs = []; scene.add(clouds);
+  [[-130, 14, -150, 1.4], [-60, 18, -200, 1.7], [-185, 12, -95, 1.1], [10, 16, -215, 1.2]].forEach(([cx, cy, cz, s]) => {
+    for (let i = 0; i < 34; i++) { const u = Math.random(), h = Math.pow(u, .8), w = (1 - h * .55);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: pt, transparent: true, depthWrite: false, fog: false }));
+      const sz = (7 + Math.random() * 7) * s * (1.1 - h * .35); sp.scale.set(sz, sz, 1);
+      sp.position.set(cx + (Math.random() - .5) * 34 * s * w, cy + h * 26 * s, cz + (Math.random() - .5) * 10); sp.userData.h = h; sp.renderOrder = Math.round(h * 100); clouds.add(sp); puffs.push(sp); } });
+  const paintClouds = () => puffs.forEach(p => p.material.color.copy(cur.cloudB).lerp(cur.cloud, Math.min(1, .25 + p.userData.h * 1.3)));
   return {
     shadows: true,
-    theme(dark) { LT = dark ? 0 : 1; },
-    update(dt) { if (Math.abs(LT - L) < .002) { if (L !== LT) { L = LT; } else return false; } else L += (LT - L) * Math.min(1, dt * 2.5);
-      sky.material.color.copy(night).lerp(day, L).multiplyScalar(.32 + .68 * L); scene.environmentIntensity = .3 + .6 * L; sun.intensity = .3 + 1.3 * L; catcher.material.opacity = .15 + .17 * L; return true; },
+    theme(dark) { tar = dark ? PAL.night : PAL.day; LT = dark ? 0 : 1; },
+    update(dt, now) {
+      let moving = lerpPal(cur, tar, Math.min(1, dt * 2.5));
+      if (Math.abs(LT - L) > .002) { L += (LT - L) * Math.min(1, dt * 2.5); moving = true; } else L = LT;
+      if (moving || !G.done) { G.done = true; paintGrad(G, cur.top, cur.mid, cur.bot, { x: .2, y: .35, r: .45, c: cur.sun, a: .25 + .2 * L });
+        scene.fog.color.copy(cur.fog); hemi.color.copy(cur.sky); hemi.groundColor.copy(cur.gnd); sun.color.copy(cur.sun); sun.intensity = .4 + 1.2 * L;
+        paintTerrain(); paintGrass(); paintClouds(); farM.color.copy(cur.far); far2M.color.copy(cur.far2); treeM.color.copy(cur.tree); tree2M.color.copy(cur.tree2); trunkM.color.copy(cur.trunk);
+        scene.environmentIntensity = .35 + .55 * L; hemi.intensity = .45 + .8 * L; }
+      clouds.position.x = Math.sin(now / 60000) * 6;
+      if (now - lastSway > 40) { sway(now / 1000); lastSway = now; } return true;
+    },
   };
 }
 
-/* HDRI assets, loaded once and shared: the studio light set for the car's reflections, the meadow for the lock screen */
-let ASSETS = null, assetsP = null;
-function loadAssets() {
-  return assetsP || (assetsP = (async () => {
-    const r = shared(), pm = new THREE.PMREMGenerator(r), hl = new RGBELoader();
-    const [st, mh, mj] = await Promise.all([hl.loadAsync(BASE + 'env/studio.hdr'), hl.loadAsync(BASE + 'env/meadow.hdr'), new THREE.TextureLoader().loadAsync(BASE + 'env/meadow.jpg')]);
-    st.mapping = mh.mapping = THREE.EquirectangularReflectionMapping; mj.mapping = THREE.EquirectangularReflectionMapping; mj.colorSpace = THREE.SRGBColorSpace; mj.anisotropy = 8;
-    ASSETS = { studio: pm.fromEquirectangular(st).texture, meadow: pm.fromEquirectangular(mh).texture, meadowBg: mj };
-    st.dispose(); mh.dispose(); pm.dispose(); ENV = ASSETS.studio; return ASSETS;
-  })().catch(e => { console.warn('HDRI not loaded, using the built-in studio', e); ASSETS = {}; return ASSETS; }));
-}
-/* everything the dashboard needs before the lock screen lets you in */
-export function ready() { return Promise.all([loadRaw(), loadAssets()]); }
+/* no downloaded lighting any more: the car uses the soft built-in studio everywhere (Adi: no hard reflections) */
+let ASSETS = {};
+function loadAssets() { return Promise.resolve(ASSETS); }
+export function ready() { return loadRaw(); }
 
 const DRIVE = {   // sky top / middle / horizon, fog, ground, road, line colour, speed (m/s shown), scenery
   Comfort: { top: '#d9cfee', mid: '#f0dde9', bot: '#f5ecf2', fog: '#efe4f0', ground: '#ddd2e6', road: '#a9a1b8', line: '#ffffff', v: 11, kind: 'lamps' },
@@ -445,17 +522,18 @@ function shared() {
 /* a photo-studio light set baked into the reflection map: soft gradient dome, long overhead soft boxes and side strips.
    These are what draw the clean highlight lines along the paint and glass. */
 function studioEnv(r) {
-  const s = new THREE.Scene(), dome = new THREE.SphereGeometry(60, 48, 24), col = [], p = dome.attributes.position, c = new THREE.Color();
-  const top = new THREE.Color('#f6f4fb'), hor = new THREE.Color('#b8b2c9'), bot = new THREE.Color('#2e2a39');
-  for (let i = 0; i < p.count; i++) { const y = p.getY(i) / 60; if (y > 0) c.copy(hor).lerp(top, Math.pow(y, .6)); else c.copy(hor).lerp(bot, Math.pow(-y, .45)); col.push(c.r, c.g, c.b); }
+  // outdoor light like a salt flat: deep-to-pale blue sky, a bright horizon, light ground just below it, a hot sun
+  const s = new THREE.Scene(), dome = new THREE.SphereGeometry(60, 96, 48), col = [], p = dome.attributes.position, c = new THREE.Color();
+  const zen = new THREE.Color('#6f97d6'), sky = new THREE.Color('#cfe0f4'), hor = new THREE.Color('#ffffff'), gnd = new THREE.Color('#c9c7cf'), far = new THREE.Color('#e7e6ec'), deep = new THREE.Color('#8d8a96');
+  for (let i = 0; i < p.count; i++) { const y = p.getY(i) / 60;
+    if (y >= 0) { c.copy(hor).lerp(sky, Math.min(1, y * 7)); if (y > .15) c.lerp(zen, Math.pow((y - .15) / .85, .8)); }
+    else { c.copy(far).lerp(gnd, Math.min(1, -y * 9)); const b = Math.exp(-Math.pow((-y - .045) / .022, 2)); c.lerp(deep, b * .8); if (y < -.3) c.lerp(deep, (-y - .3) / .7); }   // a dark band just under the horizon draws the crisp shoulder line
+    c.multiplyScalar(1.25); col.push(c.r, c.g, c.b); }
   dome.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   s.add(new THREE.Mesh(dome, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide })));
-  const box = (w, h, x, y, z, rx, ry, k) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(k, k, k * 1.02), side: THREE.DoubleSide })); m.position.set(x, y, z); m.rotation.set(rx, ry, 0); s.add(m); };
-  box(8, 36, 0, 22, 0, Math.PI / 2, 0, 5.5);                // long overhead soft box
-  box(3, 30, -9, 18, 0, Math.PI / 2, 0, 3); box(3, 30, 9, 18, 0, Math.PI / 2, 0, 3);
-  box(30, 2.2, 0, 7, -26, 0, 0, 3.2); box(30, 2.2, 0, 7, 26, 0, Math.PI, 3.2);    // horizon strips front and back
-  box(2.2, 24, -28, 6, 0, 0, Math.PI / 2, 2.6); box(2.2, 24, 28, 6, 0, 0, -Math.PI / 2, 2.6);   // side strips
-  const t = new THREE.PMREMGenerator(r).fromScene(s, .015).texture; return t;
+  const sunM = new THREE.Mesh(new THREE.SphereGeometry(2.2, 24, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color(40, 38, 34) })); sunM.position.set(-26, 38, 28); s.add(sunM);
+  const glow = new THREE.Mesh(new THREE.SphereGeometry(7, 24, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 2.1, 2), transparent: true, opacity: .5 })); glow.position.copy(sunM.position); s.add(glow);
+  return new THREE.PMREMGenerator(r).fromScene(s, .008).texture;
 }
 function _unused() {
   return R;
@@ -519,10 +597,10 @@ export async function mount(el, opt = {}) {
     body.position.y = S.lift / 1000 * LS + bob; body.rotation.x = pitch;
     P.clip.constant = -(1.115 + body.position.y);
     M.head.emissiveIntensity = S.head * 2.2 + S.beam * 1.6; M.tail.emissiveIntensity = S.tail * 2 + S.beam;
-    { const hh = smooth(.1, 1, S.head) * .55 + S.beam * .45, blink = S.haz * Math.pow(Math.max(0, Math.sin(now / 1000 * Math.PI * 1.5)), .35);
-      P.fx.head.forEach(h => h.material.opacity = hh); P.fx.tail.forEach(h => h.material.opacity = smooth(.1, 1, S.tail) * .5 + S.beam * .4);
+    { const hh = smooth(.62, 1, S.head) * .35 + S.beam * .6, blink = S.haz * Math.pow(Math.max(0, Math.sin(now / 1000 * Math.PI * 1.5)), .35);
+      P.fx.head.forEach(h => h.material.opacity = hh); P.fx.tail.forEach(h => h.material.opacity = smooth(.62, 1, S.tail) * .3 + S.beam * .5);
       P.fx.headPool.material.opacity = S.beam * .6; P.fx.tailPool.material.opacity = S.beam * .3;
-      if (beams) { const nt = world.night ? world.night() : 0; beams.mat.opacity = S.beam * nt * .6; P.fx.head.forEach(h => { h.material.opacity = hh * .45; h.scale.setScalar(.6); }); P.fx.headPool.material.opacity = S.beam * .35; }
+      if (beams) { const nt = world.night ? world.night() : 0; beams.mat.opacity = S.beam * nt * .55; beams.fm.opacity = (S.beam * nt * .9) + hh * .15; beams.tm.opacity = S.beam * nt * .35; P.fx.head.forEach(h => { h.material.opacity = hh * .25; h.scale.setScalar(.5); }); P.fx.headPool.material.opacity = S.beam * nt * .3; }
       P.fx.haz.forEach(h => h.material.opacity = blink); P.fx.hazPool.forEach(h => h.material.opacity = blink * .45); }
     Object.entries(P.wglow).forEach(([k, m]) => { m.material.opacity = (S.warn[k] || 0) * (.6 + .3 * Math.sin(now / 260)); });
     Object.entries(tyreMats).forEach(([k, m]) => { m.emissive.set('#e0303f'); m.emissiveIntensity = (S.warn[k] || 0) * (.35 + .25 * Math.sin(now / 260)); });
@@ -532,14 +610,23 @@ export async function mount(el, opt = {}) {
   fxTint(false);
   // night driving: straight, soft beams reaching forward along the road (not a round glow)
   let beams = null;
-  if (opt.scene === 'drive') { const c = document.createElement('canvas'); c.width = 512; c.height = 128; const x = c.getContext('2d');
-    // a cone of light: narrow at the lamp, widening ahead, soft all round
-    const gh = x.createLinearGradient(0, 0, 512, 0); gh.addColorStop(0, 'rgba(255,247,226,.55)'); gh.addColorStop(.08, 'rgba(255,246,222,.75)'); gh.addColorStop(.45, 'rgba(255,242,212,.32)'); gh.addColorStop(1, 'rgba(255,238,200,0)');
-    x.filter = 'blur(14px)'; x.fillStyle = gh; x.beginPath(); x.moveTo(6, 58); x.lineTo(506, 12); x.lineTo(506, 116); x.lineTo(6, 70); x.closePath(); x.fill(); x.filter = 'none';
-    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-    const bm = new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
-    beams = [.75, -.75].map(xx => { const m = new THREE.Mesh(new THREE.PlaneGeometry(10, 2.6), bm); m.rotation.set(0, -Math.PI / 2, -.05); m.position.set(xx, .5, 2.5 + 5); m.name = 'fx'; body.add(m); return m; });
-    beams.mat = bm; }
+  if (opt.scene === 'drive') {
+    // bloom like a long-exposure photo: light pours forward as a soft, feathered band with no hard edges
+    const glowTex = (w, h, fx, fy) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'), im = x.createImageData(w, h);
+      for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) { const a = Math.max(0, Math.min(1, fx(xx / (w - 1)) * fy((yy / (h - 1)) * 2 - 1))), o = (yy * w + xx) * 4; im.data[o] = 255; im.data[o + 1] = 246; im.data[o + 2] = 228; im.data[o + 3] = a * 255; }
+      x.putImageData(im, 0, 0); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+    const beamT = glowTex(512, 96, u => Math.pow(1 - u, 1.6) * (.35 + .65 * Math.min(1, u * 14)), v => Math.exp(-v * v * 5.5));
+    const bm = new THREE.MeshBasicMaterial({ map: beamT, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+    beams = [.72, -.72].map(xx => { const m = new THREE.Mesh(new THREE.PlaneGeometry(16, 2.4), bm); m.rotation.set(0, -Math.PI / 2, -.025); m.position.set(xx, .62, 2.45 + 8); m.name = 'fx'; body.add(m); return m; });
+    // the lamp itself blooms into a wide, soft flare
+    const flareT = glowTex(256, 128, u => Math.exp(-Math.pow((u - .5) * 2, 2) * 3.2), v => Math.exp(-v * v * 6));
+    const fm = new THREE.SpriteMaterial({ map: flareT, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+    beams.flares = [.72, -.72].map(xx => { const f = new THREE.Sprite(fm); f.position.set(xx, .8, 2.62); f.scale.set(3.6, 1.2, 1); f.name = 'fx'; body.add(f); return f; });
+    // a faint red light trail behind, like the ghosting in a long exposure
+    const trailT = glowTex(512, 64, u => Math.pow(u, 1.8), v => Math.exp(-v * v * 7));
+    const tm = new THREE.MeshBasicMaterial({ map: trailT, color: '#ff4a5e', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+    beams.trail = new THREE.Mesh(new THREE.PlaneGeometry(9, .7), tm); beams.trail.rotation.set(0, -Math.PI / 2, 0); beams.trail.position.set(.8, 1.02, -2.75 - 4.5); beams.trail.name = 'fx'; body.add(beams.trail);
+    beams.mat = bm; beams.fm = fm; beams.tm = tm; }
   const proj = new THREE.Vector3();
   const v = {
     el, canvas: cv, P,
@@ -656,6 +743,6 @@ export function setPaint(k) {
 export const paint = () => paintKey;
 export const preload = () => loadRaw();
 
-loadRaw(); setTimeout(() => loadAssets(), 0);   // start every download straight away, in parallel
+loadRaw();   // start the download straight away
 window.ET9 = { mount, setPaint, paint, PAINTS, preload, snapshot, onPaint, ready };
 window.dispatchEvent(new Event('et9-ready'));
