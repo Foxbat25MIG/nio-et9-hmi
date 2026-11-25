@@ -12,13 +12,14 @@ const BASE = new URL('.', import.meta.url).href;
 const EASE = t => 1 - Math.pow(1 - t, 3);          // close to the HMI's cubic-bezier(.2,.8,.2,1)
 
 export const PAINTS = {
-  ceramic:  { name: 'Midnight Ceramic Blue', c: '#1d2540', m: .55, r: .32 },
-  lavender: { name: 'Lavender silver',       c: '#b8b1d2', m: .7,  r: .32 },
-  cloud:    { name: 'Cloud White',           c: '#e8e7ec', m: .05, r: .3 },
-  black:    { name: 'Deep Black',            c: '#18171d', m: .5,  r: .28 },
-  moon:     { name: 'New Moon Silver',       c: '#a3a5ac', m: .85, r: .32 },
-  southern: { name: 'Southern Star Blue',    c: '#33548c', m: .6,  r: .32 },
-  gold:     { name: 'Sunlight Gold',         c: '#b89c6c', m: .8,  r: .32 },
+  // e: how strongly the sky reflects in the paint (dark paints need less, or they go milky)
+  ceramic:  { name: 'Midnight Ceramic Blue', c: '#1d2540', m: .45, r: .2,  e: .5 },
+  lavender: { name: 'Lavender silver',       c: '#b8b1d2', m: .7,  r: .26, e: .7 },
+  cloud:    { name: 'Cloud White',           c: '#e8e7ec', m: .05, r: .26, e: .6 },
+  black:    { name: 'Deep Black',            c: '#18171d', m: .45, r: .2,  e: .55 },
+  moon:     { name: 'New Moon Silver',       c: '#a3a5ac', m: .85, r: .26, e: .65 },
+  southern: { name: 'Southern Star Blue',    c: '#33548c', m: .55, r: .22, e: .6 },
+  gold:     { name: 'Sunlight Gold',         c: '#b89c6c', m: .8,  r: .26, e: .75 },
 };
 const storedPaint = () => { try { return localStorage.getItem('nio-paint'); } catch (e) { return null; } };
 let paintKey = PAINTS[storedPaint()] ? storedPaint() : 'ceramic';
@@ -37,7 +38,7 @@ const M = {
   glow: new THREE.MeshBasicMaterial({ color: '#7fcf96', transparent: true, opacity: 0, depthWrite: false }),
 };
 M.paintD = M.paint.clone(); M.paintD.side = THREE.DoubleSide;
-function applyPaint() { const p = PAINTS[paintKey]; [M.paint, M.paintD].forEach(m => { m.color.set(p.c); m.metalness = p.m; m.roughness = p.r; m.needsUpdate = true; }); }
+function applyPaint() { const p = PAINTS[paintKey]; [M.paint, M.paintD].forEach(m => { m.color.set(p.c); m.metalness = p.m; m.roughness = p.r; m.envMapIntensity = p.e; m.needsUpdate = true; }); }
 applyPaint();
 
 /* ---------- geometry helpers ---------- */
@@ -61,7 +62,100 @@ function splitMesh(mesh, keyOf) {
   return out;
 }
 const SMOOTH = new WeakMap();
-function smoothGeo(g) { if (!SMOOTH.has(g)) SMOOTH.set(g, pnSubdivide(toCreasedNormals(g, Math.PI / 3), 2)); return SMOOTH.get(g); }
+function smoothGeo(g) { return g; }   // the painted panels are refined once, when the file loads (refinePaint)
+/* weld a triangle soup into shared points */
+function weld(P) {
+  const map = new Map(), pos = [], idx = new Uint32Array(P.length / 3);
+  for (let i = 0; i < idx.length; i++) { const k = Math.round(P[i * 3] * 1e5) + ',' + Math.round(P[i * 3 + 1] * 1e5) + ',' + Math.round(P[i * 3 + 2] * 1e5);
+    let v = map.get(k); if (v === undefined) { v = pos.length / 3; map.set(k, v); pos.push(P[i * 3], P[i * 3 + 1], P[i * 3 + 2]); } idx[i] = v; }
+  return { pos: new Float32Array(pos), idx };
+}
+/* Fair the surface: Taubin smoothing (a shrink step then an inflate step, repeated) evens out bumps and facets without
+   shrinking the car. Points on open panel edges and on real creases stay pinned, so shut lines and character lines keep. */
+function fair(pos, idx, iters, creaseDeg) {
+  const n = pos.length / 3, T = idx.length / 3, fnx = new Float32Array(T * 3), edges = new Map();
+  for (let t = 0; t < T; t++) { const a = idx[t * 3] * 3, b = idx[t * 3 + 1] * 3, c = idx[t * 3 + 2] * 3;
+    const ux = pos[b] - pos[a], uy = pos[b + 1] - pos[a + 1], uz = pos[b + 2] - pos[a + 2], vx = pos[c] - pos[a], vy = pos[c + 1] - pos[a + 1], vz = pos[c + 2] - pos[a + 2];
+    let x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx; const d = Math.hypot(x, y, z) || 1; fnx[t * 3] = x / d; fnx[t * 3 + 1] = y / d; fnx[t * 3 + 2] = z / d;
+    for (let e = 0; e < 3; e++) { const i = idx[t * 3 + e], j = idx[t * 3 + (e + 1) % 3], k = i < j ? i * n + j : j * n + i; const l = edges.get(k); if (l) l.push(t); else edges.set(k, [t]); } }
+  const fixed = new Uint8Array(n), nb = Array.from({ length: n }, () => []), cosC = Math.cos(creaseDeg * Math.PI / 180);
+  edges.forEach((fs, k) => { const i = Math.floor(k / n), j = k % n; nb[i].push(j); nb[j].push(i);
+    if (fs.length !== 2) { fixed[i] = fixed[j] = 1; return; }
+    const a = fs[0] * 3, b = fs[1] * 3; if (fnx[a] * fnx[b] + fnx[a + 1] * fnx[b + 1] + fnx[a + 2] * fnx[b + 2] < cosC) fixed[i] = fixed[j] = 1; });
+  const tmp = new Float32Array(pos.length);
+  const step = f => { tmp.set(pos); for (let v = 0; v < n; v++) { if (fixed[v] || !nb[v].length) continue; let x = 0, y = 0, z = 0; const L = nb[v];
+      for (let q = 0; q < L.length; q++) { const o = L[q] * 3; x += tmp[o]; y += tmp[o + 1]; z += tmp[o + 2]; } const o = v * 3, m = 1 / L.length;
+      pos[o] += f * (x * m - tmp[o]); pos[o + 1] += f * (y * m - tmp[o + 1]); pos[o + 2] += f * (z * m - tmp[o + 2]); } };
+  for (let it = 0; it < iters; it++) { step(.5); step(-.53); }
+}
+/* the whole treatment for one painted panel mesh */
+function refinePaint(geo, r = .13) {   /* r: how far each smoothing patch reaches, in metres */
+  let g = geo.index ? geo.toNonIndexed() : geo;
+  g = pnSubdivide(toCreasedNormals(g, Math.PI / 3), 2);            // finer, curved facets
+  const c = Math.cos(32 * Math.PI / 180); return mlsSurface(mlsSurface(g, r, c), r, c);
+}
+/* Rebuild the surface from the points themselves rather than the triangles: around every point, fit a smooth curved patch
+   (a quadric) to everything within a few centimetres that faces the same way, then put the point on it and take its normal.
+   Long thin source triangles stop showing, because the patch doesn't care how the points were joined. Panel edges and
+   creases keep their place (normals still refine there), so panels still meet cleanly. */
+function mlsSurface(g, r, cosC) {
+  const P = g.attributes.position.array, N = g.attributes.normal.array, C = P.length / 3, K = q => Math.round(P[q * 3] * 1e5) + ',' + Math.round(P[q * 3 + 1] * 1e5) + ',' + Math.round(P[q * 3 + 2] * 1e5);
+  const vid = new Int32Array(C), ids = new Map();
+  for (let c = 0; c < C; c++) { const k = K(c); let v = ids.get(k); if (v === undefined) { v = ids.size; ids.set(k, v); } vid[c] = v; }
+  const V = ids.size, pin = new Uint8Array(V), nrm = new Float32Array(V * 3).fill(NaN), ec = new Map();
+  for (let c = 0; c < C; c++) { const v = vid[c], o = v * 3;                                   // a point with two different normals sits on a crease
+    if (isNaN(nrm[o])) { nrm[o] = N[c * 3]; nrm[o + 1] = N[c * 3 + 1]; nrm[o + 2] = N[c * 3 + 2]; }
+    else if (nrm[o] * N[c * 3] + nrm[o + 1] * N[c * 3 + 1] + nrm[o + 2] * N[c * 3 + 2] < .999) pin[v] = 1; }
+  for (let t = 0; t < C / 3; t++) for (let e = 0; e < 3; e++) { const a = vid[t * 3 + e], b = vid[t * 3 + (e + 1) % 3], k = a < b ? a * V + b : b * V + a; ec.set(k, (ec.get(k) || 0) + 1); }
+  ec.forEach((n, k) => { if (n !== 2) { pin[Math.floor(k / V)] = 1; pin[k % V] = 1; } });         // open edges stay put
+  // samples: one per point and normal, hashed into a grid of cells r wide
+  const S = [], seen = new Set(), grid = new Map(), cell = (x, y, z) => Math.floor(x / r) + ',' + Math.floor(y / r) + ',' + Math.floor(z / r);
+  for (let c = 0; c < C; c++) { const k = vid[c] + ':' + Math.round(N[c * 3] * 50) + Math.round(N[c * 3 + 1] * 50) * 101 + Math.round(N[c * 3 + 2] * 50) * 10201; if (seen.has(k)) continue; seen.add(k);
+    const i = S.length; S.push(c); const h = cell(P[c * 3], P[c * 3 + 1], P[c * 3 + 2]); const L = grid.get(h); if (L) L.push(i); else grid.set(h, [i]); }
+  const outP = new Float32Array(P), outN = new Float32Array(N), A = new Float64Array(36), B = new Float64Array(6), cache = new Map(), r2 = r * r;
+  for (let c = 0; c < C; c++) {
+    const o = c * 3, px = P[o], py = P[o + 1], pz = P[o + 2], nx = N[o], ny = N[o + 1], nz = N[o + 2];
+    const ck = vid[c] + ':' + nx.toFixed(4) + ny.toFixed(4) + nz.toFixed(4), hit = cache.get(ck);
+    if (hit) { outP.set(hit[0], o); outN.set(hit[1], o); continue; }
+    // local frame
+    let tx = Math.abs(nx) < .9 ? 1 : 0, ty = tx ? 0 : 1, tz = 0; let d = tx * nx + ty * ny; tx -= d * nx; ty -= d * ny; tz -= d * nz; let l = Math.hypot(tx, ty, tz); tx /= l; ty /= l; tz /= l;
+    const bx = ny * tz - nz * ty, by = nz * tx - nx * tz, bz = nx * ty - ny * tx;
+    A.fill(0); B.fill(0); let cnt = 0;
+    const gx = Math.floor(px / r), gy = Math.floor(py / r), gz = Math.floor(pz / r);
+    for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) for (let k = -1; k <= 1; k++) { const L = grid.get((gx + i) + ',' + (gy + j) + ',' + (gz + k)); if (!L) continue;
+      for (let q = 0; q < L.length; q++) { const s = S[L[q]] * 3, dx = P[s] - px, dy = P[s + 1] - py, dz = P[s + 2] - pz, dd = dx * dx + dy * dy + dz * dz;
+        if (dd > r2 || N[s] * nx + N[s + 1] * ny + N[s + 2] * nz < cosC) continue;
+        const u = (dx * tx + dy * ty + dz * tz) / r, v = (dx * bx + dy * by + dz * bz) / r, h = (dx * nx + dy * ny + dz * nz) / r, w = Math.pow(1 - dd / r2, 3);
+        const f = [u * u, u * v, v * v, u, v, 1]; for (let a = 0; a < 6; a++) { const fa = f[a] * w; B[a] += fa * h; for (let b2 = a; b2 < 6; b2++) A[a * 6 + b2] += fa * f[b2]; } cnt++; } }
+    let res = null;
+    if (cnt >= 24) { for (let a = 0; a < 6; a++) { A[a * 6 + a] += 1e-7; for (let b2 = 0; b2 < a; b2++) A[a * 6 + b2] = A[b2 * 6 + a]; } res = solve6(A, B); }
+    let fp = [px, py, pz], fn = [nx, ny, nz];
+    if (res) { const [,,, du, dv, h0] = res; const vx = pin[vid[c]] ? 0 : h0 * r;
+      fp = [px + nx * vx, py + ny * vx, pz + nz * vx];
+      let mx = nx - du * tx - dv * bx, my = ny - du * ty - dv * by, mz = nz - du * tz - dv * bz; l = Math.hypot(mx, my, mz); if (l && (mx * nx + my * ny + mz * nz) / l > .85) fn = [mx / l, my / l, mz / l]; }
+    cache.set(ck, [fp, fn]); outP.set(fp, o); outN.set(fn, o);
+  }
+  const out = new THREE.BufferGeometry(); out.setAttribute('position', new THREE.BufferAttribute(outP, 3)); out.setAttribute('normal', new THREE.BufferAttribute(outN, 3)); return out;
+}
+function solve6(A, B) {   // small Gaussian elimination with pivoting
+  const M = Array.from({ length: 6 }, (_, i) => [...A.slice(i * 6, i * 6 + 6), B[i]]);
+  for (let i = 0; i < 6; i++) { let p = i; for (let j = i + 1; j < 6; j++) if (Math.abs(M[j][i]) > Math.abs(M[p][i])) p = j; [M[i], M[p]] = [M[p], M[i]]; if (Math.abs(M[i][i]) < 1e-12) return null;
+    for (let j = i + 1; j < 6; j++) { const f = M[j][i] / M[i][i]; for (let k = i; k < 7; k++) M[j][k] -= f * M[i][k]; } }
+  const x = new Array(6); for (let i = 5; i >= 0; i--) { let s = M[i][6]; for (let k = i + 1; k < 6; k++) s -= M[i][k] * x[k]; x[i] = s / M[i][i]; } return x;
+}
+function calmNormals(g, n, idx, iters, cosC) {
+  const P = g.attributes.position.array, N = g.attributes.normal.array, C = P.length / 3, vid = new Int32Array(C), at = Array.from({ length: n }, () => []), nb = Array.from({ length: n }, () => new Set());
+  const key = new Map();
+  for (let c = 0; c < C; c++) { const k = Math.round(P[c * 3] * 1e5) + ',' + Math.round(P[c * 3 + 1] * 1e5) + ',' + Math.round(P[c * 3 + 2] * 1e5);
+    let v = key.get(k); if (v === undefined) { v = key.size; key.set(k, v); if (v >= n) { at.push([]); nb.push(new Set()); } } vid[c] = v; at[v].push(c); }
+  for (let t = 0; t < C / 3; t++) for (let e = 0; e < 3; e++) { const a = vid[t * 3 + e], b = vid[t * 3 + (e + 1) % 3]; nb[a].add(b); nb[b].add(a); }
+  const ring = at.map((_, v) => [v, ...nb[v]]), tmp = new Float32Array(N.length);
+  for (let it = 0; it < iters; it++) { tmp.set(N);
+    for (let c = 0; c < C; c++) { const o = c * 3, nx = tmp[o], ny = tmp[o + 1], nz = tmp[o + 2]; let x = 0, y = 0, z = 0; const R0 = ring[vid[c]];
+      for (let r = 0; r < R0.length; r++) { const L = at[R0[r]]; for (let q = 0; q < L.length; q++) { const p = L[q] * 3, d = tmp[p] * nx + tmp[p + 1] * ny + tmp[p + 2] * nz; if (d > cosC) { x += tmp[p] * d; y += tmp[p + 1] * d; z += tmp[p + 2] * d; } } }
+      const l = Math.hypot(x, y, z) || 1; N[o] = x / l; N[o + 1] = y / l; N[o + 2] = z / l; } }
+  g.attributes.normal.needsUpdate = true; return g;
+}
 /* Make the painted panels genuinely smooth: every triangle is split into four, and the new points are pushed out onto a
    curved surface (PN triangles) worked out from the normals, twice over. Flat facets become a continuous curve, so the
    reflections flow along the body instead of breaking at every facet. Positions use one smooth normal per point, so
@@ -112,9 +206,38 @@ function cornerOf(b) {
 }
 
 let rawP;
-function loadRaw() { return rawP || (rawP = new GLTFLoader().loadAsync(BASE + 'model/et9.glb').then(g => {
+const PAINT_R = { 22: .22 };   // hood gets a wider smoothing patch: it is one big gentle dome
+function loadRaw() { return rawP || (rawP = Promise.all([new GLTFLoader().loadAsync(BASE + 'model/et9.glb'), window.ET9_BAKE ? null : fetch(BASE + 'model/paint.bin').then(r => r.ok ? r.arrayBuffer() : null).catch(() => null)]).then(([g, bin]) => {
   g.scene.traverse(o => { if (!o.isMesh) return; const a = g.parser.associations.get(o) || g.parser.associations.get(o.parent); o.userData.mi = a && a.meshes != null ? a.meshes : -1; });
+  const baked = bin ? readPaint(bin) : null, done = new Map(), out = [];
+  g.scene.traverse(o => { if (!o.isMesh) return; const n = (o.material.name || '').toLowerCase(); if (n !== 'car paint' && n !== 'car_paint') return; const mi = o.userData.mi;
+    if (!done.has(o.geometry)) { const ng = baked && baked.get(mi) || toIndexed(refinePaint(o.geometry, PAINT_R[mi])); done.set(o.geometry, ng); out.push([mi, ng]); } o.geometry = done.get(o.geometry); });
+  if (window.ET9_BAKE) window.__bake = writePaint(out);
   return g; })); }
+/* The refined paint surface is worked out once, offline, and shipped as model/paint.bin (points, normals, triangles per panel)
+   so phones don't spend seconds on it. Without the file the same work runs live. */
+function toIndexed(g) {
+  const P = g.attributes.position.array, N = g.attributes.normal.array, map = new Map(), pos = [], nor = [], idx = new Uint32Array(P.length / 3);
+  for (let c = 0; c < idx.length; c++) { const o = c * 3, k = P[o].toFixed(5) + ',' + P[o + 1].toFixed(5) + ',' + P[o + 2].toFixed(5) + ',' + Math.round(N[o] * 3e3) + ',' + Math.round(N[o + 1] * 3e3) + ',' + Math.round(N[o + 2] * 3e3);
+    let v = map.get(k); if (v === undefined) { v = pos.length / 3; map.set(k, v); pos.push(P[o], P[o + 1], P[o + 2]); nor.push(N[o], N[o + 1], N[o + 2]); } idx[c] = v; }
+  const out = new THREE.BufferGeometry(); out.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3)); out.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nor), 3)); out.setIndex(new THREE.BufferAttribute(idx, 1)); return out;
+}
+function writePaint(list) {
+  const al = x => Math.ceil(x / 4) * 4; let size = 4; list.forEach(([, g]) => { size += 12 + al(g.attributes.position.count * 12) + al(g.index.count * 2); });
+  const buf = new ArrayBuffer(size), dv = new DataView(buf); let o = 0; dv.setUint32(o, list.length, true); o += 4;
+  list.forEach(([mi, g]) => { const nv = g.attributes.position.count, ni = g.index.count; dv.setUint32(o, mi, true); dv.setUint32(o + 4, nv, true); dv.setUint32(o + 8, ni, true); o += 12;
+    const q = new Int16Array(buf, o, nv * 6), P = g.attributes.position.array, N = g.attributes.normal.array; for (let i = 0; i < nv * 3; i++) { q[i] = Math.round(P[i] / 3 * 32767); q[nv * 3 + i] = Math.round(N[i] * 32767); } o += nv * 12;
+    new Uint16Array(buf, o, ni).set(g.index.array); o += al(ni * 2); });
+  return buf;
+}
+function readPaint(buf) {
+  const dv = new DataView(buf), m = new Map(); let o = 4; const n = dv.getUint32(0, true);
+  for (let k = 0; k < n; k++) { const mi = dv.getUint32(o, true), nv = dv.getUint32(o + 4, true), ni = dv.getUint32(o + 8, true); o += 12;
+    const q = new Int16Array(buf, o, nv * 6), P = new Float32Array(nv * 3); for (let i = 0; i < nv * 3; i++) P[i] = q[i] / 32767 * 3;
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.BufferAttribute(new Int16Array(buf.slice(o + nv * 6, o + nv * 12)), 3, true)); o += nv * 12;
+    g.setIndex(new THREE.BufferAttribute(new Uint16Array(buf.slice(o, o + ni * 2)), 1)); o += Math.ceil(ni * 2 / 4) * 4; m.set(mi, g); }
+  return m;
+}
 
 async function buildCar() {
   const g = await loadRaw();
@@ -516,29 +639,37 @@ function shared() {
   R.setPixelRatio(PR); R.localClippingEnabled = true; R.autoClear = false;
   R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05; R.outputColorSpace = THREE.SRGBColorSpace;
   R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap;
-  ENV = studioEnv(R);
+  ENV = window.ET9_ZEBRA ? zebraEnv(R) : studioEnv(R);
+  M.paint.envMap = M.paintD.envMap = ENV;   // the paint always sees the full sky, however dim a scene keeps its own lighting
   return R;
 }
 /* a photo-studio light set baked into the reflection map: soft gradient dome, long overhead soft boxes and side strips.
    These are what draw the clean highlight lines along the paint and glass. */
+function zebraEnv(r) {   // debug only: parallel light bands, the way designers check a surface is fair
+  const s = new THREE.Scene(); s.add(new THREE.Mesh(new THREE.SphereGeometry(60, 32, 16), new THREE.MeshBasicMaterial({ color: '#222', side: THREE.BackSide })));
+  for (let i = -12; i <= 12; i++) { const m = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, 140, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 3, 3) })); m.rotation.z = Math.PI / 2; m.position.set(0, i * 4.2, -40); s.add(m.clone()); m.position.z = 40; s.add(m); }
+  return new THREE.PMREMGenerator(r).fromScene(s, 0).texture;
+}
 function studioEnv(r) {
   // outdoor light like a salt flat: deep-to-pale blue sky, a bright horizon, light ground just below it, a hot sun
   const s = new THREE.Scene(), dome = new THREE.SphereGeometry(60, 96, 48), col = [], p = dome.attributes.position, c = new THREE.Color();
-  const zen = new THREE.Color('#6f97d6'), sky = new THREE.Color('#cfe0f4'), hor = new THREE.Color('#ffffff'), gnd = new THREE.Color('#c9c7cf'), far = new THREE.Color('#e7e6ec'), deep = new THREE.Color('#8d8a96');
+  const zen = new THREE.Color('#6f97d6'), sky = new THREE.Color('#cfe0f4'), hor = new THREE.Color('#ffffff'), gnd = new THREE.Color('#77747f'), far = new THREE.Color('#c4c2cb'), deep = new THREE.Color('#3b3942');
   for (let i = 0; i < p.count; i++) { const y = p.getY(i) / 60;
     if (y >= 0) { c.copy(hor).lerp(sky, Math.min(1, y * 7)); if (y > .15) c.lerp(zen, Math.pow((y - .15) / .85, .8)); }
-    else { c.copy(far).lerp(gnd, Math.min(1, -y * 9)); const b = Math.exp(-Math.pow((-y - .045) / .022, 2)); c.lerp(deep, b * .8); if (y < -.3) c.lerp(deep, (-y - .3) / .7); }   // a dark band just under the horizon draws the crisp shoulder line
+    else { c.copy(far).lerp(gnd, Math.min(1, -y * 4)); const b = Math.exp(-Math.pow((-y - .04) / .02, 2)); c.lerp(deep, b * .9); if (y < -.3) c.lerp(deep, (-y - .3) / .7); }   // a dark band just under the horizon draws the crisp shoulder line
     c.multiplyScalar(1.25); col.push(c.r, c.g, c.b); }
   dome.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   s.add(new THREE.Mesh(dome, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide })));
   const sunM = new THREE.Mesh(new THREE.SphereGeometry(2.2, 24, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color(40, 38, 34) })); sunM.position.set(-26, 38, 28); s.add(sunM);
   const glow = new THREE.Mesh(new THREE.SphereGeometry(7, 24, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 2.1, 2), transparent: true, opacity: .5 })); glow.position.copy(sunM.position); s.add(glow);
-  return new THREE.PMREMGenerator(r).fromScene(s, .008).texture;
+  return new THREE.PMREMGenerator(r).fromScene(s, .006, .1, 100, { size: 1024 }).texture;   // sharper reflection map
 }
 function _unused() {
   return R;
 }
+const PAINT_MATS = new Set();
 function drawTo(ctx, scene, cam, w, h, clear = true) {
+  { const k = Math.min(1.2, (scene.environmentIntensity ?? 1) / .5) * PAINTS[paintKey].e; M.paint.envMapIntensity = M.paintD.envMapIntensity = k; PAINT_MATS.forEach(m => { m.envMapIntensity = k; }); }   // the paint's sky follows each scene's light (dim at night)
   const r = shared(), pw = Math.round(w * PR), ph = Math.round(h * PR);
   if (pw > RW || ph > RH) { RW = Math.max(RW, pw); RH = Math.max(RH, ph); r.setSize(RW / PR, RH / PR, false); }
   r.setViewport(0, 0, w, h); r.setScissor(0, 0, w, h); r.setScissorTest(true); r.setClearColor(0x000000, 0); r.clear(); r.render(scene, cam);
@@ -583,7 +714,7 @@ export async function mount(el, opt = {}) {
   function apply(now) {
     const D = { dfl: -1, drl: -1, dfr: 1, drr: 1 };
     Object.keys(P.doors).forEach(k => { P.doors[k].rotation.y = D[k] * IO(S.door[k]) * 1.0;
-      doorPaint[k].copy(M.paint); doorPaint[k].side = THREE.DoubleSide; doorPaint[k].emissive.set('#d23a48'); doorPaint[k].emissiveIntensity = S.door[k] * .13; });
+      doorPaint[k].copy(M.paint); PAINT_MATS.add(doorPaint[k]); doorPaint[k].side = THREE.DoubleSide; doorPaint[k].emissive.set('#d23a48'); doorPaint[k].emissiveIntensity = S.door[k] * .13; });
     const PW = { dfl: 'fl', dfr: 'fr', drl: 'rl', drr: 'rr' };
     Object.entries(P.panes).forEach(([k, p]) => { p.position.y = -S.win[PW[k]] * .4; });
     P.frunk.rotation.x = -IO(S.frunk) * .9;
