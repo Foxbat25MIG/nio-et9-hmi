@@ -286,7 +286,7 @@ async function buildCar() {
       // the black panel behind the side glass (mesh 56) goes down with the glass, or the window still looks shut
       const glassKey = c => { const k = doorKey(c); return k && k[1] === 'r' && (c.zmin ?? c.z) < -1.17 && c.y > 1.0 ? null : k; /* glass reaching behind the rear door frame stays put */ };   // the fixed rear quarter glass stays with the body
       const parts = splitMesh(o, mi === 56 ? (c => { const k = glassKey(c); return k && c.y > 1.12 && Math.abs(c.x) < .93 ? 'p' + k : null; }) : mi === GLASS_SIDE ? glassKey : doorKey);
-      Object.entries(parts).forEach(([k, m]) => (mi === GLASS_SIDE ? P.panes[k] : k[0] === 'p' ? P.panes[k.slice(1)] : P.doors[k]).attach(m));
+      Object.entries(parts).forEach(([k, m]) => { if (mi !== GLASS_SIDE && k[0] === 'p') m.userData.frit = true; (mi === GLASS_SIDE ? P.panes[k] : k[0] === 'p' ? P.panes[k.slice(1)] : P.doors[k]).attach(m); });
       if (mi === 27 || mi === 39) { o.removeFromParent(); return; }
     }
     if (mi === ROOFG) P.roofGlass = o;
@@ -295,43 +295,16 @@ async function buildCar() {
   // window glass stays clean below the belt line: clip each pane at the door's sill
   P.paneMat = M.glass.clone(); P.paneMat.side = THREE.DoubleSide; P.clip = new THREE.Plane(new THREE.Vector3(0, 1, 0), -1.115); P.paneMat.clippingPlanes = [P.clip];
   P.aclip = new THREE.Plane(); P.paneMatF = P.paneMat.clone(); P.paneMatF.clippingPlanes = [P.clip, P.aclip];   // front windows: also cut along the A-pillar line, so the dropping glass never shows in front of the window opening
-  Object.entries(P.panes).forEach(([k, p]) => p.traverse(o => { if (o.isMesh) o.material = k[1] === 'f' ? P.paneMatF : P.paneMat; }));
+  const fritM = new THREE.MeshStandardMaterial({ color: '#141318', roughness: .5, side: THREE.DoubleSide }), fritF = fritM.clone(); fritM.clippingPlanes = [P.clip]; fritF.clippingPlanes = [P.clip, P.aclip];   // the dark edge band of each glass, moving with it
+  Object.entries(P.panes).forEach(([k, p]) => p.traverse(o => { if (o.isMesh) o.material = o.userData.frit ? (k[1] === 'f' ? fritF : fritM) : k[1] === 'f' ? P.paneMatF : P.paneMat; }));
   // dark cabin, so open windows and the glass roof show an interior, not the far side of the car
   // a soft, frosted-glass volume for the cabin: reads as an interior through the roof and windows, never as a box,
   // and sits high enough that it never shows in the wheel arches
-  /* The ET9 cabin, as seen through the glass: four individual seats in light grey leather (front pair and two wide
-     executive rear seats with leg rests), the long centre console running front to back (the rear "Executive Bridge"),
-     a slim dashboard with the floating screen and the squared-off steering wheel. Every part is a smooth, bevelled solid,
-     opaque, so nothing flickers against the glass. */
-  { const mat = (c, r = .8) => new THREE.MeshStandardMaterial({ color: c, roughness: r }), leather = mat('#c8c2bb', .62), stitch = mat('#a59e98', .7), dark = mat('#34323a', .85), floor = mat('#26252b', .95), wood = mat('#6d5a4c', .5), screen = new THREE.MeshStandardMaterial({ color: '#141418', roughness: .25, emissive: '#3a3c55', emissiveIntensity: .5 });
-    const grp = new THREE.Group(); body.add(grp); P.cabin = grp; P.cabinMats = [leather, stitch, dark, floor, wood, screen];
-    const slab = (w, d, h, r, m) => { const sh = new THREE.Shape(), x = w / 2 - r, z = d / 2 - r;   // a rounded, bevelled block: w across, d front-back, h tall
-      sh.moveTo(-x, -d / 2); sh.lineTo(x, -d / 2); sh.quadraticCurveTo(w / 2, -d / 2, w / 2, -z); sh.lineTo(w / 2, z); sh.quadraticCurveTo(w / 2, d / 2, x, d / 2); sh.lineTo(-x, d / 2); sh.quadraticCurveTo(-w / 2, d / 2, -w / 2, z); sh.lineTo(-w / 2, -z); sh.quadraticCurveTo(-w / 2, -d / 2, -x, -d / 2);
-      const bv = Math.min(r * .7, h * .45), g = new THREE.ExtrudeGeometry(sh, { depth: Math.max(.001, h - 2 * bv), bevelEnabled: true, bevelThickness: bv, bevelSize: bv * .8, bevelSegments: 4, curveSegments: 8 });
-      g.rotateX(-Math.PI / 2); g.translate(0, bv, 0); g.computeVertexNormals(); return new THREE.Mesh(g, m); };
-    const put = (o, x, y, z, rx = 0) => { o.position.set(x, y, z); o.rotation.x = rx; grp.add(o); return o; };
-    const seat = (x, z, w, rear) => { const g = new THREE.Group(); g.position.set(x, 0, z); grp.add(g);
-      const add = (o, y, zz, rx = 0) => { o.position.set(0, y, zz); o.rotation.x = rx; g.add(o); };
-      add(slab(w, .5, .13, .07, leather), .6, 0);                                  // cushion
-      add(slab(w * .9, .46, .025, .06, stitch), .728, .01);                        // cushion insert
-      const back = new THREE.Group(); back.position.set(0, .7, -.22); back.rotation.x = rear ? -.32 : -.2; g.add(back);
-      const bk = slab(w, .13, .58, .07, leather); bk.rotation.x = Math.PI / 2; bk.position.set(0, .02, .065); back.add(bk);
-      const hr = slab(w * .5, .11, .17, .05, leather); hr.rotation.x = Math.PI / 2; hr.position.set(0, .66, .07); back.add(hr);
-      if (rear) add(slab(w * .9, .28, .07, .05, leather), .48, .36, .55);          // leg rest
-      return g; };
-    seat(.4, .38, .5, 0); seat(-.4, .38, .5, 0);                                   // front seats
-    seat(.42, -.92, .56, 1); seat(-.42, -.92, .56, 1);                             // rear executive seats
-    put(slab(.24, 1.05, .24, .06, dark), 0, .52, .55);                             // front console
-    put(slab(.3, .95, .34, .08, leather), 0, .52, -.78);                           // rear Executive Bridge
-    put(slab(.24, .7, .03, .05, wood), 0, .86, -.74);                              // its wood top (the table folds out of here)
-    put(slab(1.56, .42, .2, .1, dark), 0, .84, 1.27);                              // dashboard
-    put(slab(1.2, .05, .02, .02, screen), 0, 1.05, 1.13, -.15);                    // slim instrument strip
-    put(slab(.46, .04, .28, .03, screen), 0, 1.0, 1.06, -.5);                      // floating centre screen
-    { const sh = new THREE.Shape(), w = .36, h = .26, r = .07, hole = new THREE.Path();   // the squared-off steering wheel, driver on the left
-      const rr = (p, w, h, r) => { p.moveTo(-w / 2 + r, -h / 2); p.lineTo(w / 2 - r, -h / 2); p.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r); p.lineTo(w / 2, h / 2 - r); p.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2); p.lineTo(-w / 2 + r, h / 2); p.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r); p.lineTo(-w / 2, -h / 2 + r); p.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2); };
-      rr(sh, w, h, r); rr(hole, w - .06, h - .06, r - .02); sh.holes.push(hole);
-      const g = new THREE.ExtrudeGeometry(sh, { depth: .02, bevelEnabled: true, bevelThickness: .012, bevelSize: .01, bevelSegments: 3 }); const m = new THREE.Mesh(g, dark); m.position.set(.4, .96, .95); m.rotation.x = -.5; grp.add(m); }
-    const fl = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 3.2), floor); fl.rotation.x = -Math.PI / 2; fl.position.set(0, .5, -.25); grp.add(fl); }
+  /* The file's own interior (seats, console, dash: one mesh) was drawn in shiny black metal, which mirrored the sky as white
+     blotches. It gets a soft matte leather instead; nothing extra is layered on top, so no two surfaces fight. */
+  { const leather = new THREE.MeshStandardMaterial({ color: '#57525b', roughness: .78, metalness: 0 }); let cab = null;
+    body.traverse(o => { if (o.isMesh && o.userData.mi === 19) { o.material = leather; cab = cab || o; } });
+    P.cabin = cab || new THREE.Group(); P.cabinMats = [leather]; }
   // two sunshades under the roof glass (left / right), they roll back towards the rear
   P.shades = {};
   ['l', 'r'].forEach(s => { const g2 = new THREE.PlaneGeometry(.6, 1.72, 12, 32); g2.rotateX(-Math.PI / 2); g2.translate(0, 0, -.86);
@@ -1048,7 +1021,7 @@ export async function mount(el, opt = {}) {
     Object.keys(P.doors).forEach(k => { P.doors[k].rotation.y = D[k] * IO(S.door[k]) * 1.0;
       doorPaint[k].copy(M.paint); PAINT_MATS.add(doorPaint[k]); doorPaint[k].side = THREE.DoubleSide; doorPaint[k].emissive.set('#d23a48'); doorPaint[k].emissiveIntensity = S.door[k] * .13; });
     const PW = { dfl: 'fl', dfr: 'fr', drl: 'rl', drr: 'rr' };
-    Object.entries(P.panes).forEach(([k, p]) => { const d = S.win[PW[k]] * .4; p.position.y = -d; p.position.x = (k[2] === 'l' ? 1 : -1) * d * .3; });   // the glass leans in at the top, so it moves out a little as it drops
+    Object.entries(P.panes).forEach(([k, p]) => { const d = S.win[PW[k]] * .4; p.position.y = -d; p.position.x = (k[2] === 'l' ? 1 : -1) * d * (k[1] === 'f' ? .12 : .3); });   // the glass leans in at the top, so it moves out a little as it drops
     P.frunk.rotation.x = -IO(S.frunk) * .9;
     P.boot.rotation.x = IO(S.boot) * 1.1;
     P.port.rotation.y = IO(S.port) * 1.75; P.port.visible = S.port > .01; P.portGlow.material.opacity = S.port * .7; P.portHalo.material.opacity = S.port * (.75 + .2 * Math.sin(now / 420));
@@ -1073,7 +1046,7 @@ export async function mount(el, opt = {}) {
       P.fx.head.forEach(h => h.material.opacity = hh * .9); P.fx.tail.forEach(h => h.material.opacity = smooth(.62, 1, S.tail) * .5 + S.beam * .6);
       P.fx.headPool.material.opacity = S.beam * .6; P.fx.tailPool.material.opacity = S.beam * .3;
       if (beams) { const nt = world.night ? world.night() : 0, on = Math.max(S.beam, hh); beams.poolM.opacity = S.beam * nt * .85; beams.coreM.opacity = 0; beams.glowM.opacity = on * nt * .45;
-        beams.tailM.opacity = 0; beams.tailGM.opacity = Math.max(S.beam, smooth(.3, .6, S.tail)) * (.55 + .35 * nt); beams.redM.opacity = S.beam * nt * .4;
+        beams.tailM.opacity = 0; beams.tailGM.opacity = Math.max(S.beam, smooth(.3, .6, S.tail)) * (.4 + .3 * nt); beams.redM.opacity = S.beam * nt * .4;
         const sp = world.sport ? world.sport() : 0; beams.trailM.opacity = 0; P.fx.head.forEach(h => { h.material.opacity = hh * .5; });  P.fx.headPool.material.opacity = 0; P.fx.tailPool.material.opacity = 0; }
       P.fx.haz.forEach(h => h.material.opacity = blink); P.fx.hazPool.forEach(h => h.material.opacity = blink * .45); }
     Object.entries(P.wglow).forEach(([k, m]) => { m.material.opacity = (S.warn[k] || 0) * (.6 + .3 * Math.sin(now / 260)); });
@@ -1104,7 +1077,7 @@ export async function mount(el, opt = {}) {
     // tail lamps and a faint red wash on the road behind
     const tailM = new THREE.SpriteMaterial({ map: coreT, color: '#ff3a50', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
     const tailGM = new THREE.SpriteMaterial({ map: softTex([[0, .5], [.35, .18], [1, 0]], 128), color: '#ff3048', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
-    { tailGM.map = barTex(.12, .3, .6); const g = new THREE.Sprite(tailGM); g.position.set(0, 1.06, -2.78); g.scale.set(1.15, .3, 1); g.name = 'fx'; body.add(g); }   // a soft red glow along the tail lamp, so you can see it's on
+    { tailGM.map = barTex(.05, .32, .5); const g = new THREE.Sprite(tailGM); g.position.set(0, 1.06, -2.8); g.scale.set(2.2, .18, 1); g.name = 'fx'; body.add(g); }   // a soft red glow along the tail lamp, so you can see it's on
     // Sport: a soft red light trail streaming back from the tail lamps, like a long-exposure photo
     const trailT = tex(512, 64, (u, vv) => Math.pow(1 - u, 1.4) * smooth(0, .06, u) * Math.exp(-Math.pow((vv - .5) * 4.2, 2)), [255, 70, 92]);
     const trailM = new THREE.MeshBasicMaterial({ map: trailT, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
