@@ -2040,3 +2040,13 @@ html[data-theme="dark"] .hb-bar,html[data-theme="dark"] .hb-tr{background:rgba(2
 .hm-pod:not(.min)>.hm-tg{right:12px}
 /* Driving: a soft cinematic vignette over the scene */
 .dm-c3d.c3d-host::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:16px;background:radial-gradient(ellipse 75% 70% at 50% 46%,rgba(0,0,0,0) 62%,rgba(40,28,64,.16) 100%)}
+/* rear executive table: turns towards either seat */
+.tray-out .tr-tab{transform:rotate(var(--aim,0deg))}
+.tr-aimrow{transition:opacity 240ms cubic-bezier(.2,.8,.2,1)}
+.tr-aimrow.dim{opacity:.55}
+/* Quick controls: the lock card and Close all and lock share the same two-column grid, widths and corners as the buttons below */
+.qc2 .qc-left{grid-template-columns:1fr 1fr!important;gap:10px!important}
+.qc2 .qc-lockw,.qc2 .qc-lock,.qc2 .qc-all{border-radius:18px!important}
+.qc2 .qc-lock,.qc2 .qc-all{min-height:72px;height:72px!important;min-width:0}
+.qc2 .qc-lock{padding:0 14px;gap:10px}
+.qc2 .qc-all{flex-direction:row!important;gap:8px!important;padding:0 12px!important;font-size:14px}

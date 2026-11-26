@@ -63,7 +63,10 @@
       drv.parentElement.querySelectorAll('[data-drv]').forEach(d => d.classList.toggle('on', d === drv));
       fr.querySelectorAll('.drv-n').forEach(x => x.textContent = n);
       fr.querySelectorAll('.prof').forEach(pf => { const on = pf.querySelector('.h3') && pf.querySelector('.h3').textContent === n; pf.classList.toggle('on', on); const s = pf.querySelector('.bs'); if (s) s.textContent = on ? 'Driving now' : 'Seat, mirrors, Custom mode, music'; });
-      toast(fr, `Welcome back, ${n} · seat, mirrors and music restored`); return; }
+      const pm = { Emma: 'Comfort', Pierre: 'Sport', Ashish: 'Eco' }[n] || 'Comfort';   // each driver's saved drive mode
+      fr.querySelectorAll('[data-drv2]').forEach(r => { if (!r._dm) dmPaint(r); r._dm.m = pm; dmPaint(r); });
+      { const chip = fr.querySelector('.status .chip'); if (chip) chip.lastChild.textContent = pm; }
+      toast(fr, `Welcome back, ${n} · ${pm} mode, seat, mirrors and music restored`); return; }
     const mv = t.closest('[data-mv]'); if (mv) { g2048Move(mv.closest('.gamewrap'), mv.dataset.mv); return; }
     if (t.closest('[data-g2048-new]')) { g2048New(t.closest('.gamewrap')); return; }
     const mk = t.closest('[data-mk]'); if (mk) { minesTap(mk); return; }
@@ -1456,6 +1459,8 @@
     scr.querySelector('.cl-fridge').classList.toggle('off', !C.frOn);
     scr.querySelector('.tray-svg').classList.toggle('tray-out', C.tray);
     scr.querySelector('.tr-st').textContent = C.tray ? 'Table is out' : 'Folded away';
+    { const aim = C.trayAim || 'c'; scr.querySelectorAll('[data-trayaim]').forEach(d => d.classList.toggle('on', d.dataset.trayaim === aim)); const tab = scr.querySelector('.tr-tab'); if (tab) tab.style.setProperty('--aim', ({ l: '-28deg', c: '0deg', r: '28deg' })[aim]);
+      const ar = scr.querySelector('.tr-aimrow'); if (ar) ar.classList.toggle('dim', !C.tray); }
     scr.querySelector('[data-cltray] span:last-child').textContent = C.tray ? 'Fold in' : 'Fold out';
     clAir(fr);
   }
@@ -1526,6 +1531,7 @@
     const kp = t.closest('[data-clkeep]'); if (kp) { C.keep = kp.dataset.clkeep; scr.querySelector('.cl-keep-tx').textContent = KEEP[C.keep]; return false; }
     const fm = t.closest('.cl-frmode div'); if (fm) { C.frm = fm.textContent === 'Cool' ? 'cool' : 'warm'; C.fr = C.frm === 'cool' ? 4 : 45; clPaint(fr); return false; }
     const tr = t.closest('[data-cltray]'); if (tr) { C.tray = !C.tray; clPaint(fr); return true; }
+    const ta = t.closest('[data-trayaim]'); if (ta) { C.trayAim = ta.dataset.trayaim; if (!C.tray) C.tray = true; clPaint(fr); toast(fr, 'Table turned towards ' + ta.textContent.toLowerCase()); return true; }
     return false;
   }
   function clTog(tg) {
@@ -1561,34 +1567,6 @@
   document.addEventListener('pointermove', e => { if (vDrag) vAim(e); });
   document.addEventListener('pointerup', () => { if (vDrag) { vDrag.classList.remove('drag'); vDrag = null; } });
   document.querySelectorAll('.frame').forEach(fr => { if (fr.querySelector('.cl-pane')) { clPaint(fr); clPurify(fr); wcPaint(fr); } });
-  /* Mark 2 · a second look for the vent pad: air streaming out of the vent towards where it is aimed (follows Focus / Diffuse / Sweep) */
-  const VFL = new Set(); let vflOn = false;
-  function vflowTick(now) {
-    VFL.forEach(pad => { if (!pad.isConnected || !pad.classList.contains('flow')) { VFL.delete(pad); return; } if (!pad.offsetParent) return;
-      const cv = pad.querySelector('.vp-flow'), w = pad.clientWidth, h = pad.clientHeight, pr = Math.min(2, devicePixelRatio || 1);
-      if (cv.width !== Math.round(w * pr) || cv.height !== Math.round(h * pr)) { cv.width = Math.round(w * pr); cv.height = Math.round(h * pr); }
-      const x = cv.getContext('2d'); x.setTransform(pr, 0, 0, pr, 0, 0); x.clearRect(0, 0, w, h);
-      const cs = getComputedStyle(pad), t = now / 1000; let ax = parseFloat(cs.getPropertyValue('--vx')) || 0, ay = parseFloat(cs.getPropertyValue('--vy')) || 0;
-      if (pad.classList.contains('sweep')) { ax = Math.sin(t * Math.PI / 3.4) * .85; ay = Math.sin(t * Math.PI / 5.1) * .22; }
-      const spread = pad.classList.contains('focus') ? .1 : pad.classList.contains('sweep') ? .26 : .42, dark = document.documentElement.dataset.theme === 'dark', C = dark ? '176,160,255' : '122,107,242';
-      const cx = w / 2, cy = h / 2, tx = cx + ax * w * .4, ty = cy + ay * h * .38, dx = tx - cx, dy = ty - cy, len = Math.hypot(dx, dy);
-      const g = x.createRadialGradient(tx, ty, 0, tx, ty, w * (.12 + spread * .4)); g.addColorStop(0, `rgba(${C},.3)`); g.addColorStop(1, `rgba(${C},0)`); x.fillStyle = g; x.fillRect(0, 0, w, h);
-      const P = pad._pp || (pad._pp = Array.from({ length: 80 }, () => ({ s: Math.random() * 2 - 1, v: Math.random(), l: Math.random() })));
-      x.lineCap = 'round';
-      P.forEach(p => { p.l += .011 + p.v * .009; if (p.l > 1) { p.l = 0; p.s = Math.random() * 2 - 1; p.v = Math.random(); }
-        const k = p.l; let ux, uy, px, py;
-        if (len < 10) { const a = p.s * Math.PI + p.v * 6.28; ux = Math.cos(a); uy = Math.sin(a) * .7; px = cx + ux * k * w * .42; py = cy + uy * k * h * .5; }
-        else { ux = dx / len; uy = dy / len; const off = p.s * spread * w * .55 * k; px = cx + dx * k * 1.25 - uy * off; py = cy + dy * k * 1.25 + ux * off; }
-        const tl = 8 + 16 * k; x.strokeStyle = `rgba(${C},${((1 - k) * .6 * Math.min(1, k * 6)).toFixed(3)})`; x.lineWidth = 1.2 + k * 1.8;
-        x.beginPath(); x.moveTo(px - ux * tl, py - uy * tl); x.lineTo(px, py); x.stroke(); });
-      x.fillStyle = `rgba(${C},.95)`; x.beginPath(); x.roundRect(cx - 22, cy - 4, 44, 8, 4); x.fill(); });
-    if (VFL.size) requestAnimationFrame(vflowTick); else vflOn = false;
-  }
-  document.addEventListener('click', e => { const b = e.target.closest('[data-vstyle]'); if (!b) return; const fr = frameOf(b), flow = b.dataset.vstyle === 'flow';
-    fr.querySelectorAll('[data-vstyle]').forEach(d => d.classList.toggle('on', d.dataset.vstyle === b.dataset.vstyle));
-    fr.querySelectorAll('[data-vpad]').forEach(pad => { pad.classList.toggle('flow', flow); if (flow) VFL.add(pad); });
-    if (flow && !vflOn) { vflOn = true; requestAnimationFrame(vflowTick); } });
-
   /* ---------- Quick controls: doors, frunk, boot, windows, mirrors, charge port, sunshades, lights ---------- */
   const DOORN = { dfl: 'driver door', dfr: 'passenger door', drl: 'rear left door', drr: 'rear right door', frunk: 'frunk', boot: 'boot' };
   const qcOf = fr => fr._qc || (fr._qc = { doors: true, lock: true, open: {}, port: false, win: 'closed', wins: { fl: 0, rl: 0, fr: 0, rr: 0 }, wside: 'l', mir: 'out', shade: { l: false, r: false }, lights: 'auto' });
@@ -1732,6 +1710,7 @@
       qcPaint(fr); return true; }
     const cp = t.closest('[data-cp]');
     if (cp) { const k = cp.dataset.cp;
+      if (Q.wcard && k !== 'mir' && k !== 'shl' && k !== 'shr') Q.wcard = false;   // leave the Windows view: back to the top view so the frunk, boot, port or door is seen opening
       if (k === 'mir') Q.mir = Q.mir === 'fold' ? 'out' : 'fold';
       else if (k === 'port') { Q.port = !Q.port; toast(fr, Q.port ? 'Charge port open · plug in on the left rear' : 'Charge port closed'); }
       else if (k === 'shl' || k === 'shr') { const s = k.slice(2); Q.shade[s] = !Q.shade[s]; }
