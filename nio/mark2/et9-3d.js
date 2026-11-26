@@ -1040,7 +1040,8 @@ export async function mount(el, opt = {}) {
     if (opt.scene === 'drive') { const t = (now - t0) / 1000, sp = world.speed() / 22; bob = (Math.sin(t * 1.9) * .004 + Math.sin(t * 5.3) * .0015 * sp); pitch = Math.sin(t * 1.3 + 1) * .0025 + Math.sin(t * 4.1) * .001 * sp; }
     body.position.y = S.lift / 1000 * LS + bob; body.rotation.x = pitch;
     P.clip.constant = -(1.115 + body.position.y);
-    { const n = new THREE.Vector3(0, -2.6, -1), l = n.length(); P.aclip.set(n.divideScalar(l), (3.92 + .015) / l); body.updateMatrixWorld(); P.aclip.applyMatrix4(body.matrixWorld); }
+    { const n = new THREE.Vector3(0, -2.6, -1), l = n.length(); P.aclip.set(n.divideScalar(l), (3.92 + .06) / l); body.updateMatrixWorld(); P.aclip.applyMatrix4(body.matrixWorld);
+      const fo = S.win.fl > .005 || S.win.fr > .005, want = fo ? 2 : 1; if (P.paneMatF.clippingPlanes.length !== want) { P.paneMatF.clippingPlanes = fo ? [P.clip, P.aclip] : [P.clip]; P.paneMatF.needsUpdate = true; } }   /* the A-pillar cut only while a front window is down, so closed glass is never trimmed */
     M.head.emissiveIntensity = S.head * 2.2 + S.beam * 1.6; M.tail.emissiveIntensity = S.tail * 2 + S.beam;
     { const hh = smooth(.62, 1, S.head) * .35 + S.beam * .6, blink = S.haz * Math.pow(Math.max(0, Math.sin(now / 1000 * Math.PI * 1.5)), .35);
       P.fx.head.forEach(h => h.material.opacity = hh * .9); P.fx.tail.forEach(h => h.material.opacity = smooth(.62, 1, S.tail) * .5 + S.beam * .6);
