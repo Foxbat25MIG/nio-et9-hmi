@@ -421,7 +421,7 @@ function hillsScene(scene, K) {
   const hAt = (x, z) => Math.abs(x) < 32 && Math.abs(z) < 32 ? hFine(x, z) : hCoarse(x, z);
   // terrain as rings: fine near the car, coarse at the horizon
   const ringR = []; for (let r = 0; r < 520; r = r < 1 ? 1 : r * 1.034 + .25) ringR.push(r);
-  const SEG = 288, NV = 1 + (ringR.length - 1) * SEG, P = new Float32Array(NV * 3), idx = [];
+  const SEG = 240, NV = 1 + (ringR.length - 1) * SEG, P = new Float32Array(NV * 3), idx = [];
   P[1] = hgt(0, 0);
   for (let k = 1; k < ringR.length; k++) for (let s = 0; s < SEG; s++) { const a = s / SEG * Math.PI * 2, r = ringR[k], v = 1 + (k - 1) * SEG + s, x = Math.cos(a) * r, z = Math.sin(a) * r; P[v * 3] = x; P[v * 3 + 1] = r < 30 ? hgt(x, z) : hAt(x, z); P[v * 3 + 2] = z; }
   for (let s = 0; s < SEG; s++) idx.push(0, 1 + (s + 1) % SEG, 1 + s);
@@ -431,7 +431,7 @@ function hillsScene(scene, K) {
   // how much sun each point gets: soft wrap light on the slope, times a soft shadow from any hill toward the sun
   const shadeOf = (x, y, z, nx, ny, nz) => { const lit = Math.max(0, (nx * S.x + ny * S.y + nz * S.z + .25) / 1.25);
     let occ = 0; const hz = Math.hypot(S.x, S.z), sx = S.x / hz, sz = S.z / hz, tanE = S.y / hz;
-    for (let d = 2; d < 260; d *= 1.09) { const over = hAt(x + sx * d, z + sz * d) - (y + .3 + d * tanE); if (over > 0) occ = Math.max(occ, Math.min(1, over / (1.2 + d * .045))); if (occ >= 1) break; }
+    for (let d = 2; d < 260; d *= 1.14) { const over = hAt(x + sx * d, z + sz * d) - (y + .3 + d * tanE); if (over > 0) occ = Math.max(occ, Math.min(1, over / (1.2 + d * .045))); if (occ >= 1) break; }
     return lit * (1 - occ); };
   const SH = new Float32Array(NV), NZ = new Float32Array(NV), NY = new Float32Array(NV);
   for (let v = 0; v < NV; v++) { const o = v * 3; SH[v] = shadeOf(P[o], P[o + 1], P[o + 2], NR[o], NR[o + 1], NR[o + 2]); NZ[v] = fbm(P[o] * .05, P[o + 2] * .05, 3); NY[v] = NR[o + 1]; }

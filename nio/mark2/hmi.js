@@ -1625,7 +1625,7 @@
   function whenAllReady() {
     const done = () => document.querySelectorAll('[data-lockov]').forEach(ov => ov.classList.add('ready'));
     const t0 = performance.now(), check = () => { const hosts = [...document.querySelectorAll('.hm-stage, .lk-stage')];   // lock screen and Home are enough to let you in; the car pages finish building in the background
-      if (hosts.length && hosts.every(h => h._v3 && h._v3 !== 'wait')) return setTimeout(done, 250); if (performance.now() - t0 > 8000) return done(); setTimeout(check, 120); };
+      if (hosts.length && hosts.every(h => h._v3 && h._v3 !== 'wait')) return requestAnimationFrame(done); if (performance.now() - t0 > 8000) return done(); setTimeout(check, 50); };
     try { (window.ET9 && ET9.ready ? ET9.ready() : Promise.resolve()).then(check, done); } catch (e) { done(); } }
   if (window.ET9) whenAllReady(); else window.addEventListener('et9-ready', whenAllReady, { once: true });
   setTimeout(() => document.querySelectorAll('[data-lockov]').forEach(ov => ov.classList.add('ready')), 8000);   // hard limit: never keep anyone on the lock screen longer than 8 s
