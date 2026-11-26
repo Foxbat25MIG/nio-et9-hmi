@@ -1755,21 +1755,27 @@
       go.querySelector('.ms').textContent = 'power'; go.lastElementChild.textContent = 'Plug in'; }
     pg.querySelector('.chg-tagt').textContent = CH.on ? 'Charging · left rear port' : 'Charge port · left rear';
     const Q = qcOf(fr);
-    c3d(fr, 'chg', pg.querySelector('.chg-car'), { open: {}, wins: { fl: 0, fr: 0, rl: 0, rr: 0 }, port: CH.on || Q.port, charge: CH.on, lvl: Math.min(1, CH.pct / 100), mir: 'out', shade: { l: false, r: false }, lights: 'off', dark: isDark() });
+    c3d(fr, 'chg', pg.querySelector('.chg-car'), { open: {}, wins: { fl: 0, fr: 0, rl: 0, rr: 0 }, port: !!CH.port || Q.port, plug: !!CH.plug, charge: !!CH.fx, lvl: Math.min(1, CH.pct / 100), mir: 'out', shade: { l: false, r: false }, lights: 'off', dark: isDark() });
     // the rest of the screen follows: Home battery card, its folded ring and the lock screen
     fr.querySelectorAll('.hb-big').forEach(e => e.firstChild.textContent = pct); fr.querySelectorAll('.hb-mini b').forEach(e => e.textContent = pct);
     fr.querySelectorAll('.hb-full .bs.num').forEach(e => e.textContent = km + ' km range'); fr.querySelectorAll('.hm-bat').forEach(e => { e.style.setProperty('--bp', CH.pct + '%'); e.classList.toggle('chg', CH.on); });
     fr.querySelectorAll('.lk-info .num').forEach(e => e.textContent = pct + ' % · ' + km + ' km');
   }
+  /* the physical sequence: flap opens, the cable glides in and plugs, then the charging glow fades in; stopping runs it backwards */
+  function chSeq(fr, on) { const CH = chOf(fr); (fr._chS || []).forEach(clearTimeout); const at = (ms, f) => (fr._chS = fr._chS || []).push(setTimeout(() => { f(); chPaint(fr); }, ms));
+    fr._chS = [];
+    if (on) { CH.port = true; at(800, () => CH.plug = true); at(2300, () => { CH.fx = true; fr._chT = setTimeout(() => chTick(fr), 600); }); }
+    else { CH.fx = false; at(900, () => CH.plug = false); at(2400, () => CH.port = false); }
+    chPaint(fr); }
   function chTick(fr) { const CH = chOf(fr); if (!CH.on) return; const lim = chLimit(fr);
     CH.pct = Math.min(lim, CH.pct + chKw(CH.pct, lim) / 150 * .5);   // sped up for the demo: about 2 % a second at full speed
-    if (CH.pct >= lim) { CH.on = false; CH.done = true; toast(fr, 'Charged to ' + lim + ' % · ' + Math.round(CH.pct * 5.36) + ' km'); }
+    if (CH.pct >= lim) { CH.on = false; CH.done = true; chSeq(fr, false); toast(fr, 'Charged to ' + lim + ' % · ' + Math.round(CH.pct * 5.36) + ' km'); }
     chPaint(fr); if (CH.on) fr._chT = setTimeout(() => chTick(fr), 500); }
   document.addEventListener('click', e => { const b = e.target.closest('[data-chggo]'); if (!b) return; const fr = frameOf(b), CH = chOf(fr), lim = chLimit(fr);
     clearTimeout(fr._chT);
-    if (CH.on) { CH.on = false; CH.done = false; toast(fr, 'Charging stopped at ' + Math.round(CH.pct) + ' %'); }
+    if (CH.on) { CH.on = false; CH.done = false; chSeq(fr, false); toast(fr, 'Charging stopped at ' + Math.round(CH.pct) + ' %'); }
     else if (CH.pct >= lim - .5) { toast(fr, 'Already at your ' + lim + ' % limit · raise it to charge more'); }
-    else { CH.on = true; CH.done = false; CH.from = CH.pct; toast(fr, 'Plugged in · charging to ' + lim + ' %'); fr._chT = setTimeout(() => chTick(fr), 900); }
+    else { CH.on = true; CH.done = false; CH.from = CH.pct; chSeq(fr, true); toast(fr, 'Plugging in · charging to ' + lim + ' %'); }
     chPaint(fr); });
   document.addEventListener('pointerup', () => document.querySelectorAll('.frame').forEach(f => f.querySelector('[data-chg]') && setTimeout(() => chPaint(f), 0)));
   function tyPaint(fr) {

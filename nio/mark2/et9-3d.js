@@ -284,7 +284,8 @@ async function buildCar() {
     if (BOOT.has(mi)) { P.boot.attach(o); return; }
     if (DOOR_SRC.has(mi)) {
       // the black panel behind the side glass (mesh 56) goes down with the glass, or the window still looks shut
-      const parts = splitMesh(o, mi === 56 ? (c => { const k = doorKey(c); return k && c.y > 1.12 && Math.abs(c.x) < .93 ? 'p' + k : null; }) : doorKey);
+      const glassKey = c => { const k = doorKey(c); return k && k[1] === 'r' && c.z < -1.2 && c.y > 1.0 ? null : k; };   // the fixed rear quarter glass stays with the body
+      const parts = splitMesh(o, mi === 56 ? (c => { const k = glassKey(c); return k && c.y > 1.12 && Math.abs(c.x) < .93 ? 'p' + k : null; }) : mi === GLASS_SIDE ? glassKey : doorKey);
       Object.entries(parts).forEach(([k, m]) => (mi === GLASS_SIDE ? P.panes[k] : k[0] === 'p' ? P.panes[k.slice(1)] : P.doors[k]).attach(m));
       if (mi === 27 || mi === 39) { o.removeFromParent(); return; }
     }
@@ -333,7 +334,9 @@ async function buildCar() {
   // two sunshades under the roof glass (left / right), they roll back towards the rear
   P.shades = {};
   ['l', 'r'].forEach(s => { const g2 = new THREE.PlaneGeometry(.6, 1.72, 12, 32); g2.rotateX(-Math.PI / 2); g2.translate(0, 0, -.86);
-    const sh = new THREE.Mesh(g2, M.fabric); sh.position.set((s === 'l' ? 1 : -1) * .31, 1.47, .22); body.add(sh); P.shades[s] = sh; });
+    const mat = M.fabric.clone(); mat.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)];
+    const sh = new THREE.Mesh(g2, mat); sh.position.set((s === 'l' ? 1 : -1) * .31, 1.47, .22); body.add(sh); P.shades[s] = sh;
+    const roll = new THREE.Mesh(new THREE.CylinderGeometry(.028, .028, .6, 20), M.fabric); roll.rotation.z = Math.PI / 2; body.add(roll); sh.userData.roll = roll; });
   P.curveShades = true;
   // dark matte liners in the wheel arches, so no light inner panels show around the tyres
   { const linM = new THREE.MeshStandardMaterial({ color: '#141218', roughness: .95, side: THREE.DoubleSide });
@@ -374,15 +377,15 @@ async function buildCar() {
   /* Charging: a cable plugged into the left-rear port with soft pulses of light running along it into the car, and a glowing
      battery outline in the floor whose cells fill as it charges. All hidden until charging starts. */
   { const chU = { uT: { value: 0 }, uA: { value: 0 }, uL: { value: .78 } }; P.chgU = chU; const grp = new THREE.Group(); grp.visible = false; car.add(grp); P.chg = grp;
-    const path = new THREE.CatmullRomCurve3([[1.0, 1.0, -2.14], [1.22, .97, -2.2], [1.42, .74, -2.42], [1.52, .36, -2.78], [1.5, .08, -3.25], [1.42, .04, -3.9], [1.3, .04, -5], [1.2, .04, -7]].map(a => new THREE.Vector3(...a)), false, 'centripetal');
-    const cable = new THREE.Mesh(new THREE.TubeGeometry(path, 260, .03, 16), new THREE.MeshStandardMaterial({ color: '#2b2833', roughness: .45 })); cable.castShadow = true; cable.name = 'chg'; grp.add(cable);
-    const plug = new THREE.Mesh(new THREE.CylinderGeometry(.06, .07, .16, 20), new THREE.MeshStandardMaterial({ color: '#3a3644', roughness: .35, metalness: .3 })); plug.rotation.z = Math.PI / 2; plug.position.set(1.07, 1.0, -2.15); plug.name = 'chg'; grp.add(plug);
+    const path = new THREE.CatmullRomCurve3([[1.0, 1.0, -2.14], [1.22, .97, -2.2], [1.42, .74, -2.42], [1.52, .36, -2.78], [1.5, .08, -3.25], [1.42, .04, -3.9], [1.3, .04, -5], [1.2, .04, -7]].reverse().map(a => new THREE.Vector3(...a)), false, 'centripetal');   // runs from behind the car to the port
+    const cable = new THREE.Mesh(new THREE.TubeGeometry(path, 260, .03, 16), new THREE.MeshStandardMaterial({ color: '#2b2833', roughness: .45 })); cable.castShadow = true; cable.name = 'chg'; grp.add(cable); P.chgCable = cable; P.chgPath = path;
+    const plug = new THREE.Mesh(new THREE.CylinderGeometry(.06, .07, .16, 20), new THREE.MeshStandardMaterial({ color: '#3a3644', roughness: .35, metalness: .3 })); plug.name = 'chg'; grp.add(plug); P.chgPlug = plug;
     const ring = new THREE.Mesh(new THREE.TorusGeometry(.068, .012, 10, 32), new THREE.MeshBasicMaterial({ color: '#58e39a' })); ring.rotation.y = Math.PI / 2; ring.position.set(1.155, 1.0, -2.15); ring.name = 'chg'; grp.add(ring); P.chgRing = ring;
     const flowM = new THREE.ShaderMaterial({ uniforms: chU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
       vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
       fragmentShader: `uniform float uT, uA; varying vec2 vUv;
-        void main() { float u = vUv.x, ph = fract(u * 7. + uT * .9); float p = smoothstep(0., .35, ph) * smoothstep(1., .55, ph);
-          float edge = smoothstep(.0, .06, u) * smoothstep(1., .55, u); float a = (p * .85 + .12) * edge * uA;
+        void main() { float u = vUv.x, ph = fract(u * 7. - uT * .9); float p = smoothstep(0., .35, ph) * smoothstep(1., .55, ph);
+          float edge = smoothstep(1., .94, u) * smoothstep(.0, .45, u); float a = (p * .85 + .12) * edge * uA;
           gl_FragColor = vec4(vec3(.35, .95, .62) * a, a); }` });
     const flow = new THREE.Mesh(new THREE.TubeGeometry(path, 260, .055, 16), flowM); flow.name = 'chg'; flow.renderOrder = 3; grp.add(flow);
     // battery pack outline in the floor, seen through the body like an x-ray: rounded outline, 2 × 8 cells filling from the rear
@@ -410,7 +413,8 @@ async function buildCar() {
       Object.values(P.shades).forEach(sh => { const a = sh.geometry.attributes.position;
         for (let i = 0; i < a.count; i++) { o.set(a.getX(i) + sh.position.x, .9, a.getZ(i) + sh.position.z); rc.set(o, up); const h = rc.intersectObjects(roof, false)[0];
           a.setY(i, (h ? h.point.y - .035 : 1.47) - sh.position.y); }
-        a.needsUpdate = true; sh.geometry.computeVertexNormals(); });
+        a.needsUpdate = true; sh.geometry.computeVertexNormals();
+        const prof = []; for (let i = 0; i < a.count; i++) if (Math.abs(a.getX(i)) < .03) prof.push([a.getZ(i), a.getY(i)]); prof.sort((p, q) => q[0] - p[0]); sh.userData.prof = prof; });
       roof.forEach((m, i) => m.material.side = sides[i]); } }
   car.traverse(o => { if (o.isMesh && o.name !== 'shadow' && o.name !== 'wglow' && o.name !== 'fx' && !o.material.transparent) o.castShadow = true;
     if (o.isMesh && o.material === M.paint && !o.userData.creased) { o.geometry = smoothGeo(o.geometry); o.userData.creased = true; } });
@@ -1025,8 +1029,8 @@ export async function mount(el, opt = {}) {
   if (opt.scene === 'arches' || opt.scene === 'meadow' || opt.scene === 'drive') { cam.far = 900; cam.updateProjectionMatrix(); }
   if (world) { scene.environmentIntensity = .9; }
   // state, animated values
-  const S = { chg: 0, lvl: .78, door: { dfl: 0, dfr: 0, drl: 0, drr: 0 }, frunk: 0, boot: 0, port: 0, win: { fl: 0, fr: 0, rl: 0, rr: 0 }, mir: 0, shade: { l: 0, r: 0 }, lift: 0, head: .55, tail: .5, beam: 0, haz: 0, warn: {} };
-  const LIN = { door: 1.3, frunk: 1.5, boot: 1.7, port: .8, mir: 1 };   // seconds for a full open or close, the same both ways
+  const S = { chg: 0, plug: 0, lvl: .78, door: { dfl: 0, dfr: 0, drl: 0, drr: 0 }, frunk: 0, boot: 0, port: 0, win: { fl: 0, fr: 0, rl: 0, rr: 0 }, mir: 0, shade: { l: 0, r: 0 }, lift: 0, head: .55, tail: .5, beam: 0, haz: 0, warn: {} };
+  const LIN = { plug: 1.4, door: 1.3, frunk: 1.5, boot: 1.7, port: .8, mir: 1 };   // seconds for a full open or close, the same both ways
   const IO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   const T = JSON.parse(JSON.stringify(S));
   const doorPaint = {}, dbl = new Map();
@@ -1048,9 +1052,15 @@ export async function mount(el, opt = {}) {
     P.boot.rotation.x = IO(S.boot) * 1.1;
     P.port.rotation.y = IO(S.port) * 1.75; P.port.visible = S.port > .01; P.portGlow.material.opacity = S.port * .7; P.portHalo.material.opacity = S.port * (.75 + .2 * Math.sin(now / 420));
     { const tr = S.chg > .01; P.cabinMats.forEach(m => { if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.opacity = 1 - S.chg; m.depthWrite = !tr; }); P.cabin.visible = S.chg < .98; }
-    P.chg.visible = S.chg > .005; if (P.chg.visible) { P.chgU.uA.value = S.chg; P.chgU.uT.value = now / 1000; P.chgU.uL.value = S.lvl; P.chgRing.material.color.setRGB(.35, .9 + .05 * Math.sin(now / 300), .6); }
+    P.chg.visible = S.plug > .005 || S.chg > .005;
+    if (P.chg.visible) { const k = IO(S.plug), ix = P.chgCable.geometry.index.count; P.chgCable.geometry.setDrawRange(0, Math.max(6, Math.floor(k * ix / 6) * 6));   // the cable glides in from behind and plugs into the port
+      const pt = P.chgPath.getPointAt(Math.max(.001, k)), tg = P.chgPath.getTangentAt(Math.max(.001, k)); P.chgPlug.position.copy(pt).addScaledVector(tg, .04); P.chgPlug.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tg);
+      P.chgRing.visible = S.plug > .98; } if (P.chg.visible) { P.chgU.uA.value = S.chg; P.chgU.uT.value = now / 1000; P.chgU.uL.value = S.lvl; P.chgRing.material.color.setRGB(.35, .9 + .05 * Math.sin(now / 300), .6); }
     P.mirrors.l.rotation.y = IO(S.mir) * 1.02; P.mirrors.r.rotation.y = -IO(S.mir) * 1.02;
-    ['l', 'r'].forEach(s => { P.shades[s].scale.z = 1 - S.shade[s] * .9; });
+    ['l', 'r'].forEach(s => { const sh = P.shades[s], e = -S.shade[s] * 1.6, pr = sh.userData.prof;   // rolls back towards the rear, the roller travelling with the edge
+      let y = 0; if (pr) { for (let i = 1; i < pr.length; i++) if (pr[i][0] <= e) { const [z0, y0] = pr[i - 1], [z1, y1] = pr[i]; y = y0 + (y1 - y0) * (e - z0) / (z1 - z0 || 1); break; } }
+      const pl = sh.material.clippingPlanes[0]; pl.set(new THREE.Vector3(0, 0, -1), sh.position.z + e); pl.applyMatrix4(body.matrixWorld);
+      const r = sh.userData.roll; r.position.set(sh.position.x, sh.position.y + y - .02, sh.position.z + e); r.scale.y = 1; r.visible = true; });
     // ride height (shown larger than life so it reads); when driving the body also floats a little on the air springs
     let bob = 0, pitch = 0;
     if (opt.scene === 'drive') { const t = (now - t0) / 1000, sp = world.speed() / 22; bob = (Math.sin(t * 1.9) * .004 + Math.sin(t * 5.3) * .0015 * sp); pitch = Math.sin(t * 1.3 + 1) * .0025 + Math.sin(t * 4.1) * .001 * sp; }
@@ -1061,7 +1071,7 @@ export async function mount(el, opt = {}) {
       P.fx.head.forEach(h => h.material.opacity = hh * .9); P.fx.tail.forEach(h => h.material.opacity = smooth(.62, 1, S.tail) * .5 + S.beam * .6);
       P.fx.headPool.material.opacity = S.beam * .6; P.fx.tailPool.material.opacity = S.beam * .3;
       if (beams) { const nt = world.night ? world.night() : 0, on = Math.max(S.beam, hh); beams.poolM.opacity = S.beam * nt * .85; beams.coreM.opacity = 0; beams.glowM.opacity = on * nt * .45;
-        beams.tailM.opacity = 0; beams.tailGM.opacity = Math.max(S.beam, smooth(.62, 1, S.tail)) * (.15 + .45 * nt); beams.redM.opacity = S.beam * nt * .4;
+        beams.tailM.opacity = 0; beams.tailGM.opacity = 0; beams.redM.opacity = S.beam * nt * .4;
         const sp = world.sport ? world.sport() : 0; beams.trailM.opacity = sp * (.28 + .5 * nt) * Math.min(1, world.speed() / 15); P.fx.head.forEach(h => { h.material.opacity = hh * .5; });  P.fx.headPool.material.opacity = 0; P.fx.tailPool.material.opacity = 0; }
       P.fx.haz.forEach(h => h.material.opacity = blink); P.fx.hazPool.forEach(h => h.material.opacity = blink * .45); }
     Object.entries(P.wglow).forEach(([k, m]) => { m.material.opacity = (S.warn[k] || 0) * (.6 + .3 * Math.sin(now / 260)); });
@@ -1112,7 +1122,7 @@ export async function mount(el, opt = {}) {
       Object.keys(T).forEach(k => { if (k in LIN) { if (typeof T[k] === 'object') Object.keys(T[k]).forEach(j => { const n = lin(S[k][j], T[k][j], LIN[k]); if (n !== S[k][j]) { S[k][j] = n; moving = true; } });
           else { const n = lin(S[k], T[k], LIN[k]); if (n !== S[k]) { S[k] = n; moving = true; } } }
         else if (typeof T[k] === 'object') walk(S[k], T[k], 4.2); else { const n = step(S[k], T[k], dt, 4.2); if (n !== S[k]) { S[k] = n; moving = true; } } });
-      if (S.haz > 0 || S.chg > 0) moving = true;
+      if (S.haz > 0 || S.chg > 0 || S.plug > 0) moving = true;
       if (Object.values(S.warn).some(x => x > 0)) moving = true;
       if (world && world.update(dt, now)) moving = true;
       if (opt.scene === 'drive') { wheelA = (wheelA + Math.min(dt, .05) * Math.min(world.speed() / .4, 5.2)) % (Math.PI * 2); Object.values(P.wheels).forEach(wh => wh.spin.rotation.x = wheelA); }   /* the true spin (up to 55 turns a second) strobes against the screen's frame rate and looks like jitter, so the spokes turn at a calm, readable pace */
@@ -1131,6 +1141,7 @@ export async function mount(el, opt = {}) {
       if (st.open) ['dfl', 'dfr', 'drl', 'drr', 'frunk', 'boot'].forEach(k => { const o = st.open[k] ? 1 : 0; if (k.startsWith('d')) T.door[k] = o; else T[k] = o; });
       if ('port' in st) T.port = st.port ? 1 : 0;
       if ('charge' in st) T.chg = st.charge ? 1 : 0;
+      if ('plug' in st) T.plug = st.plug ? 1 : 0;
       if ('lvl' in st) T.lvl = st.lvl;
       if (st.wins) Object.assign(T.win, st.wins);
       if ('mir' in st) T.mir = st.mir === 'fold' ? 1 : 0;
