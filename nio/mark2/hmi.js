@@ -1576,7 +1576,7 @@
     if (!host) return; host._st = st;
     const v = host._v3; if (v && v !== 'wait') { v.set(st); return; }
     if (v === 'wait') return;
-    if (!window.ET9) { if (!c3d.hooked) { c3d.hooked = true; window.addEventListener('et9-ready', () => document.querySelectorAll('.frame').forEach(f => { lockPaint(f); homePaint(f); qcPaint(f); tyPaint(f); f.querySelectorAll('[data-drv2]').forEach(dmPaint); }));   /* lock screen first, then Home, then the car pages */ } return; }
+    if (!window.ET9) { if (!c3d.hooked) { c3d.hooked = true; window.addEventListener('et9-ready', () => document.querySelectorAll('.frame').forEach(f => { lockPaint(f); homePaint(f); qcPaint(f); tyPaint(f); chPaint(f); f.querySelectorAll('[data-drv2]').forEach(dmPaint); }));   /* lock screen first, then Home, then the car pages */ } return; }
     if (false && !host.offsetParent) {   // (no longer waits until on screen: every view is built up front so pages open instantly)
       if (!host._io) { host._io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { host._io.disconnect(); host._io = null; c3d(fr, kind, host, host._st, onPick); } }); host._io.observe(host); }
       return; }
@@ -1736,6 +1736,40 @@
   }
   /* ---------- Tyres: live pressures, slow-leak demo, reset ---------- */
   const TY0 = { fl: 2.9, fr: 2.9, rl: 3.0, rr: 3.0 };
+  /* ---------- Car › Charging: plug in, watch the battery fill (the 3D car shows the cable and energy flowing in) ---------- */
+  const chOf = fr => fr._ch || (fr._ch = { on: false, pct: 78, done: false });
+  const chLimit = fr => { const v = fr.querySelector('.chg-limsl .val'); return v ? parseInt(v.textContent, 10) || 90 : 90; };
+  const chKw = (pct, lim) => Math.round(Math.max(18, Math.min(150, 150 - Math.max(0, pct - 60) * 2.6)) * (lim - pct < 2 ? .5 : 1));
+  function chPaint(fr) {
+    const pg = fr.querySelector('[data-chg]'); if (!pg) return; const CH = chOf(fr), lim = chLimit(fr), pct = Math.round(CH.pct), km = Math.round(CH.pct * 5.36);
+    pg.classList.toggle('on', CH.on);
+    pg.querySelector('.chg-pct').firstChild.textContent = pct; pg.querySelector('.chg-km').textContent = km + ' km';
+    pg.querySelector('.chg-bar').style.setProperty('--p', CH.pct + '%'); pg.querySelector('.chg-bar').style.setProperty('--l', lim + '%');
+    const st = pg.querySelector('.chg-st'), sub = pg.querySelector('.chg-sub'), go = pg.querySelector('.chg-go');
+    if (CH.on) { const kw = chKw(CH.pct, lim), min = Math.max(1, Math.round((lim - CH.pct) * 60 / kw));
+      st.textContent = 'Charging · ' + kw + ' kW'; sub.textContent = min + ' min to ' + lim + ' % · +' + Math.max(0, Math.round((CH.pct - CH.from) * 5.36)) + ' km so far';
+      go.querySelector('.ms').textContent = 'power_off'; go.lastElementChild.textContent = 'Stop charging'; }
+    else { st.textContent = CH.done ? 'Charged to ' + lim + ' %' : 'Not plugged in'; sub.textContent = CH.done ? 'Unplug when you are ready to go' : (pct >= lim ? 'Already at your ' + lim + ' % limit' : 'Plug in to start charging');
+      go.querySelector('.ms').textContent = 'power'; go.lastElementChild.textContent = 'Plug in'; }
+    pg.querySelector('.chg-tagt').textContent = CH.on ? 'Charging · left rear port' : 'Charge port · left rear';
+    const Q = qcOf(fr);
+    c3d(fr, 'chg', pg.querySelector('.chg-car'), { open: {}, wins: { fl: 0, fr: 0, rl: 0, rr: 0 }, port: CH.on || Q.port, charge: CH.on, lvl: Math.min(1, CH.pct / 100), mir: 'out', shade: { l: false, r: false }, lights: 'off', dark: isDark() });
+    // the rest of the screen follows: Home battery card, its folded ring and the lock screen
+    fr.querySelectorAll('.hb-big').forEach(e => e.firstChild.textContent = pct); fr.querySelectorAll('.hb-mini b').forEach(e => e.textContent = pct);
+    fr.querySelectorAll('.hb-full .bs.num').forEach(e => e.textContent = km + ' km range'); fr.querySelectorAll('.hm-bat').forEach(e => { e.style.setProperty('--bp', CH.pct + '%'); e.classList.toggle('chg', CH.on); });
+    fr.querySelectorAll('.lk-info .num').forEach(e => e.textContent = pct + ' % · ' + km + ' km');
+  }
+  function chTick(fr) { const CH = chOf(fr); if (!CH.on) return; const lim = chLimit(fr);
+    CH.pct = Math.min(lim, CH.pct + chKw(CH.pct, lim) / 150 * .5);   // sped up for the demo: about 2 % a second at full speed
+    if (CH.pct >= lim) { CH.on = false; CH.done = true; toast(fr, 'Charged to ' + lim + ' % · ' + Math.round(CH.pct * 5.36) + ' km'); }
+    chPaint(fr); if (CH.on) fr._chT = setTimeout(() => chTick(fr), 500); }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-chggo]'); if (!b) return; const fr = frameOf(b), CH = chOf(fr), lim = chLimit(fr);
+    clearTimeout(fr._chT);
+    if (CH.on) { CH.on = false; CH.done = false; toast(fr, 'Charging stopped at ' + Math.round(CH.pct) + ' %'); }
+    else if (CH.pct >= lim - .5) { toast(fr, 'Already at your ' + lim + ' % limit · raise it to charge more'); }
+    else { CH.on = true; CH.done = false; CH.from = CH.pct; toast(fr, 'Plugged in · charging to ' + lim + ' %'); fr._chT = setTimeout(() => chTick(fr), 900); }
+    chPaint(fr); });
+  document.addEventListener('pointerup', () => document.querySelectorAll('.frame').forEach(f => f.querySelector('[data-chg]') && setTimeout(() => chPaint(f), 0)));
   function tyPaint(fr) {
     const ty = fr.querySelector('.qc.ty'); if (!ty) return; const P = fr._ty || (fr._ty = { ...TY0 });
     let warn = null;
@@ -1759,7 +1793,7 @@
       setTimeout(() => { fr._tyMsg = false; tyPaint(fr); }, 2600); return true; }
     return false;
   }
-  document.querySelectorAll('.frame').forEach(fr => { qcPaint(fr); tyPaint(fr); });
+  document.querySelectorAll('.frame').forEach(fr => { qcPaint(fr); tyPaint(fr); chPaint(fr); });
 
   // one live Climate panel: it sits in Car › Climate when that page is open, otherwise on the Climate screen
   function clHome() {

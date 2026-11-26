@@ -565,6 +565,11 @@ html[data-theme="dark"] .hb-tr{stroke:rgba(4,3,10,0.29)}
 html[data-theme="dark"] .hb-v{stroke:#46ad6d}
 html[data-theme="dark"] .lk-bar::after{background-color:#2f2673}
 html[data-theme="dark"] .dm-c3d.c3d-host::after{background-image:radial-gradient(ellipse 75% 70% at 50% 46%,rgba(4,3,10,0.00) 62%,rgba(4,3,10,0.38) 100%)}
+html[data-theme="dark"] .chg-tag{background-color:hsla(var(--nh), var(--ns), calc(13% + var(--nl)), .7)}
+html[data-theme="dark"] .chg-page.on .chg-tag{color:#b2f0cf}
+html[data-theme="dark"] .chg-fill{background-image:linear-gradient(90deg,#52c68c,#6cd8a1)}
+html[data-theme="dark"] .chg-page.on .chg-fill{background-image:linear-gradient(90deg,#52c68c 0%,#26734a 40%,#52c68c 80%)}
+html[data-theme="dark"] .hm-bat.chg .hb-bar i{background-image:linear-gradient(90deg,#46ad6d 0%,#26734a 45%,#46ad6d 90%)}
 html[data-theme="dark"] [fill="#1f1c29"]{fill:hsl(var(--nh) var(--ns) calc(25% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d2840"]{fill:hsl(var(--nh) var(--ns) calc(27% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d6bb5"]{fill:#3277c9}

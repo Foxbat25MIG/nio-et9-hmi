@@ -344,6 +344,34 @@ async function buildCar() {
     haz: [halo('#ffa524', .88, .78, 2.44, .9), halo('#ffa524', -.88, .78, 2.44, .9), halo('#ffa524', .9, 1.04, -2.66, .9), halo('#ffa524', -.9, 1.04, -2.66, .9)],
     hazPool: [pool('#ffa524', .9, 2.5, 1.6, 1.6), pool('#ffa524', -.9, 2.5, 1.6, 1.6), pool('#ffa524', .9, -2.75, 1.6, 1.6), pool('#ffa524', -.9, -2.75, 1.6, 1.6)],
     headPool: pool('#fff0c4', 0, 4.9, 3.6, 4.8), tailPool: pool('#ff3048', 0, -3.35, 2.8, 1.5) };
+  /* Charging: a cable plugged into the left-rear port with soft pulses of light running along it into the car, and a glowing
+     battery outline in the floor whose cells fill as it charges. All hidden until charging starts. */
+  { const chU = { uT: { value: 0 }, uA: { value: 0 }, uL: { value: .78 } }; P.chgU = chU; const grp = new THREE.Group(); grp.visible = false; car.add(grp); P.chg = grp;
+    const path = new THREE.CatmullRomCurve3([[1.0, 1.0, -2.14], [1.2, .99, -2.18], [1.48, .82, -2.26], [1.66, .4, -2.4], [1.84, .06, -2.75], [2.3, .04, -3.5], [3.4, .04, -4.6], [5.2, .04, -5.6]].map(a => new THREE.Vector3(...a)), false, 'catmullrom', .3);
+    const cable = new THREE.Mesh(new THREE.TubeGeometry(path, 160, .028, 12), new THREE.MeshStandardMaterial({ color: '#2b2833', roughness: .45 })); cable.castShadow = true; cable.name = 'chg'; grp.add(cable);
+    const plug = new THREE.Mesh(new THREE.CylinderGeometry(.06, .07, .16, 20), new THREE.MeshStandardMaterial({ color: '#3a3644', roughness: .35, metalness: .3 })); plug.rotation.z = Math.PI / 2; plug.position.set(1.07, 1.0, -2.15); plug.name = 'chg'; grp.add(plug);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(.068, .012, 10, 32), new THREE.MeshBasicMaterial({ color: '#58e39a' })); ring.rotation.y = Math.PI / 2; ring.position.set(1.155, 1.0, -2.15); ring.name = 'chg'; grp.add(ring); P.chgRing = ring;
+    const flowM = new THREE.ShaderMaterial({ uniforms: chU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
+      fragmentShader: `uniform float uT, uA; varying vec2 vUv;
+        void main() { float u = vUv.x, ph = fract(u * 7. + uT * .9); float p = smoothstep(0., .35, ph) * smoothstep(1., .55, ph);
+          float edge = smoothstep(.0, .06, u) * smoothstep(1., .55, u); float a = (p * .85 + .12) * edge * uA;
+          gl_FragColor = vec4(vec3(.35, .95, .62) * a, a); }` });
+    const flow = new THREE.Mesh(new THREE.TubeGeometry(path, 160, .05, 12), flowM); flow.name = 'chg'; flow.renderOrder = 3; grp.add(flow);
+    // battery pack outline in the floor, seen through the body like an x-ray: rounded outline, 2 × 8 cells filling from the rear
+    const packM = new THREE.ShaderMaterial({ uniforms: chU, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
+      vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
+      fragmentShader: `uniform float uT, uA, uL; varying vec2 vUv;
+        float rbox(vec2 p, vec2 b, float r) { vec2 q = abs(p) - b + r; return length(max(q, 0.)) + min(max(q.x, q.y), 0.) - r; }
+        void main() { vec2 p = (vUv - .5) * vec2(1.6, 3.4); float d = rbox(p, vec2(.78, 1.68), .2);
+          float line = exp(-pow(d / .018, 2.)) * .9 + exp(-pow(max(d, 0.) / .12, 2.)) * .18 * step(0., d);
+          vec2 c = vec2(floor(vUv.x * 2.), floor(vUv.y * 8.)), f = fract(vUv * vec2(2., 8.)) - .5;
+          float cell = smoothstep(.5, .42, max(abs(f.x) * 1.02, abs(f.y) * 1.08)) * step(d, -.04);
+          float idx = (c.y + .5) / 8., lit = smoothstep(uL + .02, uL - .02, idx);
+          float wave = .5 + .5 * sin((vUv.y - uT * .35) * 18.);
+          float a = (line * .8 + cell * (lit * (.32 + .22 * wave) + .05)) * uA;
+          gl_FragColor = vec4(vec3(.36, .93, .63) * a, a); }` });
+    const pack = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 3.4), packM); pack.rotation.x = -Math.PI / 2; pack.position.set(0, .36, -.3); pack.renderOrder = 4; pack.name = 'chg'; grp.add(pack); }
   car.traverse(o => { if (o.isMesh && o.name !== 'shadow' && o.name !== 'wglow' && o.name !== 'fx' && !o.material.transparent) o.castShadow = true;
     if (o.isMesh && o.material === M.paint && !o.userData.creased) { o.geometry = smoothGeo(o.geometry); o.userData.creased = true; } });
   return { car, body, P };
@@ -871,6 +899,7 @@ const VIEWS = {   // camera position, target, field of view
   ty:   { p: [0, 15.5, -.001], t: [0, 0, -.05], fov: 26, up: [0, 0, 1] },   // straight down, nose up
   side: { p: [7.4, 1.05, .1], t: [-.4, .72, .1], fov: 27, ls: 2.4 },        // driver's side, whole car (ride height shown 2.4× so it reads)
   home: { p: [-4.9, 1.85, 8.6], t: [0, .72, 0], fov: 32, shift: [.17, .07] },   // front three-quarter; orbits the car itself, drawn right of centre (clear of the Next card)
+  chg:  { p: [5.2, 2.1, -5.3], t: [.3, .55, -.8], fov: 27 },              // Charging: rear three-quarter from the left, so the port and cable are in view
   lock: { p: [7.3, 2.2, 7.7], t: [0, 1.45, .2], fov: 28 },                   // car in the lower half, under the clock
 };
 const viewers = new Set();
@@ -956,7 +985,7 @@ export async function mount(el, opt = {}) {
   if (opt.scene === 'arches' || opt.scene === 'meadow' || opt.scene === 'drive') { cam.far = 900; cam.updateProjectionMatrix(); }
   if (world) { scene.environmentIntensity = .9; }
   // state, animated values
-  const S = { door: { dfl: 0, dfr: 0, drl: 0, drr: 0 }, frunk: 0, boot: 0, port: 0, win: { fl: 0, fr: 0, rl: 0, rr: 0 }, mir: 0, shade: { l: 0, r: 0 }, lift: 0, head: .55, tail: .5, beam: 0, haz: 0, warn: {} };
+  const S = { chg: 0, lvl: .78, door: { dfl: 0, dfr: 0, drl: 0, drr: 0 }, frunk: 0, boot: 0, port: 0, win: { fl: 0, fr: 0, rl: 0, rr: 0 }, mir: 0, shade: { l: 0, r: 0 }, lift: 0, head: .55, tail: .5, beam: 0, haz: 0, warn: {} };
   const LIN = { door: 1.3, frunk: 1.5, boot: 1.7, port: .8, mir: 1 };   // seconds for a full open or close, the same both ways
   const IO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   const T = JSON.parse(JSON.stringify(S));
@@ -978,6 +1007,7 @@ export async function mount(el, opt = {}) {
     P.frunk.rotation.x = -IO(S.frunk) * .9;
     P.boot.rotation.x = IO(S.boot) * 1.1;
     P.port.rotation.y = IO(S.port) * 1.75; P.port.visible = S.port > .01; P.portGlow.material.opacity = S.port * .7; P.portHalo.material.opacity = S.port * (.75 + .2 * Math.sin(now / 420));
+    P.chg.visible = S.chg > .005; if (P.chg.visible) { P.chgU.uA.value = S.chg; P.chgU.uT.value = now / 1000; P.chgU.uL.value = S.lvl; P.chgRing.material.color.setRGB(.35, .9 + .05 * Math.sin(now / 300), .6); }
     P.mirrors.l.rotation.y = IO(S.mir) * 1.02; P.mirrors.r.rotation.y = -IO(S.mir) * 1.02;
     ['l', 'r'].forEach(s => { P.shades[s].scale.z = 1 - S.shade[s] * .9; });
     // ride height (shown larger than life so it reads); when driving the body also floats a little on the air springs
@@ -1041,7 +1071,7 @@ export async function mount(el, opt = {}) {
       Object.keys(T).forEach(k => { if (k in LIN) { if (typeof T[k] === 'object') Object.keys(T[k]).forEach(j => { const n = lin(S[k][j], T[k][j], LIN[k]); if (n !== S[k][j]) { S[k][j] = n; moving = true; } });
           else { const n = lin(S[k], T[k], LIN[k]); if (n !== S[k]) { S[k] = n; moving = true; } } }
         else if (typeof T[k] === 'object') walk(S[k], T[k], 4.2); else { const n = step(S[k], T[k], dt, 4.2); if (n !== S[k]) { S[k] = n; moving = true; } } });
-      if (S.haz > 0) moving = true;
+      if (S.haz > 0 || S.chg > 0) moving = true;
       if (Object.values(S.warn).some(x => x > 0)) moving = true;
       if (world && world.update(dt, now)) moving = true;
       if (opt.scene === 'drive') { wheelA = (wheelA + Math.min(dt, .05) * Math.min(world.speed() / .4, 5.2)) % (Math.PI * 2); Object.values(P.wheels).forEach(wh => wh.spin.rotation.x = wheelA); }   /* the true spin (up to 55 turns a second) strobes against the screen's frame rate and looks like jitter, so the spokes turn at a calm, readable pace */
@@ -1059,6 +1089,8 @@ export async function mount(el, opt = {}) {
     set(st) {
       if (st.open) ['dfl', 'dfr', 'drl', 'drr', 'frunk', 'boot'].forEach(k => { const o = st.open[k] ? 1 : 0; if (k.startsWith('d')) T.door[k] = o; else T[k] = o; });
       if ('port' in st) T.port = st.port ? 1 : 0;
+      if ('charge' in st) T.chg = st.charge ? 1 : 0;
+      if ('lvl' in st) T.lvl = st.lvl;
       if (st.wins) Object.assign(T.win, st.wins);
       if ('mir' in st) T.mir = st.mir === 'fold' ? 1 : 0;
       if (st.shade) { T.shade.l = st.shade.l ? 1 : 0; T.shade.r = st.shade.r ? 1 : 0; }
