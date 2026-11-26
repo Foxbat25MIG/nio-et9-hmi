@@ -587,12 +587,12 @@ export function ready() { return loadRaw(); }
    (the whole world slides past the car), so it costs almost nothing per frame. */
 const DRIVE = {   // sky top / middle / horizon, fog, grass shadow / mid / lit, road, flowers, sun, speed (m/s shown), trees, flower amount
   // Comfort: warm golden afternoon, honey light, long soft shadows
-  Comfort: { top: '#9eaad6', mid: '#f4c999', bot: '#ffd592', fog: '#f2cfa6', gs: '#62794c', gm: '#9cab45', gl: '#f1cc63', road: '#6f6676', fl: '#fff0cc', sun: '#ffc888', glow: '#ffc27a', cloud: '#fff0dc', cloudB: '#d7a7a3', v: 11, trees: .6, flowers: .12, snow: 0, mist: 0, blossom: 0, sx: -.62, sy: .26 },
+  Comfort: { top: '#ab97e0', mid: '#d6c6f1', bot: '#f4e9f8', fog: '#e6dbf3', gs: '#5d8a62', gm: '#8cbf63', gl: '#cfe596', road: '#6f6a7e', fl: '#ffffff', sun: '#fff2ec', glow: '#fff0f8', cloud: '#ffffff', cloudB: '#c9b8e6', v: 11, trees: .25, flowers: 1, field: 1, snow: 0, mist: 0, blossom: 0, sx: -.62, sy: .26 },
   // Eco: fresh spring morning, pale mint light, mist in the valleys, blossom trees
-  Eco:     { top: '#9fd6ec', mid: '#dff4ef', bot: '#f6fcf4', fog: '#e7f6f1', gs: '#5fa38f', gm: '#8fd07e', gl: '#d4f2b0', road: '#86828e', fl: '#ffffff', sun: '#ffffff', glow: '#f4fff8', cloud: '#ffffff', cloudB: '#d6eaf0', v: 8, trees: 1, flowers: .8, snow: 0, mist: 1, blossom: 1, sx: .35, sy: .5 },
-  Sport:   { top: '#5d5ea8', mid: '#e7a08e', bot: '#ffd29b', fog: '#efb59e', gs: '#5a6350', gm: '#86904c', gl: '#e0b862', road: '#564f60', fl: '#ffd9a0', sun: '#ffb070', glow: '#ffb27a', cloud: '#ffd2b4', cloudB: '#b77f9e', v: 22, trees: .3, flowers: .08, snow: 0, mist: .25, blossom: 0, sx: -.85, sy: .12 },
-  Snow:    { top: '#a6bde4', mid: '#dfe7f3', bot: '#f4f6fb', fog: '#e8edf6', gs: '#aebcda', gm: '#e1e8f4', gl: '#ffffff', road: '#8b90a1', fl: '#ffffff', sun: '#fff6ea', glow: '#ffffff', cloud: '#ffffff', cloudB: '#c9d2e6', v: 6, trees: 1, flowers: 0, snow: 1, mist: .5, blossom: 0, sx: -.4, sy: .45 },
-  Custom:  { top: '#5b58a4', mid: '#b49ad0', bot: '#f2c8d4', fog: '#c6aed2', gs: '#565c78', gm: '#738465', gl: '#c4ae78', road: '#5e5872', fl: '#a780e0', sun: '#ffc6a8', glow: '#ffb6c4', cloud: '#ffd7e2', cloudB: '#8f7ab8', v: 11, trees: .35, flowers: 1, snow: 0, mist: .4, blossom: 0, sx: -.7, sy: .18 },
+  Eco:     { top: '#c3ebd2', mid: '#e2f6e8', bot: '#f6fcf5', fog: '#e8f7ee', gs: '#5fa38f', gm: '#8fd07e', gl: '#d4f2b0', road: '#86828e', fl: '#ffffff', sun: '#ffffff', glow: '#f4fff8', cloud: '#ffffff', cloudB: '#d6eaf0', field: 0, v: 8, trees: 1, flowers: .8, snow: 0, mist: 1, blossom: 1, sx: .35, sy: .5 },
+  Sport:   { top: '#5d5ea8', mid: '#e7a08e', bot: '#ffd29b', fog: '#efb59e', gs: '#5a6350', gm: '#86904c', gl: '#e0b862', road: '#564f60', fl: '#ffd9a0', sun: '#ffb070', glow: '#ffb27a', cloud: '#ffd2b4', cloudB: '#b77f9e', field: 0, v: 22, trees: .3, flowers: .08, snow: 0, mist: .25, blossom: 0, sx: -.85, sy: .12 },
+  Snow:    { top: '#a6bde4', mid: '#dfe7f3', bot: '#f4f6fb', fog: '#e8edf6', gs: '#aebcda', gm: '#e1e8f4', gl: '#ffffff', road: '#8b90a1', fl: '#ffffff', sun: '#fff6ea', glow: '#ffffff', cloud: '#ffffff', cloudB: '#c9d2e6', field: 0, v: 6, trees: 1, flowers: 0, snow: 1, mist: .5, blossom: 0, sx: -.4, sy: .45 },
+  Custom:  { top: '#5b58a4', mid: '#b49ad0', bot: '#f2c8d4', fog: '#c6aed2', gs: '#565c78', gm: '#738465', gl: '#c4ae78', road: '#5e5872', fl: '#a780e0', sun: '#ffc6a8', glow: '#ffb6c4', cloud: '#ffd7e2', cloudB: '#8f7ab8', field: 0, v: 11, trees: .35, flowers: 1, snow: 0, mist: .4, blossom: 0, sx: -.7, sy: .18 },
 };
 const DRIVE_GLSL = `
 uniform float uOff, uT;
@@ -611,14 +611,15 @@ function driveScene(scene) {
     const t = { top: .86, mid: .78, bot: .62, fog: .72, gs: .8, gm: .8, gl: .76, road: .78, fl: .55, sun: .6, glow: .35, cloud: .7, cloudB: .8 }[n] ?? .7;
     return [n, mixS(c, n[0] === 'g' && n !== 'glow' ? NG : NIGHT, k === 'Snow' && n[0] === 'g' ? t * .8 : t)]; }))]));
   Object.assign(NP.Eco, palOf({ top: '#0d2338', mid: '#1f4a5e', bot: '#5f8f96', fog: '#3e6a74', gs: '#17353a', gm: '#24504a', gl: '#4f7d6e', glow: '#cfe9ff', cloud: '#a8c4d8', cloudB: '#2f4f66', sun: '#bcd9ff' }));
-  Object.assign(NP.Comfort, palOf({ top: '#141634', mid: '#3b2f55', bot: '#a8676a', fog: '#5a4258', glow: '#ffae6a', sun: '#ffb27a' }));
+  Object.assign(NP.Comfort, palOf({ top: '#17153a', mid: '#3f3168', bot: '#a7799f', fog: '#5b4a75', glow: '#ffc0d8', sun: '#e8c4ff' }));
+  Object.assign(NP.Eco, palOf({ top: '#0f2a2a', mid: '#244e46', bot: '#6c9a88' }));
   let dark = false, nf = 0;
   const cur = palOf(Object.fromEntries(Object.entries(P.Comfort).map(([k, v]) => [k, v instanceof THREE.Color ? v.clone() : v])));
-  let mode = 'Comfort', v = P.Comfort.v, vT = v, off = 0, amt = { trees: P.Comfort.trees, flowers: P.Comfort.flowers, snow: 0, mist: 0, blossom: 0, sx: P.Comfort.sx, sy: P.Comfort.sy };
+  let mode = 'Comfort', v = P.Comfort.v, vT = v, off = 0, amt = { trees: P.Comfort.trees, flowers: P.Comfort.flowers, snow: 0, mist: 0, blossom: 0, field: 1, sx: P.Comfort.sx, sy: P.Comfort.sy };
   const G = gradCanvas(); scene.background = G.t; scene.fog = new THREE.Fog(cur.fog, 30, 330);
   const hemi = new THREE.HemisphereLight('#eef2ff', '#6f8a4a', 1.0); scene.add(hemi);
   const SUN = new THREE.Vector3(-.55, .5, -.65).normalize(), sun = sunLight('#fff0d2', SUN.clone().multiplyScalar(40).toArray(), 9); sun.shadow.radius = 6; scene.add(sun); scene.add(sun.target);
-  const U = { uOff: { value: 0 }, uT: { value: 0 }, uGs: { value: cur.gs }, uGm: { value: cur.gm }, uGl: { value: cur.gl }, uFog: { value: cur.fog }, uFogN: { value: 30 }, uFogF: { value: 330 }, uSun: { value: SUN }, uFl: { value: cur.fl }, uFlA: { value: 0 } };
+  const U = { uOff: { value: 0 }, uT: { value: 0 }, uGs: { value: cur.gs }, uGm: { value: cur.gm }, uGl: { value: cur.gl }, uFog: { value: cur.fog }, uFogN: { value: 30 }, uFogF: { value: 330 }, uSun: { value: SUN }, uFl: { value: cur.fl }, uFlA: { value: 0 }, uField: { value: 1 } };
   // hills: a big grid, fine near the road; height, light and colour all come from the shader
   const xs = []; for (let x = 30; x > -380; x -= x > -14 ? .8 : x > -60 ? 2.5 : 6) xs.push(x);
   const NZ = 240, zs = Array.from({ length: NZ + 1 }, (_, i) => -300 + i * 600 / NZ);
@@ -631,12 +632,21 @@ function driveScene(scene) {
     void main() { vec2 w = vec2(position.x, position.z + uOff); float h = hillH(w), e = .8;
       vec3 n = normalize(vec3(hillH(w - vec2(e, 0.)) - hillH(w + vec2(e, 0.)), 2. * e, hillH(w - vec2(0., e)) - hillH(w + vec2(0., e))));
       vS = clamp((dot(n, uSun) + .25) / 1.25, 0., 1.); vW = w; vec4 mv = modelViewMatrix * vec4(position.x, h, position.z, 1.); vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `uniform vec3 uGs, uGm, uGl, uFog; uniform float uFogN, uFogF, uT; varying float vS; varying float vD; varying vec2 vW;
+    fragmentShader: `uniform vec3 uGs, uGm, uGl, uFog; uniform float uFogN, uFogF, uT, uField; varying float vS; varying float vD; varying vec2 vW;
     float hsh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     void main() { float t = clamp(.18 + vS * 1.0, 0., 1.); vec3 c = t < .5 ? mix(uGs, uGm, t * 2.) : mix(uGm, uGl, (t - .5) * 2.);
       float n = sin(vW.x * .11 + sin(vW.y * .05) * 2.) * .5 + .5; c *= .9 + .16 * n;
       float g = sin(dot(vW, vec2(.38, .92)) * .23 - uT * 1.25) * .5 + .5; c *= 1. + g * g * .06;
       c *= .8 + .2 * smoothstep(7., 30., abs(vW.x + 1.6));
+      if (uField > .01) {   // a flower field: dots of pink, white, lilac and butter yellow, melting into a soft pastel tint with distance
+        vec2 cell = floor(vW * 3.2); float r = hsh(cell), r2 = hsh(cell + 17.3); vec2 f = fract(vW * 3.2) - .5;
+        vec3 fc = r2 < .3 ? vec3(1., .72, .84) : r2 < .55 ? vec3(1.) : r2 < .8 ? vec3(.83, .72, 1.) : vec3(1., .93, .6);
+        float dotA = smoothstep(.42, .2, length(f)) * step(.18, r);
+        float near = 1. - smoothstep(30., 110., vD), band = .5 + .5 * sin(vW.y * .06 + vW.x * .09);
+        vec3 tint = mix(vec3(.93, .8, .95), vec3(1., .9, .93), band);
+        c = mix(c, fc * (.75 + .3 * vS), dotA * near * .9 * uField);
+        c = mix(c, c * .4 + tint * .65 * (.75 + .35 * vS), (1. - near * .6) * .8 * uField * smoothstep(7., 16., -vW.x));
+      }
       gl_FragColor = vec4(mix(c, uFog, smoothstep(uFogN, uFogF, vD)), 1.);
       #include <tonemapping_fragment>
       #include <colorspace_fragment>
@@ -663,8 +673,8 @@ function driveScene(scene) {
   mvPosition.z -= (.15 + .5 * g) * hf * hf * bh;
   vR = rnd;
   mvPosition = modelViewMatrix * mvPosition; gl_Position = projectionMatrix * mvPosition;`);
-      sh.fragmentShader = 'uniform vec3 uGs, uGm, uGl, uFl; uniform float uFlA;\nvarying vec2 vR;\n' + sh.fragmentShader.replace('#include <color_fragment>', flower
-        ? '#include <color_fragment>\n  if (vR.x > uFlA) discard; diffuseColor.rgb *= mix(uFl, vec3(1.), .0);'
+      sh.fragmentShader = 'uniform vec3 uGs, uGm, uGl, uFl; uniform float uFlA, uField;\nvarying vec2 vR;\n' + sh.fragmentShader.replace('#include <color_fragment>', flower
+        ? '#include <color_fragment>\n  if (vR.x > uFlA) discard; vec3 fcol = vR.y < .3 ? vec3(1., .66, .8) : vR.y < .55 ? vec3(1.) : vR.y < .8 ? vec3(.8, .66, 1.) : vec3(1., .9, .5); diffuseColor.rgb *= mix(uFl, fcol, uField);'
         : '#include <color_fragment>\n  vec3 base = mix(uGm, uGl, vR.x); base = mix(base, uGs, vR.y * .55); diffuseColor.rgb *= base * 1.05;'); };
     return m; };
   const vergeSpots = (n, f) => { const out = []; for (let i = 0; i < n; i++) { const side = Math.random() < .55; const x = side ? 2.5 + Math.random() * 4.6 : -5.75 - Math.pow(Math.random(), 1.4) * 9; out.push([x, side ? -13 + Math.random() * 26 : -40 + Math.random() * 80]); } return out; };
@@ -672,7 +682,7 @@ function driveScene(scene) {
   const GBN = 45000, gGeo = bladeGeo(.008, 1), grassV = new THREE.InstancedMesh(gGeo, vergeMat(false), GBN), gr = new Float32Array(GBN * 2);
   vergeSpots(GBN).forEach(([x, z], i) => { d3.position.set(x, -.02, z); d3.rotation.set((Math.random() - .5) * .4, Math.random() * 6.3, (Math.random() - .5) * .3); d3.scale.set(1, (.06 + Math.random() * .14) * (x > 0 ? .8 : 1.3), 1); d3.updateMatrix(); grassV.setMatrixAt(i, d3.matrix); gr[i * 2] = Math.random(); gr[i * 2 + 1] = Math.random(); });
   gGeo.setAttribute('rnd', new THREE.InstancedBufferAttribute(gr, 2)); grassV.frustumCulled = false; scene.add(grassV);
-  const FBN = 5000, fGeo = new THREE.PlaneGeometry(1, 1); fGeo.rotateX(-Math.PI / 2); const flowersV = new THREE.InstancedMesh(fGeo, vergeMat(true), FBN), fr = new Float32Array(FBN * 2);
+  const FBN = 11000, fGeo = new THREE.PlaneGeometry(1, 1); fGeo.rotateX(-Math.PI / 2); const flowersV = new THREE.InstancedMesh(fGeo, vergeMat(true), FBN), fr = new Float32Array(FBN * 2);
   vergeSpots(FBN).forEach(([x, z], i) => { const s = .05 + Math.random() * .04; d3.position.set(x, .12 + Math.random() * .14, z); d3.rotation.set((Math.random() - .5) * .8, Math.random() * 6.3, (Math.random() - .5) * .8); d3.scale.set(s, 1, s); d3.updateMatrix(); flowersV.setMatrixAt(i, d3.matrix); fr[i * 2] = Math.random(); fr[i * 2 + 1] = Math.random(); });
   fGeo.setAttribute('rnd', new THREE.InstancedBufferAttribute(fr, 2)); flowersV.frustumCulled = false; scene.add(flowersV);
   // scenery that slides past and wraps around: round film-style trees, snowy pines with deer, street lamps
@@ -684,6 +694,13 @@ function driveScene(scene) {
   add('trees', i => { const g = new THREE.Group(), s = .9 + Math.random() * .8; g.scale.setScalar(s);
     const t = new THREE.Mesh(new THREE.CylinderGeometry(.12, .2, 1.8, 7), trunkM); t.position.y = .9; t.castShadow = true; g.add(t);
     for (let k = 0; k < 6; k++) { const b = new THREE.Mesh(new THREE.SphereGeometry(.75 + (k % 3) * .22, 16, 12), leafM[(i + k) % 3]); b.position.set(Math.cos(k * 2.1) * .55, 2.2 + (k % 3) * .4, Math.sin(k * 2.1) * .55); b.castShadow = true; g.add(b); } return g; }, 34, [-70, -18]);
+  const woolM = lamb('#f8f6f2'), faceM = lamb('#3a3340');
+  add('sheep', i => { const g = new THREE.Group(), s = .8 + Math.random() * .3; g.scale.setScalar(s);
+    for (let k = 0; k < 8; k++) { const b = new THREE.Mesh(new THREE.SphereGeometry(.32 + (k % 3) * .06, 14, 10), woolM); b.position.set((k % 2 ? .14 : -.14) * (k % 3 ? 1 : .4), .72 + (k % 4) * .07, -.42 + k * .12); b.castShadow = true; g.add(b); }
+    const head = new THREE.Mesh(new THREE.SphereGeometry(.17, 12, 10), faceM); head.scale.set(.85, 1, 1.25); head.position.set(0, .82, .62); g.add(head);
+    [-1, 1].forEach(sd => { const e = new THREE.Mesh(new THREE.SphereGeometry(.07, 8, 6), faceM); e.scale.set(1.6, .6, .8); e.position.set(sd * .16, .9, .58); g.add(e); });
+    [[.15, .3], [-.15, .3], [.15, -.32], [-.15, -.32]].forEach(([x, z]) => { const l = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, .5, 6), faceM); l.position.set(x, .25, z); g.add(l); });
+    g.rotation.y = Math.random() * 6.28; return g; }, 24, [-34, -9]);
   const blM = [lamb('#f6b3cb'), lamb('#fde0ea'), lamb('#f19dbb')];
   add('blossom', i => { const g = new THREE.Group(), s = 1 + Math.random() * .9; g.scale.setScalar(s);
     const t = new THREE.Mesh(new THREE.CylinderGeometry(.11, .19, 1.7, 7), trunkM); t.position.y = .85; t.castShadow = true; g.add(t);
@@ -759,14 +776,14 @@ function driveScene(scene) {
       const tar = (dark ? NP : P)[mode], k = Math.min(1, dt * 2.2), t = now / 1000;
       if (lerpPal(cur, tar, k) || !G.done) { G.done = true; paintGrad(G, cur.top, cur.mid, cur.bot, { x: .3, y: .62, r: .6, c: cur.glow, a: .4 }); }
       nf += ((dark ? 1 : 0) - nf) * k; const day = 1 - nf;
-      ['trees', 'flowers', 'snow', 'mist', 'blossom', 'sx', 'sy'].forEach(n => { amt[n] += (P[mode][n] - amt[n]) * k; });
+      ['trees', 'flowers', 'snow', 'mist', 'blossom', 'field', 'sx', 'sy'].forEach(n => { amt[n] += (P[mode][n] - amt[n]) * k; });
       SUN.set(amt.sx, amt.sy, -.6).normalize(); sun.position.copy(SUN).multiplyScalar(40);
       mistM.opacity = amt.mist * (.8 - .3 * nf); mistM.color.copy(cur.fog).lerp(cur.cloud, .4);
       motes.material.opacity = (.35 + .35 * nf) * (mode === 'Snow' ? 0 : 1); motes.material.color.copy(nf > .5 ? C('#ffd27a') : cur.glow); motesU.value = nf;
       scene.fog.color.copy(cur.fog); U.uFogN.value = 20; U.uFogF.value = 280 - nf * 100; scene.fog.near = 20; scene.fog.far = U.uFogF.value;
       hemi.intensity = .35 + .65 * day; hemi.groundColor.copy(cur.gm); sun.color.copy(cur.sun); sun.intensity = .25 + 1.9 * day; scene.environmentIntensity = .25 + .5 * day;
       roadM.color.copy(cur.road); kerbM.color.setScalar(.35 + .5 * day);
-      U.uFlA.value = amt.flowers * (mode === 'Snow' ? 0 : 1); U.uT.value = t;
+      U.uFlA.value = amt.flowers * (mode === 'Snow' ? 0 : 1); U.uField.value = amt.field; U.uT.value = t;
       puffs.forEach(p => p.material.color.copy(cur.cloudB).lerp(cur.cloud, .35 + p.userData.h * .65)); glowSun.material.color.copy(cur.glow).multiplyScalar((.32 + .2 * (mode === 'Sport' || mode === 'Comfort' ? 1 : 0)) * (1 - nf * .6)); glowSun.position.set(-330, 18 + amt.sy * 80, -150 - amt.sx * 120);
       blM.forEach((m, i) => m.color.set(['#f6b3cb', '#fde0ea', '#f19dbb'][i]).lerp(C('#9fb8d8'), nf * .35).multiplyScalar(.5 + .5 * day));
       leafM.forEach((m, i) => m.color.set(['#6fae4a', '#88c25a', '#5d9c45'][i]).lerp(cur.gl, .18).lerp(C(['#f6b3cb', '#a9d77e', '#fdd6e3'][i]), amt.blossom * (i === 1 ? .5 : .95)).multiplyScalar(.3 + .7 * day));
@@ -776,7 +793,8 @@ function driveScene(scene) {
       { const tt = t % 26; sleigh.visible = mode === 'Snow' && tt < 11; sleigh.position.z = -50 + tt * 9; sleigh.position.y = 9 + Math.sin(tt * 2.2) * .3; }
       if (snow.material.opacity > .01) { for (let i = 0; i < SN; i++) { sp[i * 3 + 1] -= dt * 1.1; sp[i * 3 + 2] -= dt * v * .85; if (sp[i * 3 + 1] < 0) sp[i * 3 + 1] += 7; if (sp[i * 3 + 2] < -15) sp[i * 3 + 2] += 30; } sg.attributes.position.needsUpdate = true; }
       moonM.opacity = nf * amt.mist * .95; lampHaloM.opacity = nf * .9; lampPoolM.opacity = nf * .55; bulbM.emissiveIntensity = .4 + nf * 3;
-      const show = { trees: mode !== 'Snow' && mode !== 'Eco', blossom: mode === 'Eco', pines: mode === 'Snow', lamps: mode !== 'Eco' };
+      const show = { trees: mode !== 'Snow' && mode !== 'Eco', blossom: mode === 'Eco', pines: mode === 'Snow', lamps: mode !== 'Eco', sheep: mode === 'Comfort' };
+      woolM.color.set('#f8f6f2').multiplyScalar(.35 + .65 * day);
       Object.entries(sets).forEach(([kind, g]) => { g.visible = show[kind]; if (!g.visible) return;
         g.userData.items.forEach(o => { o.position.z -= v * dt; if (o.position.z < -LZ / 2) o.position.z += LZ;
           if (kind === 'trees') o.visible = o.userData.r < amt.trees;
