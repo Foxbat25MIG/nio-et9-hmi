@@ -373,140 +373,139 @@ function bladeGeo(w = .022, h = 1) { const g = new THREE.BufferGeometry();
   g.setAttribute('color', new THREE.Float32BufferAttribute([.62, .62, .62, .62, .62, .62, .86, .86, .86, .86, .86, .86, 1, 1, 1], 3));
   g.setIndex([0, 1, 2, 0, 2, 3, 3, 2, 4]); g.computeVertexNormals(); return g; }
 
-/* Home: a ring of tall white arches around a stepped stage, light falling through the openings, lavender grass, white dunes and sky beyond */
-function archScene(scene) {
-  const PAL = {
-    day:   palOf({ top: '#7fa9e3', mid: '#bcd3f2', bot: '#f1ecf6', fog: '#e8ebf6', wall: '#e2dfee', floor: '#d9d5e7', sky: '#eef2ff', gnd: '#cdc6e0', sun: '#ffd6de', glow: '#ffb9cb', grass: '#9f7fdc', grass2: '#c9b2f2' }),
-    night: palOf({ top: '#0b1030', mid: '#202652', bot: '#47396a', fog: '#24264a', wall: '#4b4867', floor: '#2b2a42', sky: '#4f5a92', gnd: '#15131f', sun: '#a9b3ff', glow: '#ff9cc4', grass: '#5d43a0', grass2: '#8a68d0' }),
-  };
+/* ---------- Lock and Home: green rolling hills (Adi's two references), with a lavender haze, and a dusk version for dark mode ----------
+   The hills are lit once, ahead of time: every point knows how much sun it gets and whether a hill in front of it casts a
+   shadow, so the long soft shadows across the valleys cost nothing per frame. Only the car's own shadow is live. */
+const rng = s => () => (s = (s * 16807) % 2147483647) / 2147483647;
+function daisyTex() { const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+  x.translate(32, 32); x.fillStyle = '#fff';
+  for (let i = 0; i < 14; i++) { x.save(); x.rotate(i / 14 * Math.PI * 2); x.beginPath(); x.ellipse(0, -17, 4.2, 13, 0, 0, Math.PI * 2); x.fill(); x.restore(); }
+  x.fillStyle = '#f3c63a'; x.beginPath(); x.arc(0, 0, 7.5, 0, Math.PI * 2); x.fill();
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+function hillsScene(scene, K) {
+  const PAL = { day: palOf(K.day), night: palOf(K.night) };
   const cur = Object.fromEntries(Object.entries(PAL.day).map(([k, v]) => [k, v.clone()]));
   let tar = PAL.day, L = 1, LT = 1;
-  const G = gradCanvas(); scene.background = G.t; scene.fog = new THREE.Fog(cur.fog, 30, 110);
-  const hemi = new THREE.HemisphereLight(cur.sky, cur.gnd, 1.05); scene.add(hemi);
-  const sun = sunLight(cur.sun, [19, 15.5, -27], 34); scene.add(sun); scene.add(sun.target);
-  const fill = new THREE.DirectionalLight('#fff4f0', .35); fill.position.set(-10, 6, 12); scene.add(fill);
-  // ground: flat inside the ring, soft white dunes outside it
-  const tg = new THREE.PlaneGeometry(260, 260, 180, 180); tg.rotateX(-Math.PI / 2);
-  { const p = tg.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i), r = Math.hypot(x, z);
-      p.setY(i, -.78 + smooth(25, 46, r) * (fbm(x * .03, z * .03) * 7 - 1.5) * (1 + smooth(60, 120, r) * 1.5)); } tg.computeVertexNormals(); }
-  const floorM = new THREE.MeshStandardMaterial({ color: cur.floor, roughness: .82 }), floor = new THREE.Mesh(tg, floorM); floor.receiveShadow = true; scene.add(floor);
-  // round stage and three steps, slightly glossy
-  const stageM = new THREE.MeshPhysicalMaterial({ color: cur.wall, roughness: .38, clearcoat: .35, clearcoatRoughness: .4 });
-  const st = (r, y) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, .26, 128), stageM); m.position.y = y; m.receiveShadow = true; m.castShadow = true; scene.add(m); };
-  st(5.6, -.13); st(6.15, -.39); st(6.7, -.65);
-  // colonnade: twelve panels on a circle, each with one tall arch; deep reveals catch the light
-  const R = 21, N = 12, pw = 2 * R * Math.tan(Math.PI / N) + .04, ph = 10.5, aw = 1.95, ah = 4.6;
-  const shape = new THREE.Shape(); shape.moveTo(-pw / 2, 0); shape.lineTo(pw / 2, 0); shape.lineTo(pw / 2, ph); shape.lineTo(-pw / 2, ph); shape.lineTo(-pw / 2, 0);
-  const hole = new THREE.Path(); hole.moveTo(-aw, .02); hole.lineTo(-aw, ah); hole.absarc(0, ah, aw, Math.PI, 0, true); hole.lineTo(aw, .02); hole.lineTo(-aw, .02); shape.holes.push(hole);
-  const wg = new THREE.ExtrudeGeometry(shape, { depth: 1.6, bevelEnabled: true, bevelThickness: .12, bevelSize: .12, bevelSegments: 4, curveSegments: 48 });
-  const wallM = new THREE.MeshStandardMaterial({ color: cur.wall, roughness: .92 });
-  // a soft pink glow hugging each arch, like light bouncing off the reveals
-  const glowT = (() => { const c = document.createElement('canvas'); c.width = 256; c.height = 512; const x = c.getContext('2d'); const W = 256, H = 512, cx = 128, r = 92, ay = 210;
-    x.filter = 'blur(14px)'; x.strokeStyle = 'rgba(255,255,255,1)'; x.lineWidth = 18; x.beginPath(); x.moveTo(cx - r, H); x.lineTo(cx - r, ay); x.arc(cx, ay, r, Math.PI, 0); x.lineTo(cx + r, H); x.stroke();
-    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
-  const glowM = new THREE.MeshBasicMaterial({ map: glowT, color: cur.glow, transparent: true, opacity: .55, depthWrite: false, fog: false });
-  for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2 + .26, p = new THREE.Group(); p.position.set(Math.sin(a) * R, -.78, Math.cos(a) * R); p.rotation.y = a + Math.PI; scene.add(p);
-    const w = new THREE.Mesh(wg, wallM); w.position.z = -.8; w.castShadow = true; w.receiveShadow = true; p.add(w);
-    const gl = new THREE.Mesh(new THREE.PlaneGeometry(aw * 2 * 1.39, (ah + aw) * 1.39 * 1.0), glowM); gl.position.set(0, (ah + aw) * .69 * 1.0 - .2, .9); p.add(gl); }
-  // lavender grass: thousands of thin blades in soft drifts, swaying
-  const B = 7000, grassM = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .85, side: THREE.DoubleSide, emissive: cur.grass, emissiveIntensity: .18 });
-  const grass = new THREE.InstancedMesh(bladeGeo(), grassM, B), d = new THREE.Object3D(), col = new THREE.Color(), GB = [];
-  const drifts = [[-1.0, 8.6, 2.6, .7], [-.15, 8.8, 2.0, .55], [2.15, 9.3, 2.8, .9], [3.55, 10.1, 2.6, .9], [4.6, 8.9, 1.6, .6]];
-  while (GB.length < B) { const [a, r, hl, hw] = drifts[GB.length % drifts.length], u = Math.random() * 2 - 1, v = Math.random() * 2 - 1, q = u * u + v * v; if (q > 1) continue;
-    const ang = a + u * hl / r, rr = r + v * hw; GB.push({ x: Math.sin(ang) * rr, z: Math.cos(ang) * rr, h: (.28 + Math.random() * .5) * (1 - q * .55), ry: Math.random() * 6.3, lean: (Math.random() - .5) * .35, ph: Math.random() * 6.3, c: Math.random() }); }
-  GB.forEach((b, i) => { col.copy(cur.grass).lerp(cur.grass2, b.c); grass.setColorAt(i, col); }); grass.receiveShadow = true; scene.add(grass);
-  const sway = t => { for (let i = 0; i < B; i++) { const b = GB[i]; d.position.set(b.x, -.78, b.z); d.rotation.set(b.lean + Math.sin(t * 1.3 + b.ph + b.x * .3) * .07, b.ry, 0); d.scale.set(1, b.h, 1); d.updateMatrix(); grass.setMatrixAt(i, d.matrix); } grass.instanceMatrix.needsUpdate = true; };
-  sway(0); let lastSway = 0;
+  const G = gradCanvas(); scene.background = G.t; scene.fog = new THREE.Fog(cur.fog, K.fogNear, K.fogFar);
+  const S = new THREE.Vector3(...K.sun).normalize();
+  const hemi = new THREE.HemisphereLight(cur.sky, cur.gnd, 1.1); scene.add(hemi);
+  const sun = sunLight(cur.sun, S.clone().multiplyScalar(40).toArray(), 13); sun.shadow.radius = 6; scene.add(sun); scene.add(sun.target);
+  const hgt = K.height;
+  // height grids, so the many lookups below are cheap: fine (0.5 m) round the car, coarse (4.5 m) out to the horizon
+  const grid = (N, S, fn) => { const O = N * S / 2, H = new Float32Array(N * N); for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) H[j * N + i] = fn(i * S - O, j * S - O);
+    return (x, z) => { const fx = (x + O) / S, fz = (z + O) / S, i = Math.floor(fx), j = Math.floor(fz); if (i < 0 || j < 0 || i >= N - 1 || j >= N - 1) return -1e3;
+      const u = fx - i, v = fz - j, a = H[j * N + i], b = H[j * N + i + 1], c = H[(j + 1) * N + i], d = H[(j + 1) * N + i + 1]; return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; }; };
+  const hCoarse = grid(240, 4.5, hgt), hFine = grid(132, .5, hgt);
+  const hAt = (x, z) => Math.abs(x) < 32 && Math.abs(z) < 32 ? hFine(x, z) : hCoarse(x, z);
+  // terrain as rings: fine near the car, coarse at the horizon
+  const ringR = []; for (let r = 0; r < 520; r = r < 1 ? 1 : r * 1.034 + .25) ringR.push(r);
+  const SEG = 288, NV = 1 + (ringR.length - 1) * SEG, P = new Float32Array(NV * 3), idx = [];
+  P[1] = hgt(0, 0);
+  for (let k = 1; k < ringR.length; k++) for (let s = 0; s < SEG; s++) { const a = s / SEG * Math.PI * 2, r = ringR[k], v = 1 + (k - 1) * SEG + s, x = Math.cos(a) * r, z = Math.sin(a) * r; P[v * 3] = x; P[v * 3 + 1] = r < 30 ? hgt(x, z) : hAt(x, z); P[v * 3 + 2] = z; }
+  for (let s = 0; s < SEG; s++) idx.push(0, 1 + (s + 1) % SEG, 1 + s);
+  for (let k = 1; k < ringR.length - 1; k++) for (let s = 0; s < SEG; s++) { const a = 1 + (k - 1) * SEG + s, b = 1 + (k - 1) * SEG + (s + 1) % SEG, c = a + SEG, d = b + SEG; idx.push(a, b, d, a, d, c); }
+  const tg = new THREE.BufferGeometry(); tg.setAttribute('position', new THREE.BufferAttribute(P, 3)); tg.setIndex(idx); tg.computeVertexNormals();
+  const NR = tg.attributes.normal.array, cols = new Float32Array(NV * 3); tg.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+  // how much sun each point gets: soft wrap light on the slope, times a soft shadow from any hill toward the sun
+  const shadeOf = (x, y, z, nx, ny, nz) => { const lit = Math.max(0, (nx * S.x + ny * S.y + nz * S.z + .25) / 1.25);
+    let occ = 0; const hz = Math.hypot(S.x, S.z), sx = S.x / hz, sz = S.z / hz, tanE = S.y / hz;
+    for (let d = 2; d < 260; d *= 1.09) { const over = hAt(x + sx * d, z + sz * d) - (y + .3 + d * tanE); if (over > 0) occ = Math.max(occ, Math.min(1, over / (1.2 + d * .045))); if (occ >= 1) break; }
+    return lit * (1 - occ); };
+  const SH = new Float32Array(NV), NZ = new Float32Array(NV), NY = new Float32Array(NV);
+  for (let v = 0; v < NV; v++) { const o = v * 3; SH[v] = shadeOf(P[o], P[o + 1], P[o + 2], NR[o], NR[o + 1], NR[o + 2]); NZ[v] = fbm(P[o] * .05, P[o + 2] * .05, 3); NY[v] = NR[o + 1]; }
+  const tc = new THREE.Color(), grassCol = (out, sh, n, ny) => { const t = Math.min(1, sh * 1.15);
+    if (t < .5) out.copy(cur.gs).lerp(cur.gm, t * 2); else out.copy(cur.gm).lerp(cur.gl, (t - .5) * 2);
+    out.multiplyScalar(.86 + .28 * n).multiplyScalar(.82 + .18 * ny); return out; };
+  const paintTerrain = () => { for (let v = 0; v < NV; v++) { grassCol(tc, SH[v], NZ[v], NY[v]); cols[v * 3] = tc.r; cols[v * 3 + 1] = tc.g; cols[v * 3 + 2] = tc.b; } tg.attributes.color.needsUpdate = true; };
+  // a fine, soft stroke texture so close grass reads as grass, not plastic
+  const strokes = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.fillStyle = '#e9e9e9'; x.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 2600; i++) { const v = 205 + Math.random() * 50 | 0; x.strokeStyle = `rgba(${v},${v},${v},.55)`; x.lineWidth = .8 + Math.random() * 1.4; x.lineCap = 'round';
+      const px = Math.random() * 256, py = Math.random() * 256, l = 5 + Math.random() * 9, a = -Math.PI / 2 + (Math.random() - .5) * .7; x.beginPath(); x.moveTo(px, py); x.lineTo(px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(260, 260); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; })();
+  const terrain = new THREE.Mesh(tg, new THREE.MeshBasicMaterial({ vertexColors: true, map: strokes })); scene.add(terrain);
+  // the car's own shadow, live, on a clear catcher over the flat ground round the car
+  const catcher = new THREE.Mesh(new THREE.CircleGeometry(K.flat, 64), new THREE.ShadowMaterial({ color: cur.shadow, opacity: .42, depthWrite: false }));
+  catcher.rotation.x = -Math.PI / 2; catcher.position.y = K.podium ? .004 : hgt(0, 0) + .004; catcher.receiveShadow = true; catcher.renderOrder = 1; scene.add(catcher);
+  // the white podium (lock screen)
+  let podM = null;
+  if (K.podium) { podM = new THREE.MeshPhysicalMaterial({ color: cur.podium, roughness: .32, clearcoat: .6, clearcoatRoughness: .25 });
+    const pg = new THREE.CylinderGeometry(K.podium, K.podium, .34, 160, 1); pg.translate(0, -.17, 0); const pd = new THREE.Mesh(pg, podM); pd.receiveShadow = true; pd.castShadow = true; scene.add(pd);
+    const bev = new THREE.Mesh(new THREE.TorusGeometry(K.podium - .02, .03, 12, 160), podM); bev.rotation.x = Math.PI / 2; bev.position.y = -.03; scene.add(bev); }
+  // grass blades: their colour comes from the lit ground under them; they sway in the shader, so it costs nothing on the CPU
+  const rnd = rng(K.seed || 7), wind = { value: 0 };
+  const swayMat = m => { m.onBeforeCompile = sh => { sh.uniforms.uT = wind; sh.vertexShader = 'uniform float uT;\n' + sh.vertexShader.replace('#include <begin_vertex>',
+    '#include <begin_vertex>\n  float ph = instanceMatrix[3].x * .37 + instanceMatrix[3].z * .23;\n  transformed.x += (sin(uT * 1.3 + ph) * .6 + sin(uT * 2.9 + ph * 1.7) * .25) * .14 * transformed.y * transformed.y;'); }; return m; };
+  const blades = [], flowers = [];
+  K.grass.forEach(([cx, cz, rad, n, hmin, hmax, flw]) => { for (let i = 0; i < n; i++) { const a = rnd() * 6.283, r = Math.sqrt(rnd()) * rad, x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r;
+      if (Math.abs(x) < 1.25 && Math.abs(z) < 2.85) continue; if (K.podium && Math.hypot(x, z) < K.podium + .05) continue;
+      const edge = 1 - (r / rad) ** 2; blades.push({ x, z, y: hAt(x, z), h: (hmin + rnd() * (hmax - hmin)) * (.45 + .55 * edge), c: rnd() });
+      if (flw && rnd() < flw * (.25 + .75 * edge)) flowers.push({ x: x + (rnd() - .5) * .3, z: z + (rnd() - .5) * .3, h: blades[blades.length - 1].h * (.75 + rnd() * .35), s: .045 + rnd() * .04 }); } });
+  const bm = swayMat(new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })), grass = new THREE.InstancedMesh(bladeGeo(.011, 1), bm, blades.length), d = new THREE.Object3D();
+  blades.forEach((b, i) => { d.position.set(b.x, b.y - .02, b.z); d.rotation.set((rnd() - .5) * .35, rnd() * 6.3, (rnd() - .5) * .25); d.scale.set(1, b.h, 1); d.updateMatrix(); grass.setMatrixAt(i, d.matrix); });
+  grass.frustumCulled = false; scene.add(grass);
+  const lightAt = (x, z) => { const y = hAt(x, z), e = .6, nx = hAt(x - e, z) - hAt(x + e, z), nz = hAt(x, z - e) - hAt(x, z + e), l = Math.hypot(nx, 2 * e, nz); return shadeOf(x, y, z, nx / l, 2 * e / l, nz / l); };
+  blades.forEach(b => { b.sh = lightAt(b.x, b.z); b.n = fbm(b.x * .05, b.z * .05, 3); });
+  const paintGrass = () => { blades.forEach((b, i) => { grassCol(tc, Math.min(1, b.sh + .08), b.n, 1).multiplyScalar(.9 + b.c * .3); grass.setColorAt(i, tc); }); grass.instanceColor.needsUpdate = true; };
+  let daisies = null;
+  if (flowers.length) { const fm = swayMat(new THREE.MeshBasicMaterial({ map: daisyTex(), alphaTest: .5, side: THREE.DoubleSide })), fg = new THREE.PlaneGeometry(1, 1); fg.rotateX(-Math.PI / 2);
+    daisies = new THREE.InstancedMesh(fg, fm, flowers.length);
+    flowers.forEach((f, i) => { d.position.set(f.x, hAt(f.x, f.z) + f.h, f.z); d.rotation.set((rnd() - .5) * .9, rnd() * 6.3, (rnd() - .5) * .9); d.scale.set(f.s, 1, f.s); d.updateMatrix(); daisies.setMatrixAt(i, d.matrix); f.sh = lightAt(f.x, f.z); });
+    daisies.frustumCulled = false; scene.add(daisies); }
+  const paintFlowers = () => { if (!daisies) return; flowers.forEach((f, i) => { tc.copy(cur.daisyS).lerp(cur.daisy, Math.min(1, f.sh * 1.3)); daisies.setColorAt(i, tc); }); daisies.instanceColor.needsUpdate = true; };
+  // a few soft clouds low over the hills
+  const pt = softTex([[0, .95], [.5, .7], [.8, .25], [1, 0]]), puffs = [], clouds = new THREE.Group(); scene.add(clouds);
+  (K.clouds || []).forEach(([ang, dist, y, w]) => { const cx = Math.cos(ang) * dist, cz = Math.sin(ang) * dist;
+    for (let i = 0; i < 22; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: pt, transparent: true, depthWrite: false, fog: false })), u = rnd() * 2 - 1, h = rnd();
+      const sz = (10 + rnd() * 12) * w * (1 - Math.abs(u) * .45); sp.scale.set(sz * 1.7, sz * .6, 1);
+      sp.position.set(cx + u * 26 * w * -Math.sin(ang), y + h * 6 * w, cz + u * 26 * w * Math.cos(ang)); sp.userData.h = h; sp.renderOrder = Math.round(h * 50); clouds.add(sp); puffs.push(sp); } });
+  const paintClouds = () => puffs.forEach(p => { p.material.color.copy(cur.cloudB).lerp(cur.cloud, .35 + p.userData.h * .65); p.material.opacity = .9; });
   return {
     shadows: true,
     theme(dark) { tar = dark ? PAL.night : PAL.day; LT = dark ? 0 : 1; },
     update(dt, now) {
       let moving = lerpPal(cur, tar, Math.min(1, dt * 2.5));
       if (Math.abs(LT - L) > .002) { L += (LT - L) * Math.min(1, dt * 2.5); moving = true; } else L = LT;
-      if (moving || !G.done) { G.done = true; paintGrad(G, cur.top, cur.mid, cur.bot, { x: .72, y: .58, r: .55, c: cur.glow, a: .55 * L + .25 });
-        scene.fog.color.copy(cur.fog); hemi.color.copy(cur.sky); hemi.groundColor.copy(cur.gnd); sun.color.copy(cur.sun); sun.intensity = .45 + 2.05 * L;
-        wallM.color.copy(cur.wall); floorM.color.copy(cur.floor); stageM.color.copy(cur.wall); glowM.color.copy(cur.glow); glowM.opacity = .35 + .4 * (1 - L);
-        grassM.emissive.copy(cur.grass); scene.environmentIntensity = .2 + .3 * L; hemi.intensity = .3 + .32 * L; fill.intensity = .08 + .18 * L; }
-      if (now - lastSway > 33) { sway(now / 1000); lastSway = now; } return true;
+      if (moving || !G.done) { G.done = true; paintGrad(G, cur.top, cur.mid, cur.bot, { x: K.glow[0], y: K.glow[1], r: K.glow[2], c: cur.glow, a: .35 + .3 * (1 - L) });
+        scene.fog.color.copy(cur.fog); scene.fog.far = K.fogFar * (.6 + .4 * L); hemi.color.copy(cur.sky); hemi.groundColor.copy(cur.gnd); sun.color.copy(cur.sun); sun.intensity = .5 + 1.9 * L; hemi.intensity = .45 + .7 * L;
+        catcher.material.color.copy(cur.shadow); if (podM) podM.color.copy(cur.podium);
+        paintTerrain(); paintGrass(); paintFlowers(); paintClouds(); scene.environmentIntensity = .3 + .3 * L; }
+      wind.value = now / 1000; clouds.position.x = Math.sin(now / 70000) * 8; return true;
     },
   };
 }
-
-/* Lock screen: rolling meadow at golden hour, pale rocks, far peaks with snow, pink clouds, a low sun casting long shadows (day) or a violet dusk (night) */
-/* Lock screen: a painted summer meadow in the spirit of Studio Ghibli. Big soft cumulus clouds on a deep blue sky,
-   rolling hills in smooth bands of green, round trees, flowers dotted through soft grass. Day, or a violet dusk at night. */
-function meadowScene(scene) {
-  const PAL = {
-    day:   palOf({ top: '#2f7fd0', mid: '#7fb9ea', bot: '#dceff3', fog: '#cfe6ee', h1: '#3f8f3c', h2: '#7fbf4a', h3: '#c4dc6a', far: '#7fa7c9', far2: '#a9c6dc', tree: '#3d7f3a', tree2: '#5fa54a', trunk: '#6b4f3a', cloud: '#ffffff', cloudB: '#c6d6ea', sky: '#e8f4ff', gnd: '#5b8a3e', sun: '#fff1d6', flower: '#ffffff', flower2: '#ffd84d', flower3: '#b994ef' }),
-    night: palOf({ top: '#0d1236', mid: '#2c2f6b', bot: '#6a5387', fog: '#3a3766', h1: '#16301f', h2: '#25452b', h3: '#3a5a36', far: '#2c335c', far2: '#3c4472', tree: '#14281a', tree2: '#1f3a24', trunk: '#2a2230', cloud: '#b3a6d6', cloudB: '#4a4580', sky: '#6870b0', gnd: '#101a14', sun: '#b9b2ff', flower: '#cfc6ff', flower2: '#e6cf7a', flower3: '#9a7fe0' }),
-  };
-  const cur = Object.fromEntries(Object.entries(PAL.day).map(([k, v]) => [k, v.clone()]));
-  let tar = PAL.day, L = 1, LT = 1;
-  const G = gradCanvas(); scene.background = G.t; scene.fog = new THREE.Fog(cur.fog, 70, 300);
-  const hemi = new THREE.HemisphereLight(cur.sky, cur.gnd, 1.25); scene.add(hemi);
-  const sun = sunLight(cur.sun, [-24, 26, -18], 24); sun.intensity = 1.6; sun.shadow.radius = 9; scene.add(sun); scene.add(sun.target);
-  // hills: only long, low swells (no small bumps), painted in soft bands
-  const hgt = (x, z) => { const r = Math.hypot(x, z); return (Math.sin(x * .045 + .6) * Math.cos(z * .038) * 3.2 + Math.sin(x * .021 - z * .017) * 4 + 2.2) * smooth(8, 30, r) * (1 + smooth(60, 160, r) * 1.8); };
-  const tg = new THREE.PlaneGeometry(420, 420, 200, 200); tg.rotateX(-Math.PI / 2);
-  const pos = tg.attributes.position, cols = new Float32Array(pos.count * 3), MIX = [];
-  for (let i = 0; i < pos.count; i++) pos.setY(i, hgt(pos.getX(i), pos.getZ(i)));
-  tg.computeVertexNormals(); const nrm = tg.attributes.normal;
-  for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), z = pos.getZ(i); MIX.push([smooth(-.5, 7, pos.getY(i)), nrm.getY(i), fbm(x * .04, z * .04, 3)]); }
-  tg.setAttribute('color', new THREE.BufferAttribute(cols, 3));
-  // a faint brush texture so the grass reads as painted, not plastic
-  const brush = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.fillStyle = '#d8d8d8'; x.fillRect(0, 0, 256, 256);
-    for (let i = 0; i < 900; i++) { const v = 200 + Math.random() * 55 | 0; x.strokeStyle = `rgba(${v},${v},${v},.5)`; x.lineWidth = 2 + Math.random() * 3; x.lineCap = 'round';
-      const px = Math.random() * 256, py = Math.random() * 256, a = -1.2 + Math.random() * .5; x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo(px + 4, py - 6, px + Math.cos(a) * 14, py + Math.sin(a) * 14); x.stroke(); }
-    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(70, 70); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; })();
-  const terrain = new THREE.Mesh(tg, new THREE.MeshLambertMaterial({ vertexColors: true, map: brush })); terrain.receiveShadow = true; scene.add(terrain);
-  const tc = new THREE.Color();
-  const paintTerrain = () => { for (let i = 0; i < pos.count; i++) { const [h, ny, n] = MIX[i];
-      tc.copy(cur.h1).lerp(cur.h2, Math.min(1, h * .9 + n * .35)); tc.lerp(cur.h3, smooth(.55, 1, h + (n - .5) * .3) * .6 * ny); cols[i * 3] = tc.r; cols[i * 3 + 1] = tc.g; cols[i * 3 + 2] = tc.b; } tg.attributes.color.needsUpdate = true; };
-  // distant blue ridges, layered for depth
-  const farM = new THREE.MeshLambertMaterial({ color: cur.far }), far2M = new THREE.MeshLambertMaterial({ color: cur.far2 });
-  [[far2M, 230, 26], [farM, 190, 18]].forEach(([m, R, H], j) => { const g = new THREE.CylinderGeometry(R, R, 1, 160, 8, true), p = g.attributes.position;
-    for (let k = 0; k < p.count; k++) { const a = Math.atan2(p.getZ(k), p.getX(k)), top = p.getY(k) > 0; p.setY(k, top ? H * (.45 + .55 * fbm(a * 3 + j * 7, j, 3)) : -2); }
-    g.computeVertexNormals(); const ms = new THREE.Mesh(g, m); ms.material.side = THREE.BackSide; scene.add(ms); });
-  // big round trees on the hills
-  const treeM = new THREE.MeshLambertMaterial({ color: cur.tree }), tree2M = new THREE.MeshLambertMaterial({ color: cur.tree2 }), trunkM = new THREE.MeshLambertMaterial({ color: cur.trunk });
-  [[-62, -40, 1.5], [-48, -72, 1.2], [-90, -30, 1.3], [-30, -96, 1.6], [-110, -70, 1.4], [8, -88, 1.1]].forEach(([x, z, s], j) => { const t = new THREE.Group(); t.position.set(x, hgt(x, z) - .2, z); t.scale.setScalar(s); scene.add(t);
-    const tr = new THREE.Mesh(new THREE.CylinderGeometry(.22, .32, 2.6, 8), trunkM); tr.position.y = 1.3; tr.castShadow = true; t.add(tr);
-    for (let i = 0; i < 9; i++) { const b = new THREE.Mesh(new THREE.SphereGeometry(1.2 + (i % 3) * .35, 18, 14), i % 3 ? treeM : tree2M); b.position.set(Math.cos(i * 2.3 + j) * 1.2, 3 + (i % 4) * .45, Math.sin(i * 2.3 + j) * 1.2); b.castShadow = true; t.add(b); } });
-  // soft grass tufts and flowers near the car
-  const B = 1500, grassM = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
-  const grass = new THREE.InstancedMesh(bladeGeo(.09, 1), grassM, B), d = new THREE.Object3D(), GB = [], gc = new THREE.Color();
-  while (GB.length < B) { const a = Math.random() * Math.PI * 2, r = 3.4 + Math.pow(Math.random(), 1.3) * 24, x = Math.cos(a) * r, z = Math.sin(a) * r;
-    if (Math.hypot(x - 7.3, z - 7.7) < 3.5) continue; GB.push({ x, z, y: hgt(x, z), h: .07 + Math.random() * .1, ry: Math.random() * 6.3, lean: (Math.random() - .5) * .3, ph: Math.random() * 6.3, c: Math.random() }); }
-  scene.add(grass);
-  const paintGrass = () => { GB.forEach((b, i) => { gc.copy(cur.h2).lerp(cur.h3, .15 + b.c * .35); if (b.c > .9) gc.copy(b.c > .985 ? cur.flower3 : b.c > .97 ? cur.flower2 : cur.flower); grass.setColorAt(i, gc); }); grass.instanceColor.needsUpdate = true; };
-  const sway = t => { for (let i = 0; i < B; i++) { const b = GB[i]; d.position.set(b.x, b.y - .02, b.z); d.rotation.set(b.lean + Math.sin(t * 1.2 + b.x * .15 + b.z * .1) * .12, b.ry, 0); d.scale.set(1, b.h, 1); d.updateMatrix(); grass.setMatrixAt(i, d.matrix); } grass.instanceMatrix.needsUpdate = true; };
-  sway(0); let lastSway = 0;
-  // cumulus: towers of soft puffs, bright tops, cooler shaded bellies
-  const pt = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
-    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.55, 'rgba(255,255,255,.9)'); g.addColorStop(.8, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128);
-    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
-  const clouds = new THREE.Group(), puffs = []; scene.add(clouds);
-  [[-130, 14, -150, 1.4], [-60, 18, -200, 1.7], [-185, 12, -95, 1.1], [10, 16, -215, 1.2]].forEach(([cx, cy, cz, s]) => {
-    for (let i = 0; i < 34; i++) { const u = Math.random(), h = Math.pow(u, .8), w = (1 - h * .55);
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: pt, transparent: true, depthWrite: false, fog: false }));
-      const sz = (7 + Math.random() * 7) * s * (1.1 - h * .35); sp.scale.set(sz, sz, 1);
-      sp.position.set(cx + (Math.random() - .5) * 34 * s * w, cy + h * 26 * s, cz + (Math.random() - .5) * 10); sp.userData.h = h; sp.renderOrder = Math.round(h * 100); clouds.add(sp); puffs.push(sp); } });
-  const paintClouds = () => puffs.forEach(p => p.material.color.copy(cur.cloudB).lerp(cur.cloud, Math.min(1, .25 + p.userData.h * 1.3)));
+const bump = (x, z, cx, cz, r, h) => { const q = ((x - cx) ** 2 + (z - cz) ** 2) / (r * r); return q >= 1 ? 0 : h * (1 - q) * (1 - q); };
+/* Lock screen (reference 1): a white podium on a flat green, daisy-covered mounds around it, rounded hills behind, blue ridges far off */
+const LOCK = (() => { const R = rng(11), H = [];
+  for (let i = 0; i < 60; i++) { const a = R() * 6.283, d = 70 + R() * 260, r = 16 + R() * 14 + d * .12; H.push([Math.cos(a) * d, Math.sin(a) * d, r, d * (.03 + R() * .05)]); }
+  [[-70, -66, 22, 6], [-22, -100, 24, 6.5], [-110, -14, 26, 7], [36, -110, 24, 4.5], [-150, -115, 34, 10], [80, -170, 36, 8]].forEach(h => H.push(h));
+  const mounds = [[-6.5, -1.5, 4.8, 1.1], [-3.5, 6.8, 4.2, .8], [5.5, -6, 5.5, 1.2], [9, 3, 4, .6]];
   return {
-    shadows: true,
-    theme(dark) { tar = dark ? PAL.night : PAL.day; LT = dark ? 0 : 1; },
-    update(dt, now) {
-      let moving = lerpPal(cur, tar, Math.min(1, dt * 2.5));
-      if (Math.abs(LT - L) > .002) { L += (LT - L) * Math.min(1, dt * 2.5); moving = true; } else L = LT;
-      if (moving || !G.done) { G.done = true; paintGrad(G, cur.top, cur.mid, cur.bot, { x: .2, y: .35, r: .45, c: cur.sun, a: .25 + .2 * L });
-        scene.fog.color.copy(cur.fog); hemi.color.copy(cur.sky); hemi.groundColor.copy(cur.gnd); sun.color.copy(cur.sun); sun.intensity = .4 + 1.2 * L;
-        paintTerrain(); paintGrass(); paintClouds(); farM.color.copy(cur.far); far2M.color.copy(cur.far2); treeM.color.copy(cur.tree); tree2M.color.copy(cur.tree2); trunkM.color.copy(cur.trunk);
-        scene.environmentIntensity = .35 + .55 * L; hemi.intensity = .45 + .8 * L; }
-      clouds.position.x = Math.sin(now / 60000) * 6;
-      if (now - lastSway > 40) { sway(now / 1000); lastSway = now; } return true;
-    },
-  };
-}
+    seed: 5, podium: 3.6, flat: 20, fogNear: 25, fogFar: 430, sun: [-.79, .5, .2], glow: [.25, .62, .6],
+    height: (x, z) => { const r = Math.hypot(x, z); let h = (fbm(x * .012, z * .012, 3) - .5) * 3 * smooth(12, 50, r) - .3;
+      for (const [cx, cz, rr, hh] of H) h += bump(x, z, cx, cz, rr, hh) * smooth(20, 60, r);
+      for (const [cx, cz, rr, hh] of mounds) h += bump(x, z, cx, cz, rr, hh);
+      return h + smooth(300, 480, r) * 26 * fbm(Math.atan2(z, x) * 4, 1, 3); },
+    grass: [[0, 0, 14, 26000, .1, .24, 0], [-6.5, -1.5, 4.6, 7000, .24, .46, .9], [-3.5, 6.8, 4, 5500, .22, .42, .9], [5.5, -6, 5.2, 7500, .24, .46, .9], [9, 3, 3.8, 4000, .2, .38, .8], [0, 0, 28, 14000, .12, .3, .03]],
+    clouds: [[-2.2, 260, 38, 1.2], [-1.6, 300, 46, 1], [-2.9, 240, 30, .8], [-.9, 280, 42, .9]],
+    day:   { top: '#9db7df', mid: '#cbd6ee', bot: '#ecebf4', fog: '#d9dbee', glow: '#fff3e2', sky: '#dfe8ff', gnd: '#6b8f45', sun: '#fff4e0', shadow: '#24452c',
+             gs: '#2f6a2c', gm: '#5f9b33', gl: '#a6cf55', daisy: '#ffffff', daisyS: '#c9d3d6', podium: '#f2f2f6', cloud: '#ffffff', cloudB: '#c9cde3' },
+    night: { top: '#1a1d4a', mid: '#5b4f8e', bot: '#e6a9ae', fog: '#7c6d9e', glow: '#ffb59a', sky: '#7d83c4', gnd: '#1e2a26', sun: '#ffb38c', shadow: '#0d1220',
+             gs: '#142a2b', gm: '#233d33', gl: '#5b5c45', daisy: '#e8def8', daisyS: '#7e78a8', podium: '#c9c2df', cloud: '#f6c6c6', cloudB: '#6b5f9a' },
+  }; })();
+/* Home (reference 2): long smooth rolling dunes of grass, a low sun throwing long shadows across the valleys, a pale sky */
+const HOME = (() => { const R = rng(23), H = [];
+  for (let i = 0; i < 70; i++) { const a = R() * 6.283, d = 80 + R() * 260, r = 30 + R() * 40 + d * .1; H.push([Math.cos(a) * d, Math.sin(a) * d, r, 1 + d * (.015 + R() * .03)]); }
+  return {
+    seed: 9, flat: 20, fogNear: 30, fogFar: 480, sun: [.86, .19, -.36], glow: [.82, .62, .7],
+    height: (x, z) => { const r = Math.hypot(x, z); let h = (Math.sin(x * .034 + 1) * Math.cos(z * .027) * 1.3 + (fbm(x * .011, z * .011, 3) - .5) * 3.5) * smooth(10, 45, r) - smooth(40, 120, r) * 2;
+      for (const [cx, cz, rr, hh] of H) h += bump(x, z, cx, cz, rr, hh) * smooth(20, 60, r); return h; },
+    grass: [[0, 0, 13, 34000, .09, .22, 0], [0, 0, 28, 18000, .12, .28, 0]],
+    clouds: [[2.6, 300, 40, 1], [-.6, 320, 44, .9], [1.2, 280, 36, .8], [-2.4, 300, 42, 1.1]],
+    day:   { top: '#a9bde6', mid: '#d9e2f1', bot: '#f2efe6', fog: '#dfdfee', glow: '#fff1d0', sky: '#e6efff', gnd: '#6f9a3e', sun: '#fff0d2', shadow: '#1f3d22',
+             gs: '#2e5e26', gm: '#6aa12f', gl: '#b9da5a', cloud: '#ffffff', cloudB: '#cdd0e6' },
+    night: { top: '#171b45', mid: '#4d4687', bot: '#d99aa6', fog: '#6e6394', glow: '#ffae8e', sky: '#757cbf', gnd: '#1a2622', sun: '#ffaa82', shadow: '#0b1020',
+             gs: '#122728', gm: '#223b31', gl: '#5e5a44', cloud: '#f2bfc2', cloudB: '#615894' },
+  }; })();
 
 /* no downloaded lighting any more: the car uses the soft built-in studio everywhere (Adi: no hard reflections) */
 let ASSETS = {};
@@ -695,7 +694,8 @@ export async function mount(el, opt = {}) {
   await turn();   // views are built one at a time, letting the page draw in between
   const { car, body, P } = await buildCar(); scene.add(car);
   await turn();
-  const world = opt.scene === 'arches' ? archScene(scene) : opt.scene === 'meadow' ? (meadowScene(scene) || archScene(scene)) : opt.scene === 'drive' ? driveScene(scene) : null;
+  const world = opt.scene === 'arches' ? hillsScene(scene, HOME) : opt.scene === 'meadow' ? hillsScene(scene, LOCK) : opt.scene === 'drive' ? driveScene(scene) : null;
+  if (opt.scene === 'arches' || opt.scene === 'meadow') { cam.far = 900; cam.updateProjectionMatrix(); }
   if (world) { scene.environmentIntensity = .9; }
   // state, animated values
   const S = { door: { dfl: 0, dfr: 0, drl: 0, drr: 0 }, frunk: 0, boot: 0, port: 0, win: { fl: 0, fr: 0, rl: 0, rr: 0 }, mir: 0, shade: { l: 0, r: 0 }, lift: 0, head: .55, tail: .5, beam: 0, haz: 0, warn: {} };
