@@ -1992,3 +1992,23 @@
   document.addEventListener('selectstart', e => { if (e.target.closest && e.target.closest('.frame') && !e.target.closest('input, textarea')) e.preventDefault(); });
   document.querySelectorAll('.frame img').forEach(i => i.draggable = false);
 })();
+/* 48" driver display: mirrors the centre screen (speed, gear, drive mode, range, navigation, media, calls) */
+(function () {
+  const st = document.querySelector('[data-strip]'), fr = document.querySelector('.frame[data-dash]') || document.querySelector('.frame'); if (!st || !fr) return;
+  const q = (r, s) => r.querySelector(s), txt = (s, d) => { const e = q(fr, s); return e ? e.textContent.trim() : d; }, set = (s, v) => { const e = q(st, s); if (e && e.textContent !== v) e.textContent = v; };
+  function sync() {
+    set('.sp-v', txt('[data-nav="speed"]', '0')); set('.sp-lim', txt('.status .limit', '50'));
+    const g = txt('.status .gear .on', 'D'); st.querySelectorAll('.sp-gear span').forEach(s => s.classList.toggle('on', s.textContent === g));
+    set('.sp-mode', (q(fr, '.status .chip') || {}).lastChild ? q(fr, '.status .chip').lastChild.textContent.trim() : 'Comfort');
+    set('.sp-range', txt('.status .r .num', '418 km range').replace(' range', ''));
+    set('.sp-dist', txt('[data-nav="dist"]', '400 m')); set('.sp-street', txt('[data-nav="street"]', '')); set('.sp-arr', txt('[data-nav="eta"]', ''));
+    set('.sp-rem', txt('[data-nav="rem"]', ''));
+    const ic = q(fr, '[data-nav="icon"]'); if (ic) set('.sp-turn', ic.textContent.trim() || 'straight');
+    const pl = q(fr, '.player'); if (pl) { set('.sp-t', txt('.player .h3', '')); set('.sp-a', txt('.player .b2', ''));
+      const art = q(pl, '.art-fg'); const cov = q(st, '.sp-cov'), bg = art ? art.style.backgroundImage : ''; if (cov.style.backgroundImage !== bg) cov.style.backgroundImage = bg; }
+    const co = q(fr, '.callov'); const on = !!(co && co.classList.contains('on')); st.classList.toggle('calling', on);
+    if (on) { set('.sp-cn', txt('.callov .call-n', '')); set('.sp-cs', txt('.callov .call-s', '')); }
+    const dr = parseFloat(txt('[data-nav="driven"]', '0')), km = parseFloat(txt('[data-nav="km"]', '0')); if (km > 0) st.style.setProperty('--p', Math.min(100, dr / (dr + km) * 100) + '%');
+  }
+  sync(); setInterval(sync, 400);
+})();
