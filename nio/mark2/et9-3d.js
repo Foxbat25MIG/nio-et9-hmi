@@ -298,7 +298,7 @@ async function buildCar() {
   // a soft, frosted-glass volume for the cabin: reads as an interior through the roof and windows, never as a box,
   // and sits high enough that it never shows in the wheel arches
   { const g = new THREE.SphereGeometry(1, 48, 24); g.scale(.64, .29, 1.34);
-    const m = new THREE.MeshPhysicalMaterial({ color: '#b9b4c8', roughness: .55, transparent: true, opacity: .62, depthWrite: false, clearcoat: .4, clearcoatRoughness: .3 });
+    const m = new THREE.MeshPhysicalMaterial({ color: '#c9c8cf', roughness: .6, transparent: true, opacity: .5, depthWrite: false, clearcoat: .4, clearcoatRoughness: .3 });
     const cab = new THREE.Mesh(g, m); cab.position.set(0, 1.06, -.4); cab.renderOrder = 1; body.add(cab); P.cabin = cab; }
   // two sunshades under the roof glass (left / right), they roll back towards the rear
   P.shades = {};
@@ -308,17 +308,6 @@ async function buildCar() {
   { const linM = new THREE.MeshStandardMaterial({ color: '#141218', roughness: .95, side: THREE.DoubleSide });
     Object.values(P.wheels).forEach(w => { const g = new THREE.CylinderGeometry(.47, .47, .3, 40, 1, true, Math.PI * .04, Math.PI * .92); g.rotateZ(Math.PI / 2);   // top half only: never shows under the tyre
       const m = new THREE.Mesh(g, linM); m.position.copy(w.hub.position); m.position.x *= .93; body.add(m); }); }
-  // a soft, blurred hint of the cabin (seats, console) under the glass roof: seen when the sunshades open, no detail
-  { const c = document.createElement('canvas'); c.width = 256; c.height = 512; const x = c.getContext('2d');
-    x.fillStyle = '#4a4458'; x.fillRect(0, 0, 256, 512); x.filter = 'blur(10px)';
-    const seat = (cx, cy, w, h) => { x.fillStyle = '#b9b2cc'; x.beginPath(); x.roundRect(cx - w / 2, cy - h / 2, w, h, 18); x.fill(); x.fillStyle = '#d6d0e3'; x.beginPath(); x.roundRect(cx - w / 2 + 8, cy + h / 2 - 34, w - 16, 26, 10); x.fill(); };
-    x.fillStyle = '#2c2836'; x.fillRect(0, 0, 256, 70);                       // dashboard
-    seat(76, 168, 82, 118); seat(180, 168, 82, 118);                         // front seats
-    x.fillStyle = '#6a6380'; x.beginPath(); x.roundRect(112, 120, 32, 160, 12); x.fill();   // console
-    seat(76, 340, 86, 124); seat(180, 340, 86, 124);                         // rear seats
-    x.fillStyle = '#3a3546'; x.fillRect(0, 440, 256, 72);                     // boot floor
-    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-    const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 2.7), new THREE.MeshBasicMaterial({ map: t })); pl.rotation.x = -Math.PI / 2; pl.rotation.z = Math.PI; pl.position.set(0, 1.275, -.38); body.add(pl); }
   // charge port flap on the left rear quarter (green glow when open)
   const flapG = new THREE.BoxGeometry(.014, .17, .2); flapG.translate(0, 0, -.1);
   P.port = pivot('port', .975, 1.0, -2.06); const flap = new THREE.Mesh(flapG, M.paint); P.port.add(flap); body.add(P.port);
@@ -339,16 +328,23 @@ async function buildCar() {
   const soft = softTex(), poolT = softTex([[0, 1], [.5, .45], [1, 0]]);
   const halo = (c, x, y, z, sc, parent = body) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: soft, color: c, transparent: true, opacity: 0, depthWrite: false })); sp.position.set(x, y, z); sp.scale.set(sc, sc, 1); sp.name = 'fx'; parent.add(sp); return sp; };
   const pool = (c, x, z, w, l) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, l), new THREE.MeshBasicMaterial({ map: poolT, color: c, transparent: true, opacity: 0, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(x, .006, z); m.name = 'fx'; car.add(m); return m; };
-  const bt = barTex(), bar = (c, y, z, w, h) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: bt, color: c, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); sp.position.set(0, y, z); sp.scale.set(w, h, 1); sp.userData.b = [w, h]; sp.name = 'fx'; body.add(sp); return sp; };
-  P.fx = { head: [bar('#fff5e0', .82, 2.47, 2.0, .36)], tail: [bar('#ff2f48', 1.07, -2.69, 2.1, .34)],   // full-width light bars front and rear, not round dots
+  const bt = barTex(), bar = (c, y, z, w, h, bend) => {   // a flat ribbon along the curve of the nose or tail (seen from above it follows the car's outline)
+    const N = 48, pos = [], uv = [], idx = [];
+    for (let i = 0; i <= N; i++) { const u = i / N, x = (u - .5) * w, zc = z + bend * (1 - Math.pow(x / (w / 2), 2));
+      const dz = -2 * bend * x / Math.pow(w / 2, 2), l = Math.hypot(1, dz), nx = -dz / l, nz = 1 / l;
+      pos.push(x - nx * h / 2, y, zc - nz * h / 2, x + nx * h / 2, y, zc + nz * h / 2); uv.push(u, 0, u, 1); if (i < N) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: bt, color: c, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+    m.userData.b = [1, 1]; m.name = 'fx'; body.add(m); return m; };
+  P.fx = { head: [bar('#fff5e0', .84, 2.3, 1.86, .3, .22)], tail: [bar('#ff2f48', 1.08, -2.55, 1.96, .28, -.16)],   // full-width light bars front and rear, not round dots
     haz: [halo('#ffa524', .88, .78, 2.44, .9), halo('#ffa524', -.88, .78, 2.44, .9), halo('#ffa524', .9, 1.04, -2.66, .9), halo('#ffa524', -.9, 1.04, -2.66, .9)],
     hazPool: [pool('#ffa524', .9, 2.5, 1.6, 1.6), pool('#ffa524', -.9, 2.5, 1.6, 1.6), pool('#ffa524', .9, -2.75, 1.6, 1.6), pool('#ffa524', -.9, -2.75, 1.6, 1.6)],
     headPool: pool('#fff0c4', 0, 4.9, 3.6, 4.8), tailPool: pool('#ff3048', 0, -3.35, 2.8, 1.5) };
   /* Charging: a cable plugged into the left-rear port with soft pulses of light running along it into the car, and a glowing
      battery outline in the floor whose cells fill as it charges. All hidden until charging starts. */
   { const chU = { uT: { value: 0 }, uA: { value: 0 }, uL: { value: .78 } }; P.chgU = chU; const grp = new THREE.Group(); grp.visible = false; car.add(grp); P.chg = grp;
-    const path = new THREE.CatmullRomCurve3([[1.0, 1.0, -2.14], [1.2, .99, -2.18], [1.48, .82, -2.26], [1.66, .4, -2.4], [1.84, .06, -2.75], [2.3, .04, -3.5], [3.4, .04, -4.6], [5.2, .04, -5.6]].map(a => new THREE.Vector3(...a)), false, 'catmullrom', .3);
-    const cable = new THREE.Mesh(new THREE.TubeGeometry(path, 160, .028, 12), new THREE.MeshStandardMaterial({ color: '#2b2833', roughness: .45 })); cable.castShadow = true; cable.name = 'chg'; grp.add(cable);
+    const path = new THREE.CatmullRomCurve3([[1.0, 1.0, -2.14], [1.28, .96, -2.16], [1.55, .7, -2.1], [1.75, .25, -1.85], [1.95, .05, -1.3], [2.15, .04, -.5], [2.3, .04, .6], [2.4, .04, 2.2], [2.45, .04, 4]].map(a => new THREE.Vector3(...a)), false, 'centripetal');
+    const cable = new THREE.Mesh(new THREE.TubeGeometry(path, 260, .03, 16), new THREE.MeshStandardMaterial({ color: '#2b2833', roughness: .45 })); cable.castShadow = true; cable.name = 'chg'; grp.add(cable);
     const plug = new THREE.Mesh(new THREE.CylinderGeometry(.06, .07, .16, 20), new THREE.MeshStandardMaterial({ color: '#3a3644', roughness: .35, metalness: .3 })); plug.rotation.z = Math.PI / 2; plug.position.set(1.07, 1.0, -2.15); plug.name = 'chg'; grp.add(plug);
     const ring = new THREE.Mesh(new THREE.TorusGeometry(.068, .012, 10, 32), new THREE.MeshBasicMaterial({ color: '#58e39a' })); ring.rotation.y = Math.PI / 2; ring.position.set(1.155, 1.0, -2.15); ring.name = 'chg'; grp.add(ring); P.chgRing = ring;
     const flowM = new THREE.ShaderMaterial({ uniforms: chU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
@@ -357,7 +353,7 @@ async function buildCar() {
         void main() { float u = vUv.x, ph = fract(u * 7. + uT * .9); float p = smoothstep(0., .35, ph) * smoothstep(1., .55, ph);
           float edge = smoothstep(.0, .06, u) * smoothstep(1., .55, u); float a = (p * .85 + .12) * edge * uA;
           gl_FragColor = vec4(vec3(.35, .95, .62) * a, a); }` });
-    const flow = new THREE.Mesh(new THREE.TubeGeometry(path, 160, .05, 12), flowM); flow.name = 'chg'; flow.renderOrder = 3; grp.add(flow);
+    const flow = new THREE.Mesh(new THREE.TubeGeometry(path, 260, .055, 16), flowM); flow.name = 'chg'; flow.renderOrder = 3; grp.add(flow);
     // battery pack outline in the floor, seen through the body like an x-ray: rounded outline, 2 × 8 cells filling from the rear
     const packM = new THREE.ShaderMaterial({ uniforms: chU, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
       vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
@@ -894,12 +890,12 @@ function hillHJS(x, z) { const sm = (a, b, v) => { const t = Math.min(1, Math.ma
 /* ---------- viewers ---------- */
 const VIEWS = {   // camera position, target, field of view
   qc:   { p: [0, 16.2, -.001], t: [0, 0, .2], fov: 23.5, up: [0, 0, 1] },   // straight down, nose up (locked)
-  qcwinL: { p: [4.1, 2.6, -5.6], t: [0, .7, .05], fov: 34, up: [0, 1, 0] },   // left windows: seen from the left rear
-  qcwinR: { p: [-4.1, 2.6, -5.6], t: [0, .7, .05], fov: 34, up: [0, 1, 0] },  // right windows: seen from the right rear  // while the Windows menu is open: three-quarter rear view, so the glass is seen going down
+  qcwinL: { p: [4.7, 2.9, -6.4], t: [0, .7, -.35], fov: 36, up: [0, 1, 0] },   // left windows: seen from the left rear
+  qcwinR: { p: [-4.7, 2.9, -6.4], t: [0, .7, -.35], fov: 36, up: [0, 1, 0] },  // right windows: seen from the right rear  // while the Windows menu is open: three-quarter rear view, so the glass is seen going down
   ty:   { p: [0, 15.5, -.001], t: [0, 0, -.05], fov: 26, up: [0, 0, 1] },   // straight down, nose up
   side: { p: [7.4, 1.05, .1], t: [-.4, .72, .1], fov: 27, ls: 2.4 },        // driver's side, whole car (ride height shown 2.4× so it reads)
   home: { p: [-4.9, 1.85, 8.6], t: [0, .72, 0], fov: 32, shift: [.17, .07] },   // front three-quarter; orbits the car itself, drawn right of centre (clear of the Next card)
-  chg:  { p: [5.2, 2.1, -5.3], t: [.3, .55, -.8], fov: 27 },              // Charging: rear three-quarter from the left, so the port and cable are in view
+  chg:  { p: [0, 16.2, -.001], t: [.5, 0, .2], fov: 25, up: [0, 0, 1] },   // Charging: the same top view as Quick controls              // Charging: rear three-quarter from the left, so the port and cable are in view
   lock: { p: [7.3, 2.2, 7.7], t: [0, 1.45, .2], fov: 28 },                   // car in the lower half, under the clock
 };
 const viewers = new Set();
@@ -1026,7 +1022,7 @@ export async function mount(el, opt = {}) {
     Object.entries(P.wglow).forEach(([k, m]) => { m.material.opacity = (S.warn[k] || 0) * (.6 + .3 * Math.sin(now / 260)); });
     Object.entries(tyreMats).forEach(([k, m]) => { m.emissive.set('#e0303f'); m.emissiveIntensity = (S.warn[k] || 0) * (.35 + .25 * Math.sin(now / 260)); });
   }
-  function fxTint(dark) { P.fx.head.forEach(h => { h.material.color.set(dark ? '#fff7e2' : '#ffe6a6'); const [bw, bh] = h.userData.b, k = dark ? 1 : 1.1; h.scale.set(bw * k, bh * k, 1); });
+  function fxTint(dark) { P.fx.head.forEach(h => { h.material.color.set(dark ? '#fff7e2' : '#ffe6a6');  });
     P.fx.headPool.material.color.set(dark ? '#fff0c4' : '#ffd36a'); P.fx.tail.forEach(h => h.material.color.set(dark ? '#ff2f48' : '#ff1f3d')); }
   fxTint(false);
   /* Night driving headlights, the way they look from the roadside in real life: in clear air the beam itself is invisible.

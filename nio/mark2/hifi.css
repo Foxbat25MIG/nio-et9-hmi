@@ -2073,3 +2073,22 @@ html[data-theme="dark"] .hb-bar,html[data-theme="dark"] .hb-tr{background:rgba(2
 .hm-bat .hb-bar i{width:var(--bp,78%);transition:width 600ms cubic-bezier(.2,.8,.2,1)}
 .hm-bat.chg .hb-bar i{background:linear-gradient(90deg,#3f9b62 0%,#7ae6ad 45%,#3f9b62 90%);background-size:200% 100%;animation:chgShine 2.4s linear infinite}
 .chg-page.on .chg-go .ms{color:var(--t1)}
+/* Home: only the current driver's photo */
+.hm-head [data-drv]:not(.on){display:none}
+/* Quick controls: fixed, equal columns that never shift when a tile turns on */
+.qc2 .qc-side{width:380px!important;flex:none!important}
+.qc2 .qc-left,.qc2 .qc-btns{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;width:100%!important}
+.qc2 .qc-lockw,.qc2 .qc-all,.qc2 .qc-btns .qbtn{width:100%!important;min-width:0!important;box-sizing:border-box!important;margin:0!important;border-width:1px!important}
+.qc2 .qc-lock{width:100%;justify-content:center!important;align-items:center!important;text-align:left}
+.qc2 .qc-btns .qbtn,.qc2 .qc-all,.qc2 .qc-lock{font-weight:500!important;white-space:nowrap}
+/* vents: sweep shown as vertical vanes turning left and right, the way the air actually moves */
+.vent-pad.sweep .vp-blades{flex-direction:row;inset:26px 40px;perspective:260px}
+.vent-pad.sweep .vp-blades i{width:6px;height:auto;animation:vvane 3.4s cubic-bezier(.45,0,.55,1) infinite alternate}
+@keyframes vvane{from{transform:rotateY(-58deg)}to{transform:rotateY(58deg)}}
+/* rear table, seen from above: turns towards the seat it serves, and that seat lights up */
+.tray-svg{width:140px!important;height:90px!important}
+.tr-tab{transform-origin:70px 46px!important;transform:scale(.4)!important;opacity:.5;transition:transform .6s var(--ease),opacity .6s var(--ease)}
+.tray-out .tr-tab{transform:translateX(var(--tx,0px)) rotate(var(--aim,0deg))!important;opacity:1}
+.tr-tab rect{fill:#7a6fd0!important}.tr-dir{stroke:#7a6fd0;stroke-width:2;stroke-linecap:round;opacity:0}
+.tr-seat{transition:fill .4s var(--ease)}.tray-out.aim-l .tr-sl,.tray-out.aim-r .tr-sr{fill:#d9d2fa}
+.tr-l{font:600 9px "Red Hat Text",sans-serif;fill:var(--t3);text-anchor:middle}

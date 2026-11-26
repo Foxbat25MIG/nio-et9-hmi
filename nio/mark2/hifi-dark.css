@@ -570,6 +570,9 @@ html[data-theme="dark"] .chg-page.on .chg-tag{color:#b2f0cf}
 html[data-theme="dark"] .chg-fill{background-image:linear-gradient(90deg,#52c68c,#6cd8a1)}
 html[data-theme="dark"] .chg-page.on .chg-fill{background-image:linear-gradient(90deg,#52c68c 0%,#26734a 40%,#52c68c 80%)}
 html[data-theme="dark"] .hm-bat.chg .hb-bar i{background-image:linear-gradient(90deg,#46ad6d 0%,#26734a 45%,#46ad6d 90%)}
+html[data-theme="dark"] .tr-tab rect{fill:#2f2673!important}
+html[data-theme="dark"] .tr-dir{stroke:#8c82d6}
+html[data-theme="dark"] .tray-out.aim-l .tr-sl,html[data-theme="dark"] .tray-out.aim-r .tr-sr{fill:#2c2357}
 html[data-theme="dark"] [fill="#1f1c29"]{fill:hsl(var(--nh) var(--ns) calc(25% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d2840"]{fill:hsl(var(--nh) var(--ns) calc(27% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d6bb5"]{fill:#3277c9}

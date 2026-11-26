@@ -1459,7 +1459,7 @@
     scr.querySelector('.cl-fridge').classList.toggle('off', !C.frOn);
     scr.querySelector('.tray-svg').classList.toggle('tray-out', C.tray);
     scr.querySelector('.tr-st').textContent = C.tray ? 'Table is out' : 'Folded away';
-    { const aim = C.trayAim || 'c'; scr.querySelectorAll('[data-trayaim]').forEach(d => d.classList.toggle('on', d.dataset.trayaim === aim)); const tab = scr.querySelector('.tr-tab'); if (tab) tab.style.setProperty('--aim', ({ l: '-28deg', c: '0deg', r: '28deg' })[aim]);
+    { const aim = C.trayAim || 'c'; scr.querySelectorAll('[data-trayaim]').forEach(d => d.classList.toggle('on', d.dataset.trayaim === aim)); const tab = scr.querySelector('.tr-tab'); if (tab) tab.style.setProperty('--aim', ({ l: '-22deg', c: '0deg', r: '22deg' })[aim]); tab.style.setProperty('--tx', ({ l: '-18px', c: '0px', r: '18px' })[aim]); const sv = scr.querySelector('.tray-svg'); sv.classList.toggle('aim-l', aim === 'l'); sv.classList.toggle('aim-r', aim === 'r');
       const ar = scr.querySelector('.tr-aimrow'); if (ar) ar.classList.toggle('dim', !C.tray); }
     scr.querySelector('[data-cltray] span:last-child').textContent = C.tray ? 'Fold in' : 'Fold out';
     clAir(fr);
