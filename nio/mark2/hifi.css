@@ -2106,3 +2106,7 @@ html[data-theme="dark"] .qc-btns .qbtn.hz.on,html[data-theme="dark"] .qc-btns .q
 @keyframes camDrift{from{background-size:104%;background-position:48% 50%}to{background-size:108%;background-position:52% 48%}}
 .camtag{position:absolute;left:12px;top:10px;z-index:1;font:600 13px "Red Hat Text",sans-serif;color:#fff;padding:3px 10px;border-radius:999px;background:rgba(20,18,30,.45);backdrop-filter:blur(8px)}
 .camlive{position:absolute;right:12px;top:10px;z-index:1;font:700 11px "Red Hat Text",sans-serif;color:#fff;padding:3px 8px;border-radius:999px;background:#e0394b;letter-spacing:.06em}
+/* camera feeds always fill their box (cover), drifting with a gentle zoom instead of resizing the image */
+.camv{background-size:cover!important;background-position:center!important;animation:none!important}
+.camv::before{content:"";position:absolute;inset:0;background:inherit;background-size:cover;background-position:center;animation:camDrift2 9s ease-in-out infinite alternate}
+@keyframes camDrift2{from{transform:scale(1.03) translateX(-.6%)}to{transform:scale(1.07) translateX(.6%)}}
