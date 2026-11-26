@@ -1995,5 +1995,6 @@
 })();
 
 /* camera feeds: the car seen at the edge of a view is tinted to the colour chosen in Settings › Display › Car colour */
-document.querySelectorAll('.camv').forEach(c => { const m = (c.getAttribute('style') || '').match(/img\/camera\/(blindspot-right|left|right)\.jpg(\?v=\d+)?/); if (!m) return;
+const camTint = () => document.querySelectorAll('.camv:not([data-tinted])').forEach(c => { c.dataset.tinted = 1; const m = (c.getAttribute('style') || '').match(/img\/camera\/(blindspot-right|left|right)\.jpg(\?v=\d+)?/); if (!m) return;
   const t = document.createElement('i'); t.className = 'camtint'; const u = `img/camera/${m[1]}-car.png${m[2] || ''}`; t.style.webkitMaskImage = t.style.maskImage = `url(${u})`; c.appendChild(t); });
+camTint(); new MutationObserver(camTint).observe(document.body, { childList: true, subtree: true });   /* the Camera app builds its grid when opened */
