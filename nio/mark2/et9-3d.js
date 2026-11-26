@@ -51,7 +51,7 @@ function splitMesh(mesh, keyOf) {
   const mw = mesh.matrixWorld, buckets = {}, rest = [];
   for (let i = 0; i < idx.length; i += 3) {
     tmp.fromBufferAttribute(pos, idx[i]).applyMatrix4(mw); tmp2.fromBufferAttribute(pos, idx[i + 1]).applyMatrix4(mw); tmp3.fromBufferAttribute(pos, idx[i + 2]).applyMatrix4(mw);
-    const c = tmp.add(tmp2).add(tmp3).multiplyScalar(1 / 3), k = keyOf(c);
+    const zmin = Math.min(tmp.z, tmp2.z, tmp3.z), c = tmp.add(tmp2).add(tmp3).multiplyScalar(1 / 3); c.zmin = zmin; const k = keyOf(c);
     (k ? (buckets[k] = buckets[k] || []) : rest).push(idx[i], idx[i + 1], idx[i + 2]);
   }
   const out = {};
@@ -284,7 +284,7 @@ async function buildCar() {
     if (BOOT.has(mi)) { P.boot.attach(o); return; }
     if (DOOR_SRC.has(mi)) {
       // the black panel behind the side glass (mesh 56) goes down with the glass, or the window still looks shut
-      const glassKey = c => { const k = doorKey(c); return k && k[1] === 'r' && c.z < -1.2 && c.y > 1.0 ? null : k; };   // the fixed rear quarter glass stays with the body
+      const glassKey = c => { const k = doorKey(c); return k && k[1] === 'r' && (c.zmin ?? c.z) < -1.17 && c.y > 1.0 ? null : k; /* glass reaching behind the rear door frame stays put */ };   // the fixed rear quarter glass stays with the body
       const parts = splitMesh(o, mi === 56 ? (c => { const k = glassKey(c); return k && c.y > 1.12 && Math.abs(c.x) < .93 ? 'p' + k : null; }) : mi === GLASS_SIDE ? glassKey : doorKey);
       Object.entries(parts).forEach(([k, m]) => (mi === GLASS_SIDE ? P.panes[k] : k[0] === 'p' ? P.panes[k.slice(1)] : P.doors[k]).attach(m));
       if (mi === 27 || mi === 39) { o.removeFromParent(); return; }
@@ -1072,7 +1072,7 @@ export async function mount(el, opt = {}) {
       P.fx.headPool.material.opacity = S.beam * .6; P.fx.tailPool.material.opacity = S.beam * .3;
       if (beams) { const nt = world.night ? world.night() : 0, on = Math.max(S.beam, hh); beams.poolM.opacity = S.beam * nt * .85; beams.coreM.opacity = 0; beams.glowM.opacity = on * nt * .45;
         beams.tailM.opacity = 0; beams.tailGM.opacity = 0; beams.redM.opacity = S.beam * nt * .4;
-        const sp = world.sport ? world.sport() : 0; beams.trailM.opacity = sp * (.28 + .5 * nt) * Math.min(1, world.speed() / 15); P.fx.head.forEach(h => { h.material.opacity = hh * .5; });  P.fx.headPool.material.opacity = 0; P.fx.tailPool.material.opacity = 0; }
+        const sp = world.sport ? world.sport() : 0; beams.trailM.opacity = 0; P.fx.head.forEach(h => { h.material.opacity = hh * .5; });  P.fx.headPool.material.opacity = 0; P.fx.tailPool.material.opacity = 0; }
       P.fx.haz.forEach(h => h.material.opacity = blink); P.fx.hazPool.forEach(h => h.material.opacity = blink * .45); }
     Object.entries(P.wglow).forEach(([k, m]) => { m.material.opacity = (S.warn[k] || 0) * (.6 + .3 * Math.sin(now / 260)); });
     Object.entries(tyreMats).forEach(([k, m]) => { m.emissive.set('#e0303f'); m.emissiveIntensity = (S.warn[k] || 0) * (.35 + .25 * Math.sin(now / 260)); });
