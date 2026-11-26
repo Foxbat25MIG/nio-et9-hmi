@@ -294,7 +294,8 @@ async function buildCar() {
   });
   // window glass stays clean below the belt line: clip each pane at the door's sill
   P.paneMat = M.glass.clone(); P.paneMat.side = THREE.DoubleSide; P.clip = new THREE.Plane(new THREE.Vector3(0, 1, 0), -1.115); P.paneMat.clippingPlanes = [P.clip];
-  Object.values(P.panes).forEach(p => p.traverse(o => { if (o.isMesh) o.material = P.paneMat; }));
+  P.aclip = new THREE.Plane(); P.paneMatF = P.paneMat.clone(); P.paneMatF.clippingPlanes = [P.clip, P.aclip];   // front windows: also cut along the A-pillar line, so the dropping glass never shows in front of the window opening
+  Object.entries(P.panes).forEach(([k, p]) => p.traverse(o => { if (o.isMesh) o.material = k[1] === 'f' ? P.paneMatF : P.paneMat; }));
   // dark cabin, so open windows and the glass roof show an interior, not the far side of the car
   // a soft, frosted-glass volume for the cabin: reads as an interior through the roof and windows, never as a box,
   // and sits high enough that it never shows in the wheel arches
@@ -1066,12 +1067,13 @@ export async function mount(el, opt = {}) {
     if (opt.scene === 'drive') { const t = (now - t0) / 1000, sp = world.speed() / 22; bob = (Math.sin(t * 1.9) * .004 + Math.sin(t * 5.3) * .0015 * sp); pitch = Math.sin(t * 1.3 + 1) * .0025 + Math.sin(t * 4.1) * .001 * sp; }
     body.position.y = S.lift / 1000 * LS + bob; body.rotation.x = pitch;
     P.clip.constant = -(1.115 + body.position.y);
+    { const n = new THREE.Vector3(0, -2.6, -1), l = n.length(); P.aclip.set(n.divideScalar(l), (3.92 + .015) / l); body.updateMatrixWorld(); P.aclip.applyMatrix4(body.matrixWorld); }
     M.head.emissiveIntensity = S.head * 2.2 + S.beam * 1.6; M.tail.emissiveIntensity = S.tail * 2 + S.beam;
     { const hh = smooth(.62, 1, S.head) * .35 + S.beam * .6, blink = S.haz * Math.pow(Math.max(0, Math.sin(now / 1000 * Math.PI * 1.5)), .35);
       P.fx.head.forEach(h => h.material.opacity = hh * .9); P.fx.tail.forEach(h => h.material.opacity = smooth(.62, 1, S.tail) * .5 + S.beam * .6);
       P.fx.headPool.material.opacity = S.beam * .6; P.fx.tailPool.material.opacity = S.beam * .3;
       if (beams) { const nt = world.night ? world.night() : 0, on = Math.max(S.beam, hh); beams.poolM.opacity = S.beam * nt * .85; beams.coreM.opacity = 0; beams.glowM.opacity = on * nt * .45;
-        beams.tailM.opacity = 0; beams.tailGM.opacity = 0; beams.redM.opacity = S.beam * nt * .4;
+        beams.tailM.opacity = 0; beams.tailGM.opacity = Math.max(S.beam, smooth(.3, .6, S.tail)) * (.55 + .35 * nt); beams.redM.opacity = S.beam * nt * .4;
         const sp = world.sport ? world.sport() : 0; beams.trailM.opacity = 0; P.fx.head.forEach(h => { h.material.opacity = hh * .5; });  P.fx.headPool.material.opacity = 0; P.fx.tailPool.material.opacity = 0; }
       P.fx.haz.forEach(h => h.material.opacity = blink); P.fx.hazPool.forEach(h => h.material.opacity = blink * .45); }
     Object.entries(P.wglow).forEach(([k, m]) => { m.material.opacity = (S.warn[k] || 0) * (.6 + .3 * Math.sin(now / 260)); });
@@ -1102,7 +1104,7 @@ export async function mount(el, opt = {}) {
     // tail lamps and a faint red wash on the road behind
     const tailM = new THREE.SpriteMaterial({ map: coreT, color: '#ff3a50', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
     const tailGM = new THREE.SpriteMaterial({ map: softTex([[0, .5], [.35, .18], [1, 0]], 128), color: '#ff3048', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
-    { const g = new THREE.Sprite(tailGM); g.position.set(0, 1.04, -3); g.scale.set(3.4, 1.1, 1); g.name = 'fx'; body.add(g); }
+    { tailGM.map = barTex(.12, .3, .6); const g = new THREE.Sprite(tailGM); g.position.set(0, 1.06, -2.78); g.scale.set(1.15, .3, 1); g.name = 'fx'; body.add(g); }   // a soft red glow along the tail lamp, so you can see it's on
     // Sport: a soft red light trail streaming back from the tail lamps, like a long-exposure photo
     const trailT = tex(512, 64, (u, vv) => Math.pow(1 - u, 1.4) * smooth(0, .06, u) * Math.exp(-Math.pow((vv - .5) * 4.2, 2)), [255, 70, 92]);
     const trailM = new THREE.MeshBasicMaterial({ map: trailT, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
