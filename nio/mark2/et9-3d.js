@@ -587,9 +587,9 @@ export function ready() { return loadRaw(); }
    (the whole world slides past the car), so it costs almost nothing per frame. */
 const DRIVE = {   // sky top / middle / horizon, fog, grass shadow / mid / lit, road, flowers, sun, speed (m/s shown), trees, flower amount
   // Comfort: warm golden afternoon, honey light, long soft shadows
-  Comfort: { top: '#9db4df', mid: '#efd9c4', bot: '#ffe4c0', fog: '#efdcca', gs: '#557c55', gm: '#8aae4c', gl: '#e4d377', road: '#6f6879', fl: '#fff3d6', sun: '#ffd6a0', glow: '#ffd39a', cloud: '#fff3e4', cloudB: '#d9b8b8', v: 11, trees: .6, flowers: .12, snow: 0, mist: 0, blossom: 0, sx: -.62, sy: .26 },
+  Comfort: { top: '#9eaad6', mid: '#f4c999', bot: '#ffd592', fog: '#f2cfa6', gs: '#62794c', gm: '#9cab45', gl: '#f1cc63', road: '#6f6676', fl: '#fff0cc', sun: '#ffc888', glow: '#ffc27a', cloud: '#fff0dc', cloudB: '#d7a7a3', v: 11, trees: .6, flowers: .12, snow: 0, mist: 0, blossom: 0, sx: -.62, sy: .26 },
   // Eco: fresh spring morning, pale mint light, mist in the valleys, blossom trees
-  Eco:     { top: '#b7d5ef', mid: '#e4f1f0', bot: '#f6faf0', fog: '#e8f2ee', gs: '#6a9f86', gm: '#93c873', gl: '#d8efa6', road: '#7d7886', fl: '#fffbe8', sun: '#fffaf0', glow: '#fffbe6', cloud: '#ffffff', cloudB: '#dbe7ef', v: 8, trees: 1, flowers: .8, snow: 0, mist: 1, blossom: 1, sx: .35, sy: .5 },
+  Eco:     { top: '#9fd6ec', mid: '#dff4ef', bot: '#f6fcf4', fog: '#e7f6f1', gs: '#5fa38f', gm: '#8fd07e', gl: '#d4f2b0', road: '#86828e', fl: '#ffffff', sun: '#ffffff', glow: '#f4fff8', cloud: '#ffffff', cloudB: '#d6eaf0', v: 8, trees: 1, flowers: .8, snow: 0, mist: 1, blossom: 1, sx: .35, sy: .5 },
   Sport:   { top: '#5d5ea8', mid: '#e7a08e', bot: '#ffd29b', fog: '#efb59e', gs: '#5a6350', gm: '#86904c', gl: '#e0b862', road: '#564f60', fl: '#ffd9a0', sun: '#ffb070', glow: '#ffb27a', cloud: '#ffd2b4', cloudB: '#b77f9e', v: 22, trees: .3, flowers: .08, snow: 0, mist: .25, blossom: 0, sx: -.85, sy: .12 },
   Snow:    { top: '#a6bde4', mid: '#dfe7f3', bot: '#f4f6fb', fog: '#e8edf6', gs: '#aebcda', gm: '#e1e8f4', gl: '#ffffff', road: '#8b90a1', fl: '#ffffff', sun: '#fff6ea', glow: '#ffffff', cloud: '#ffffff', cloudB: '#c9d2e6', v: 6, trees: 1, flowers: 0, snow: 1, mist: .5, blossom: 0, sx: -.4, sy: .45 },
   Custom:  { top: '#5b58a4', mid: '#b49ad0', bot: '#f2c8d4', fog: '#c6aed2', gs: '#565c78', gm: '#738465', gl: '#c4ae78', road: '#5e5872', fl: '#a780e0', sun: '#ffc6a8', glow: '#ffb6c4', cloud: '#ffd7e2', cloudB: '#8f7ab8', v: 11, trees: .35, flowers: 1, snow: 0, mist: .4, blossom: 0, sx: -.7, sy: .18 },
@@ -610,6 +610,8 @@ function driveScene(scene) {
     if (!(c instanceof THREE.Color)) return [n, c];
     const t = { top: .86, mid: .78, bot: .62, fog: .72, gs: .8, gm: .8, gl: .76, road: .78, fl: .55, sun: .6, glow: .35, cloud: .7, cloudB: .8 }[n] ?? .7;
     return [n, mixS(c, n[0] === 'g' && n !== 'glow' ? NG : NIGHT, k === 'Snow' && n[0] === 'g' ? t * .8 : t)]; }))]));
+  Object.assign(NP.Eco, palOf({ top: '#0d2338', mid: '#1f4a5e', bot: '#5f8f96', fog: '#3e6a74', gs: '#17353a', gm: '#24504a', gl: '#4f7d6e', glow: '#cfe9ff', cloud: '#a8c4d8', cloudB: '#2f4f66', sun: '#bcd9ff' }));
+  Object.assign(NP.Comfort, palOf({ top: '#141634', mid: '#3b2f55', bot: '#a8676a', fog: '#5a4258', glow: '#ffae6a', sun: '#ffb27a' }));
   let dark = false, nf = 0;
   const cur = palOf(Object.fromEntries(Object.entries(P.Comfort).map(([k, v]) => [k, v instanceof THREE.Color ? v.clone() : v])));
   let mode = 'Comfort', v = P.Comfort.v, vT = v, off = 0, amt = { trees: P.Comfort.trees, flowers: P.Comfort.flowers, snow: 0, mist: 0, blossom: 0, sx: P.Comfort.sx, sy: P.Comfort.sy };
@@ -682,6 +684,10 @@ function driveScene(scene) {
   add('trees', i => { const g = new THREE.Group(), s = .9 + Math.random() * .8; g.scale.setScalar(s);
     const t = new THREE.Mesh(new THREE.CylinderGeometry(.12, .2, 1.8, 7), trunkM); t.position.y = .9; t.castShadow = true; g.add(t);
     for (let k = 0; k < 6; k++) { const b = new THREE.Mesh(new THREE.SphereGeometry(.75 + (k % 3) * .22, 16, 12), leafM[(i + k) % 3]); b.position.set(Math.cos(k * 2.1) * .55, 2.2 + (k % 3) * .4, Math.sin(k * 2.1) * .55); b.castShadow = true; g.add(b); } return g; }, 34, [-70, -18]);
+  const blM = [lamb('#f6b3cb'), lamb('#fde0ea'), lamb('#f19dbb')];
+  add('blossom', i => { const g = new THREE.Group(), s = 1 + Math.random() * .9; g.scale.setScalar(s);
+    const t = new THREE.Mesh(new THREE.CylinderGeometry(.11, .19, 1.7, 7), trunkM); t.position.y = .85; t.castShadow = true; g.add(t);
+    for (let k = 0; k < 7; k++) { const b = new THREE.Mesh(new THREE.SphereGeometry(.7 + (k % 3) * .2, 16, 12), blM[(i + k) % 3]); b.position.set(Math.cos(k * 1.9) * .6, 2.1 + (k % 3) * .38, Math.sin(k * 1.9) * .6); b.castShadow = true; g.add(b); } return g; }, 28, [-34, -9]);
   const ornM = ['#e0344b', '#ffc94d', '#6fa8ff', '#ffffff'].map(c => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: .9, roughness: .3 }));
   const starM = new THREE.MeshStandardMaterial({ color: '#ffd76a', emissive: '#ffd76a', emissiveIntensity: 1.6 }), deerM = lamb('#8a6a55'), antM = lamb('#d9cbb8');
   const deer = () => { const g = new THREE.Group(), b = (w, h, d, x, y, z, m = deerM) => { const k = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); k.position.set(x, y, z); g.add(k); return k; };
@@ -724,7 +730,7 @@ function driveScene(scene) {
   glowSun.position.set(-330, 30, -150); glowSun.scale.set(300, 300, 1); glowSun.renderOrder = -12; scene.add(glowSun);
   // morning mist lying in the valleys (Eco), a hint of haze in the other moods
   const mistT = softTex([[0, .9], [.45, .5], [1, 0]], 128), mistM = new THREE.SpriteMaterial({ map: mistT, transparent: true, opacity: 0, depthWrite: false, fog: false });
-  for (let i = 0; i < 26; i++) { const m = new THREE.Sprite(mistM), x = -30 - Math.random() * 170, z = (Math.random() - .5) * 340; m.position.set(x, 1 + Math.random() * 2.5 + (-x) * .01, z); const w = 40 + Math.random() * 60; m.scale.set(w, w * .16, 1); m.renderOrder = -5; scene.add(m); }
+  for (let i = 0; i < 34; i++) { const m = new THREE.Sprite(mistM), x = -14 - Math.pow(Math.random(), 1.5) * 150, z = (Math.random() - .5) * 300; m.position.set(x, .6 + Math.random() * 1.6 + (-x) * .012, z); const w = 26 + Math.random() * 50; m.scale.set(w, w * .14, 1); m.renderOrder = -5; scene.add(m); }
   // light in the air: drifting motes by day, fireflies at night
   const NMo = 220, mp = new Float32Array(NMo * 3), ms = new Float32Array(NMo);
   for (let i = 0; i < NMo; i++) { mp[i * 3] = -14 + Math.random() * 18; mp[i * 3 + 1] = .2 + Math.random() * 3; mp[i * 3 + 2] = (Math.random() - .5) * 40; ms[i] = Math.random() * 100; }
@@ -736,6 +742,8 @@ function driveScene(scene) {
       .replace('gl_PointSize = size;', 'gl_PointSize = size * (1. + uN * 1.3);');
     sh.fragmentShader = 'varying float vA;\n' + sh.fragmentShader.replace('#include <premultiplied_alpha_fragment>', '#include <premultiplied_alpha_fragment>\n  gl_FragColor.a *= vA;'); };
   const motes = new THREE.Points(mg, mm); motes.frustumCulled = false; scene.add(motes);
+  const moonM = new THREE.SpriteMaterial({ map: softTex([[0, 1], [.16, 1], [.2, .35], [.5, .08], [1, 0]], 128), color: '#eef6ff', transparent: true, opacity: 0, depthWrite: false, fog: false });
+  const moon = new THREE.Sprite(moonM); moon.position.set(-320, 70, 60); moon.scale.set(90, 90, 1); moon.renderOrder = -11; scene.add(moon);
   // falling snow
   const SN = 900, sg = new THREE.BufferGeometry(), sp = new Float32Array(SN * 3);
   for (let i = 0; i < SN; i++) { sp[i * 3] = -18 + Math.random() * 24; sp[i * 3 + 1] = Math.random() * 7; sp[i * 3 + 2] = (Math.random() - .5) * 30; }
@@ -753,21 +761,22 @@ function driveScene(scene) {
       nf += ((dark ? 1 : 0) - nf) * k; const day = 1 - nf;
       ['trees', 'flowers', 'snow', 'mist', 'blossom', 'sx', 'sy'].forEach(n => { amt[n] += (P[mode][n] - amt[n]) * k; });
       SUN.set(amt.sx, amt.sy, -.6).normalize(); sun.position.copy(SUN).multiplyScalar(40);
-      mistM.opacity = amt.mist * (.55 - .25 * nf); mistM.color.copy(cur.fog).lerp(cur.cloud, .4);
+      mistM.opacity = amt.mist * (.8 - .3 * nf); mistM.color.copy(cur.fog).lerp(cur.cloud, .4);
       motes.material.opacity = (.35 + .35 * nf) * (mode === 'Snow' ? 0 : 1); motes.material.color.copy(nf > .5 ? C('#ffd27a') : cur.glow); motesU.value = nf;
       scene.fog.color.copy(cur.fog); U.uFogN.value = 20; U.uFogF.value = 280 - nf * 100; scene.fog.near = 20; scene.fog.far = U.uFogF.value;
       hemi.intensity = .35 + .65 * day; hemi.groundColor.copy(cur.gm); sun.color.copy(cur.sun); sun.intensity = .25 + 1.9 * day; scene.environmentIntensity = .25 + .5 * day;
       roadM.color.copy(cur.road); kerbM.color.setScalar(.35 + .5 * day);
       U.uFlA.value = amt.flowers * (mode === 'Snow' ? 0 : 1); U.uT.value = t;
       puffs.forEach(p => p.material.color.copy(cur.cloudB).lerp(cur.cloud, .35 + p.userData.h * .65)); glowSun.material.color.copy(cur.glow).multiplyScalar((.32 + .2 * (mode === 'Sport' || mode === 'Comfort' ? 1 : 0)) * (1 - nf * .6)); glowSun.position.set(-330, 18 + amt.sy * 80, -150 - amt.sx * 120);
+      blM.forEach((m, i) => m.color.set(['#f6b3cb', '#fde0ea', '#f19dbb'][i]).lerp(C('#9fb8d8'), nf * .35).multiplyScalar(.5 + .5 * day));
       leafM.forEach((m, i) => m.color.set(['#6fae4a', '#88c25a', '#5d9c45'][i]).lerp(cur.gl, .18).lerp(C(['#f6b3cb', '#a9d77e', '#fdd6e3'][i]), amt.blossom * (i === 1 ? .5 : .95)).multiplyScalar(.3 + .7 * day));
       v += (vT - v) * k; off += v * dt; U.uOff.value = off;
       rt.offset.y = -(off / 400 * 20) % 1;
       snow.material.opacity = amt.snow * .9;
       { const tt = t % 26; sleigh.visible = mode === 'Snow' && tt < 11; sleigh.position.z = -50 + tt * 9; sleigh.position.y = 9 + Math.sin(tt * 2.2) * .3; }
       if (snow.material.opacity > .01) { for (let i = 0; i < SN; i++) { sp[i * 3 + 1] -= dt * 1.1; sp[i * 3 + 2] -= dt * v * .85; if (sp[i * 3 + 1] < 0) sp[i * 3 + 1] += 7; if (sp[i * 3 + 2] < -15) sp[i * 3 + 2] += 30; } sg.attributes.position.needsUpdate = true; }
-      lampHaloM.opacity = nf * .9; lampPoolM.opacity = nf * .55; bulbM.emissiveIntensity = .4 + nf * 3;
-      const show = { trees: mode !== 'Snow', pines: mode === 'Snow', lamps: true };
+      moonM.opacity = nf * amt.mist * .95; lampHaloM.opacity = nf * .9; lampPoolM.opacity = nf * .55; bulbM.emissiveIntensity = .4 + nf * 3;
+      const show = { trees: mode !== 'Snow' && mode !== 'Eco', blossom: mode === 'Eco', pines: mode === 'Snow', lamps: mode !== 'Eco' };
       Object.entries(sets).forEach(([kind, g]) => { g.visible = show[kind]; if (!g.visible) return;
         g.userData.items.forEach(o => { o.position.z -= v * dt; if (o.position.z < -LZ / 2) o.position.z += LZ;
           if (kind === 'trees') o.visible = o.userData.r < amt.trees;
