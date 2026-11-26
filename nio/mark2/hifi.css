@@ -2038,3 +2038,5 @@ html[data-theme="dark"] .hb-bar,html[data-theme="dark"] .hb-tr{background:rgba(2
 /* Podcasts widget open: the covers stop before the fold button's column */
 .hm-pod:not(.min){padding-right:56px!important}
 .hm-pod:not(.min)>.hm-tg{right:12px}
+/* Driving: a soft cinematic vignette over the scene */
+.dm-c3d.c3d-host::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:16px;background:radial-gradient(ellipse 75% 70% at 50% 46%,rgba(0,0,0,0) 62%,rgba(40,28,64,.16) 100%)}

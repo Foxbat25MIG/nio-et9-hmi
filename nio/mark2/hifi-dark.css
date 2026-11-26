@@ -564,6 +564,7 @@ html[data-theme="dark"] .hb-bar i{background-color:#46ad6d}
 html[data-theme="dark"] .hb-tr{stroke:rgba(4,3,10,0.29)}
 html[data-theme="dark"] .hb-v{stroke:#46ad6d}
 html[data-theme="dark"] .lk-bar::after{background-color:#2f2673}
+html[data-theme="dark"] .dm-c3d.c3d-host::after{background-image:radial-gradient(ellipse 75% 70% at 50% 46%,rgba(4,3,10,0.00) 62%,rgba(4,3,10,0.38) 100%)}
 html[data-theme="dark"] [fill="#1f1c29"]{fill:hsl(var(--nh) var(--ns) calc(25% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d2840"]{fill:hsl(var(--nh) var(--ns) calc(27% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d6bb5"]{fill:#3277c9}
