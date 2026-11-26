@@ -595,11 +595,11 @@ const DRIVE = {   // sky top / middle / horizon, fog, grass shadow / mid / lit, 
   Custom:  { top: '#5b58a4', mid: '#b49ad0', bot: '#f2c8d4', fog: '#c6aed2', gs: '#565c78', gm: '#738465', gl: '#c4ae78', road: '#5e5872', fl: '#a780e0', sun: '#ffc6a8', glow: '#ffb6c4', cloud: '#ffd7e2', cloudB: '#8f7ab8', field: 0, v: 11, trees: .35, flowers: 1, snow: 0, mist: .4, blossom: 0, sx: -.7, sy: .18 },
 };
 const DRIVE_GLSL = `
-uniform float uOff, uT;
+uniform float uOff, uT, uMount;
 float hillH(vec2 p) {   // p = (x, z) in the moving world; the road runs along z at x = -1.6
   float far = smoothstep(10., 45., -p.x), farther = smoothstep(70., 260., -p.x);
   float h = sin(p.y * .021 + sin(p.y * .007) * 2.) * 3. + sin(p.y * .047 + 1.3) * 1.5 + sin(p.x * .031 + p.y * .013) * 2.4 + 3.2;
-  float y = far * h * (1. + farther * 3.2) + smoothstep(5.8, 14., -p.x) * sin(p.y * .09) * .25;
+  float y = far * h * (1. + farther * 1.6) + smoothstep(5.8, 14., -p.x) * sin(p.y * .09) * .25;
   return mix(y, -.06, step(-5.75, p.x) * step(p.x, 2.45));   // tucked under the road
 }`;
 function driveScene(scene) {
@@ -615,11 +615,11 @@ function driveScene(scene) {
   Object.assign(NP.Eco, palOf({ top: '#0f2a2a', mid: '#244e46', bot: '#6c9a88' }));
   let dark = false, nf = 0;
   const cur = palOf(Object.fromEntries(Object.entries(P.Comfort).map(([k, v]) => [k, v instanceof THREE.Color ? v.clone() : v])));
-  let mode = 'Comfort', v = P.Comfort.v, vT = v, off = 0, amt = { trees: P.Comfort.trees, flowers: P.Comfort.flowers, snow: 0, mist: 0, blossom: 0, field: 1, sx: P.Comfort.sx, sy: P.Comfort.sy };
+  let mode = 'Comfort', v = P.Comfort.v, vT = v, off = 0, amt = { sport: 0, trees: P.Comfort.trees, flowers: P.Comfort.flowers, snow: 0, mist: 0, blossom: 0, field: 1, sx: P.Comfort.sx, sy: P.Comfort.sy };
   const G = gradCanvas(); scene.background = G.t; scene.fog = new THREE.Fog(cur.fog, 30, 330);
   const hemi = new THREE.HemisphereLight('#eef2ff', '#6f8a4a', 1.0); scene.add(hemi);
   const SUN = new THREE.Vector3(-.55, .5, -.65).normalize(), sun = sunLight('#fff0d2', SUN.clone().multiplyScalar(40).toArray(), 9); sun.shadow.radius = 6; scene.add(sun); scene.add(sun.target);
-  const U = { uOff: { value: 0 }, uT: { value: 0 }, uGs: { value: cur.gs }, uGm: { value: cur.gm }, uGl: { value: cur.gl }, uFog: { value: cur.fog }, uFogN: { value: 30 }, uFogF: { value: 330 }, uSun: { value: SUN }, uFl: { value: cur.fl }, uFlA: { value: 0 }, uField: { value: 1 } };
+  const U = { uOff: { value: 0 }, uT: { value: 0 }, uGs: { value: cur.gs }, uGm: { value: cur.gm }, uGl: { value: cur.gl }, uFog: { value: cur.fog }, uFogN: { value: 30 }, uFogF: { value: 330 }, uSun: { value: SUN }, uFl: { value: cur.fl }, uFlA: { value: 0 }, uField: { value: 1 }, uDay: { value: 1 }, uMount: { value: 0 } };
   // hills: a big grid, fine near the road; height, light and colour all come from the shader
   const xs = []; for (let x = 30; x > -380; x -= x > -14 ? .8 : x > -60 ? 2.5 : 6) xs.push(x);
   const NZ = 240, zs = Array.from({ length: NZ + 1 }, (_, i) => -300 + i * 600 / NZ);
@@ -628,24 +628,25 @@ function driveScene(scene) {
   for (let j = 0; j < NZ; j++) for (let i = 0; i < xs.length - 1; i++) { const a = j * xs.length + i, b = a + 1, c = a + xs.length, d = c + 1; hi.push(a, c, b, b, c, d); }
   const hg = new THREE.BufferGeometry(); hg.setAttribute('position', new THREE.BufferAttribute(hp, 3)); hg.setIndex(hi);
   const hillM = new THREE.ShaderMaterial({ uniforms: U, side: THREE.DoubleSide, vertexShader: DRIVE_GLSL + `
-    uniform vec3 uSun; varying float vS; varying float vD; varying vec2 vW;
-    void main() { vec2 w = vec2(position.x, position.z + uOff); float h = hillH(w), e = .8;
+    uniform vec3 uSun; varying float vS; varying float vD; varying vec2 vW; varying float vH;
+    void main() { vec2 w = vec2(position.x, position.z + uOff); float h = hillH(w), e = .8; vH = h;
       vec3 n = normalize(vec3(hillH(w - vec2(e, 0.)) - hillH(w + vec2(e, 0.)), 2. * e, hillH(w - vec2(0., e)) - hillH(w + vec2(0., e))));
       vS = clamp((dot(n, uSun) + .25) / 1.25, 0., 1.); vW = w; vec4 mv = modelViewMatrix * vec4(position.x, h, position.z, 1.); vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `uniform vec3 uGs, uGm, uGl, uFog; uniform float uFogN, uFogF, uT, uField; varying float vS; varying float vD; varying vec2 vW;
+    fragmentShader: `uniform vec3 uGs, uGm, uGl, uFog; uniform float uFogN, uFogF, uT, uField, uDay, uMount; varying float vS; varying float vD; varying vec2 vW; varying float vH;
     float hsh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     void main() { float t = clamp(.18 + vS * 1.0, 0., 1.); vec3 c = t < .5 ? mix(uGs, uGm, t * 2.) : mix(uGm, uGl, (t - .5) * 2.);
       float n = sin(vW.x * .11 + sin(vW.y * .05) * 2.) * .5 + .5; c *= .9 + .16 * n;
       float g = sin(dot(vW, vec2(.38, .92)) * .23 - uT * 1.25) * .5 + .5; c *= 1. + g * g * .06;
       c *= .8 + .2 * smoothstep(7., 30., abs(vW.x + 1.6));
-      if (uField > .01) {   // a flower field: dots of pink, white, lilac and butter yellow, melting into a soft pastel tint with distance
+            if (uField > .01) {   // a flower field: dots of pink, white, lilac and butter yellow, melting into a soft pastel tint with distance
         vec2 cell = floor(vW * 3.2); float r = hsh(cell), r2 = hsh(cell + 17.3); vec2 f = fract(vW * 3.2) - .5;
         vec3 fc = r2 < .3 ? vec3(1., .72, .84) : r2 < .55 ? vec3(1.) : r2 < .8 ? vec3(.83, .72, 1.) : vec3(1., .93, .6);
         float dotA = smoothstep(.42, .2, length(f)) * step(.18, r);
         float near = 1. - smoothstep(30., 110., vD), band = .5 + .5 * sin(vW.y * .06 + vW.x * .09);
         vec3 tint = mix(vec3(.93, .8, .95), vec3(1., .9, .93), band);
-        c = mix(c, fc * (.75 + .3 * vS), dotA * near * .9 * uField);
-        c = mix(c, c * .4 + tint * .65 * (.75 + .35 * vS), (1. - near * .6) * .8 * uField * smoothstep(7., 16., -vW.x));
+        float dk = mix(.2, 1., uDay);
+        c = mix(c, fc * (.75 + .3 * vS) * dk, dotA * near * .9 * uField * mix(.35, 1., uDay));
+        c = mix(c, c * .4 + tint * .65 * (.75 + .35 * vS) * dk, (1. - near * .6) * .8 * uField * mix(.3, 1., uDay) * smoothstep(7., 16., -vW.x));
       }
       gl_FragColor = vec4(mix(c, uFog, smoothstep(uFogN, uFogF, vD)), 1.);
       #include <tonemapping_fragment>
@@ -661,6 +662,11 @@ function driveScene(scene) {
   road.rotation.x = -Math.PI / 2; road.position.set(-1.6, 0, 0); road.receiveShadow = true; scene.add(road);
   const kerbM = new THREE.MeshStandardMaterial({ color: '#cfcad8', roughness: .9 });
   [-5.5, 2.3].forEach(x => { const k = new THREE.Mesh(new THREE.BoxGeometry(.22, .06, 400), kerbM); k.position.set(x, .03, 0); k.receiveShadow = true; scene.add(k); });
+  // Sport: soft red-and-white race kerbs along both edges
+  const rumbleT = (() => { const c = document.createElement('canvas'); c.width = 8; c.height = 64; const x = c.getContext('2d'); x.fillStyle = '#f4f1f4'; x.fillRect(0, 0, 8, 64); x.fillStyle = '#e0465e'; x.fillRect(0, 0, 8, 32);
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 100); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.LinearFilter; return t; })();
+  const rumbleM = new THREE.MeshStandardMaterial({ map: rumbleT, roughness: .6, transparent: true, opacity: 0 });
+  [-5.3, 2.1].forEach(x => { const r = new THREE.Mesh(new THREE.PlaneGeometry(.55, 400), rumbleM); r.rotation.x = -Math.PI / 2; r.position.set(x, .065, 0); r.receiveShadow = true; scene.add(r); });
   // verge grass and flowers on both sides, moving with the world, swaying in the same gusts as Home
   const vergeMat = (flower) => { const m = flower ? new THREE.MeshBasicMaterial({ map: daisyTex(), alphaTest: .5, side: THREE.DoubleSide }) : new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
     m.onBeforeCompile = sh => { Object.assign(sh.uniforms, U);
@@ -673,8 +679,8 @@ function driveScene(scene) {
   mvPosition.z -= (.15 + .5 * g) * hf * hf * bh;
   vR = rnd;
   mvPosition = modelViewMatrix * mvPosition; gl_Position = projectionMatrix * mvPosition;`);
-      sh.fragmentShader = 'uniform vec3 uGs, uGm, uGl, uFl; uniform float uFlA, uField;\nvarying vec2 vR;\n' + sh.fragmentShader.replace('#include <color_fragment>', flower
-        ? '#include <color_fragment>\n  if (vR.x > uFlA) discard; vec3 fcol = vR.y < .3 ? vec3(1., .66, .8) : vR.y < .55 ? vec3(1.) : vR.y < .8 ? vec3(.8, .66, 1.) : vec3(1., .9, .5); diffuseColor.rgb *= mix(uFl, fcol, uField);'
+      sh.fragmentShader = 'uniform vec3 uGs, uGm, uGl, uFl; uniform float uFlA, uField, uDay;\nvarying vec2 vR;\n' + sh.fragmentShader.replace('#include <color_fragment>', flower
+        ? '#include <color_fragment>\n  if (vR.x > uFlA) discard; vec3 fcol = vR.y < .3 ? vec3(1., .66, .8) : vR.y < .55 ? vec3(1.) : vR.y < .8 ? vec3(.8, .66, 1.) : vec3(1., .9, .5); diffuseColor.rgb *= mix(uFl, fcol * mix(.25, 1., uDay), uField);'
         : '#include <color_fragment>\n  vec3 base = mix(uGm, uGl, vR.x); base = mix(base, uGs, vR.y * .55); diffuseColor.rgb *= base * 1.05;'); };
     return m; };
   const vergeSpots = (n, f) => { const out = []; for (let i = 0; i < n; i++) { const side = Math.random() < .55; const x = side ? 2.5 + Math.random() * 4.6 : -5.75 - Math.pow(Math.random(), 1.4) * 9; out.push([x, side ? -13 + Math.random() * 26 : -40 + Math.random() * 80]); } return out; };
@@ -720,13 +726,13 @@ function driveScene(scene) {
     const t = new THREE.Mesh(new THREE.CylinderGeometry(.08, .12, .8, 6), trunkM); t.position.y = .4; g.add(t);
     [0, 1, 2].forEach(k => { const c = new THREE.Mesh(new THREE.ConeGeometry(1.1 - k * .3, 1.3, 12), k === 2 ? snowCapM : pineM[k % 2]); c.position.y = 1.1 + k * .75; c.castShadow = true; g.add(c); }); return g; }, 30, [-34, -9]);
   // street lamps on the far verge; at night the bulbs glow and throw warm pools on the road
-  const lampHaloM = new THREE.SpriteMaterial({ map: softTex(), color: '#ffd9a6', transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending });
+  const lampHaloM = new THREE.SpriteMaterial({ map: softTex([[0, .55], [.3, .2], [.7, .04], [1, 0]], 128), color: '#ffd9a6', transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending });
   const lampPoolM = new THREE.MeshBasicMaterial({ map: softTex([[0, 1], [.5, .5], [1, 0]]), color: '#ffcf8f', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
   const bulbM = new THREE.MeshStandardMaterial({ color: '#ffe9c9', emissive: '#ffe9c9', emissiveIntensity: 1 }), poleM = new THREE.MeshStandardMaterial({ color: '#8d84a3', roughness: .6 });
   add('lamps', () => { const g = new THREE.Group(); const p = new THREE.Mesh(new THREE.CylinderGeometry(.05, .07, 3.4, 8), poleM); p.position.y = 1.7; g.add(p);
     const a = new THREE.Mesh(new THREE.BoxGeometry(1.5, .07, .07), poleM); a.position.set(.72, 3.35, 0); g.add(a);
     const b = new THREE.Mesh(new THREE.BoxGeometry(.5, .08, .2), bulbM); b.position.set(1.42, 3.28, 0); g.add(b);
-    const h = new THREE.Sprite(lampHaloM); h.position.set(1.42, 3.2, 0); h.scale.set(1.6, 1.6, 1); g.add(h);
+    const h = new THREE.Sprite(lampHaloM); h.position.set(1.42, 3.15, 0); h.scale.set(3.2, 3.2, 1); g.add(h);
     const pl = new THREE.Mesh(new THREE.PlaneGeometry(7, 7), lampPoolM); pl.rotation.x = -Math.PI / 2; pl.position.set(2.6, .012, 0); g.add(pl); return g; }, 8, [-6.3, -6.2]);
   const sleigh = new THREE.Group(); sleigh.position.set(-40, 9, -40); scene.add(sleigh);
   { const red = new THREE.MeshStandardMaterial({ color: '#c8263c', roughness: .5 }), gold = new THREE.MeshStandardMaterial({ color: '#e8b64a', metalness: .6, roughness: .3 });
@@ -745,6 +751,23 @@ function driveScene(scene) {
       const sz = (10 + Math.random() * 10) * w * (1.15 - h * .35); sp.scale.set(sz, sz * .9, 1); sp.position.set(-dx, y + h * 12 * w, cz + u * 26 * w); sp.userData.h = h; sp.renderOrder = -10; clouds.add(sp); puffs.push(sp); } });
   const glowSun = new THREE.Sprite(new THREE.SpriteMaterial({ map: softTex([[0, 1], [.2, .55], [.55, .14], [1, 0]]), transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
   glowSun.position.set(-330, 30, -150); glowSun.scale.set(300, 300, 1); glowSun.renderOrder = -12; scene.add(glowSun);
+  // Sport: a soft, hazy mountain range far behind the hills, with snowy tops
+  const mN = 440, mpos = [], mcol = [], midx = [], mtop = new THREE.Color('#fbf5fb'), mmid = new THREE.Color('#9f98c6'), mbot = new THREE.Color('#d9c4d8');
+  for (let i = 0; i <= mN; i++) { const z = -900 + i * 1800 / mN, r = Math.abs(Math.sin(z * .006 + 1.3) + .6 * Math.sin(z * .015 + .4) + .3 * Math.sin(z * .041)), h = 30 + 70 * Math.pow(r * .55, 1.5);
+    mpos.push(-420, -10, z, -420, h, z); const snow = smooth(55, 80, h); mcol.push(mbot.r, mbot.g, mbot.b); const tc2 = mmid.clone().lerp(mtop, snow); mcol.push(tc2.r, tc2.g, tc2.b);
+    if (i < mN) { const a = i * 2; midx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } }
+  const mg2 = new THREE.BufferGeometry(); mg2.setAttribute('position', new THREE.Float32BufferAttribute(mpos, 3)); mg2.setAttribute('color', new THREE.Float32BufferAttribute(mcol, 3)); mg2.setIndex(midx);
+  const mountM = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, fog: false, depthWrite: false, side: THREE.DoubleSide });
+  const mount = new THREE.Mesh(mg2, mountM); mount.renderOrder = -9; mount.frustumCulled = false; scene.add(mount);
+  // Sport: soft streaks of light rushing past, like a long-exposure photo of a race track
+  const streakT = (() => { const c = document.createElement('canvas'); c.width = 256; c.height = 16; const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 256, 0);
+    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.7, 'rgba(255,255,255,.9)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 256, 16);
+    x.globalCompositeOperation = 'destination-in'; const v2 = x.createLinearGradient(0, 0, 0, 16); v2.addColorStop(0, 'rgba(0,0,0,0)'); v2.addColorStop(.5, 'rgba(0,0,0,1)'); v2.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = v2; x.fillRect(0, 0, 256, 16);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  const streakM = [new THREE.MeshBasicMaterial({ map: streakT, color: '#ff5a72', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }),
+    new THREE.MeshBasicMaterial({ map: streakT, color: '#fff1dc', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false })];
+  const streaks = Array.from({ length: 16 }, (_, i) => { const L = 6 + Math.random() * 10, m = new THREE.Mesh(new THREE.PlaneGeometry(L, .05 + Math.random() * .06), streakM[i % 2]);
+    m.rotation.y = Math.PI / 2; m.position.set(i % 3 ? -5.2 - Math.random() * 3 : 2.6 + Math.random() * 2, .25 + Math.random() * 1.3, (Math.random() - .5) * 60); m.userData.sp = .6 + Math.random() * .7; scene.add(m); return m; });
   // morning mist lying in the valleys (Eco), a hint of haze in the other moods
   const mistT = softTex([[0, .9], [.45, .5], [1, 0]], 128), mistM = new THREE.SpriteMaterial({ map: mistT, transparent: true, opacity: 0, depthWrite: false, fog: false });
   for (let i = 0; i < 34; i++) { const m = new THREE.Sprite(mistM), x = -14 - Math.pow(Math.random(), 1.5) * 150, z = (Math.random() - .5) * 300; m.position.set(x, .6 + Math.random() * 1.6 + (-x) * .012, z); const w = 26 + Math.random() * 50; m.scale.set(w, w * .14, 1); m.renderOrder = -5; scene.add(m); }
@@ -770,20 +793,23 @@ function driveScene(scene) {
     shadows: true,
     mode(m) { if (!P[m]) return; mode = m; vT = P[m].v; },
     night: () => nf,
+    sport: () => amt.sport,
     theme(d) { dark = d; },
     speed: () => v,
     update(dt, now) {
       const tar = (dark ? NP : P)[mode], k = Math.min(1, dt * 2.2), t = now / 1000;
       if (lerpPal(cur, tar, k) || !G.done) { G.done = true; paintGrad(G, cur.top, cur.mid, cur.bot, { x: .3, y: .62, r: .6, c: cur.glow, a: .4 }); }
       nf += ((dark ? 1 : 0) - nf) * k; const day = 1 - nf;
-      ['trees', 'flowers', 'snow', 'mist', 'blossom', 'field', 'sx', 'sy'].forEach(n => { amt[n] += (P[mode][n] - amt[n]) * k; });
+      ['trees', 'flowers', 'snow', 'mist', 'blossom', 'field', 'sx', 'sy'].forEach(n => { amt[n] += (P[mode][n] - amt[n]) * k; }); amt.sport += ((mode === 'Sport' ? 1 : 0) - amt.sport) * k;
+      rumbleM.opacity = amt.sport; streakM[0].opacity = amt.sport * (.35 + .4 * nf); streakM[1].opacity = amt.sport * (.25 + .35 * nf); mountM.opacity = amt.sport; mountM.color.setScalar(.45 + .55 * day);
+      if (amt.sport > .01) streaks.forEach(m => { m.position.z -= v * m.userData.sp * dt * 1.6; if (m.position.z < -32) m.position.z += 64; }); rumbleT.offset.y = -(off / 400 * 100) % 1; rumbleM.color.setScalar(.35 + .65 * day);
       SUN.set(amt.sx, amt.sy, -.6).normalize(); sun.position.copy(SUN).multiplyScalar(40);
       mistM.opacity = amt.mist * (.8 - .3 * nf); mistM.color.copy(cur.fog).lerp(cur.cloud, .4);
       motes.material.opacity = (.35 + .35 * nf) * (mode === 'Snow' ? 0 : 1); motes.material.color.copy(nf > .5 ? C('#ffd27a') : cur.glow); motesU.value = nf;
       scene.fog.color.copy(cur.fog); U.uFogN.value = 20; U.uFogF.value = 280 - nf * 100; scene.fog.near = 20; scene.fog.far = U.uFogF.value;
       hemi.intensity = .35 + .65 * day; hemi.groundColor.copy(cur.gm); sun.color.copy(cur.sun); sun.intensity = .25 + 1.9 * day; scene.environmentIntensity = .25 + .5 * day;
       roadM.color.copy(cur.road); kerbM.color.setScalar(.35 + .5 * day);
-      U.uFlA.value = amt.flowers * (mode === 'Snow' ? 0 : 1); U.uField.value = amt.field; U.uT.value = t;
+      U.uFlA.value = amt.flowers * (mode === 'Snow' ? 0 : 1); U.uField.value = amt.field; U.uDay.value = day; U.uMount.value = amt.sport; U.uT.value = t;
       puffs.forEach(p => p.material.color.copy(cur.cloudB).lerp(cur.cloud, .35 + p.userData.h * .65)); glowSun.material.color.copy(cur.glow).multiplyScalar((.32 + .2 * (mode === 'Sport' || mode === 'Comfort' ? 1 : 0)) * (1 - nf * .6)); glowSun.position.set(-330, 18 + amt.sy * 80, -150 - amt.sx * 120);
       blM.forEach((m, i) => m.color.set(['#f6b3cb', '#fde0ea', '#f19dbb'][i]).lerp(C('#9fb8d8'), nf * .35).multiplyScalar(.5 + .5 * day));
       leafM.forEach((m, i) => m.color.set(['#6fae4a', '#88c25a', '#5d9c45'][i]).lerp(cur.gl, .18).lerp(C(['#f6b3cb', '#a9d77e', '#fdd6e3'][i]), amt.blossom * (i === 1 ? .5 : .95)).multiplyScalar(.3 + .7 * day));
@@ -792,7 +818,7 @@ function driveScene(scene) {
       snow.material.opacity = amt.snow * .9;
       { const tt = t % 26; sleigh.visible = mode === 'Snow' && tt < 11; sleigh.position.z = -50 + tt * 9; sleigh.position.y = 9 + Math.sin(tt * 2.2) * .3; }
       if (snow.material.opacity > .01) { for (let i = 0; i < SN; i++) { sp[i * 3 + 1] -= dt * 1.1; sp[i * 3 + 2] -= dt * v * .85; if (sp[i * 3 + 1] < 0) sp[i * 3 + 1] += 7; if (sp[i * 3 + 2] < -15) sp[i * 3 + 2] += 30; } sg.attributes.position.needsUpdate = true; }
-      moonM.opacity = nf * amt.mist * .95; lampHaloM.opacity = nf * .9; lampPoolM.opacity = nf * .55; bulbM.emissiveIntensity = .4 + nf * 3;
+      moonM.opacity = nf * amt.mist * .95; lampHaloM.opacity = nf * .6; lampPoolM.opacity = nf * .5; bulbM.emissiveIntensity = .3 + nf * 1.2;
       const show = { trees: mode !== 'Snow' && mode !== 'Eco', blossom: mode === 'Eco', pines: mode === 'Snow', lamps: mode !== 'Eco', sheep: mode === 'Comfort' };
       woolM.color.set('#f8f6f2').multiplyScalar(.35 + .65 * day);
       Object.entries(sets).forEach(([kind, g]) => { g.visible = show[kind]; if (!g.visible) return;
@@ -807,7 +833,7 @@ function driveScene(scene) {
 function hillHJS(x, z) { const sm = (a, b, v) => { const t = Math.min(1, Math.max(0, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
   const far = sm(10, 45, -x), farther = sm(70, 260, -x);
   const h = Math.sin(z * .021 + Math.sin(z * .007) * 2) * 3 + Math.sin(z * .047 + 1.3) * 1.5 + Math.sin(x * .031 + z * .013) * 2.4 + 3.2;
-  return far * h * (1 + farther * 3.2) + sm(5.8, 14, -x) * Math.sin(z * .09) * .25; }
+  return far * h * (1 + farther * 1.6) + sm(5.8, 14, -x) * Math.sin(z * .09) * .25; }
 
 /* ---------- viewers ---------- */
 const VIEWS = {   // camera position, target, field of view
@@ -895,7 +921,7 @@ export async function mount(el, opt = {}) {
   const { car, body, P } = await buildCar(); scene.add(car);
   await turn();
   const world = opt.scene === 'arches' ? hillsScene(scene, HOME) : opt.scene === 'meadow' ? hillsScene(scene, LOCK) : opt.scene === 'drive' ? driveScene(scene) : null;
-  if (opt.scene === 'arches' || opt.scene === 'meadow') { cam.far = 900; cam.updateProjectionMatrix(); }
+  if (opt.scene === 'arches' || opt.scene === 'meadow' || opt.scene === 'drive') { cam.far = 900; cam.updateProjectionMatrix(); }
   if (world) { scene.environmentIntensity = .9; }
   // state, animated values
   const S = { door: { dfl: 0, dfr: 0, drl: 0, drr: 0 }, frunk: 0, boot: 0, port: 0, win: { fl: 0, fr: 0, rl: 0, rr: 0 }, mir: 0, shade: { l: 0, r: 0 }, lift: 0, head: .55, tail: .5, beam: 0, haz: 0, warn: {} };
@@ -931,8 +957,9 @@ export async function mount(el, opt = {}) {
     { const hh = smooth(.62, 1, S.head) * .35 + S.beam * .6, blink = S.haz * Math.pow(Math.max(0, Math.sin(now / 1000 * Math.PI * 1.5)), .35);
       P.fx.head.forEach(h => h.material.opacity = hh); P.fx.tail.forEach(h => h.material.opacity = smooth(.62, 1, S.tail) * .3 + S.beam * .5);
       P.fx.headPool.material.opacity = S.beam * .6; P.fx.tailPool.material.opacity = S.beam * .3;
-      if (beams) { const nt = world.night ? world.night() : 0, on = Math.max(S.beam, hh); beams.poolM.opacity = S.beam * nt * .9; beams.coreM.opacity = on * (.55 + .45 * nt); beams.glowM.opacity = on * nt * .55;
-        beams.tailM.opacity = Math.max(S.beam, smooth(.62, 1, S.tail)) * (.35 + .5 * nt); beams.redM.opacity = S.beam * nt * .45; P.fx.head.forEach(h => { h.material.opacity = hh * .15 * (1 - nt); h.scale.setScalar(.5); }); P.fx.tail.forEach(h => h.material.opacity *= .3); P.fx.headPool.material.opacity = 0; P.fx.tailPool.material.opacity = 0; }
+      if (beams) { const nt = world.night ? world.night() : 0, on = Math.max(S.beam, hh); beams.poolM.opacity = S.beam * nt * .85; beams.coreM.opacity = on * (.35 + .4 * nt); beams.glowM.opacity = on * nt * .5;
+        beams.tailM.opacity = Math.max(S.beam, smooth(.62, 1, S.tail)) * (.3 + .4 * nt); beams.tailGM.opacity = Math.max(S.beam, smooth(.62, 1, S.tail)) * (.15 + .45 * nt); beams.redM.opacity = S.beam * nt * .4;
+        const sp = world.sport ? world.sport() : 0; beams.trailM.opacity = sp * (.28 + .5 * nt) * Math.min(1, world.speed() / 15); P.fx.head.forEach(h => { h.material.opacity = hh * .15 * (1 - nt); h.scale.setScalar(.5); }); P.fx.tail.forEach(h => h.material.opacity *= .3); P.fx.headPool.material.opacity = 0; P.fx.tailPool.material.opacity = 0; }
       P.fx.haz.forEach(h => h.material.opacity = blink); P.fx.hazPool.forEach(h => h.material.opacity = blink * .45); }
     Object.entries(P.wglow).forEach(([k, m]) => { m.material.opacity = (S.warn[k] || 0) * (.6 + .3 * Math.sin(now / 260)); });
     Object.entries(tyreMats).forEach(([k, m]) => { m.emissive.set('#e0303f'); m.emissiveIntensity = (S.warn[k] || 0) * (.35 + .25 * Math.sin(now / 260)); });
@@ -950,21 +977,28 @@ export async function mount(el, opt = {}) {
       x.putImageData(im, 0, 0); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
     // light on the road: u across, v along (v = 0 at the bumper). Rises fast, brightest 4–12 m out, fades by ~30 m; widens with distance; a sharp-ish cut-off edge to the left like a dipped beam
     const poolT = tex(128, 512, (u, vv) => { const d = vv * 30, along = smooth(0, 1.4, d) * Math.exp(-Math.pow(Math.max(0, d - 6) / 12, 1.6)) * (1 - smooth(24, 30, d));
-      const half = 1.1 + d * .17, x = (u - .5) * 9, across = Math.exp(-Math.pow(x / half, 4) * 1.2); return along * across * .95; }, [255, 246, 226]);
+      const half = 1.3 + d * .19, x = (u - .5) * 9, across = Math.exp(-Math.pow(x / half, 2) * 1.1); return along * across * .85; }, [255, 244, 222]);
     const poolM = new THREE.MeshBasicMaterial({ map: poolT, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
     const roadPool = new THREE.Mesh(new THREE.PlaneGeometry(9, 30), poolM); roadPool.rotation.x = -Math.PI / 2; roadPool.position.set(-.3, .02, 2.55 + 15); roadPool.name = 'fx'; car.add(roadPool);
     // the lamp: a hot core and a small, tight glow
-    const coreT = softTex([[0, 1], [.12, .95], [.3, .35], [.6, .08], [1, 0]], 128);
-    const coreM = new THREE.SpriteMaterial({ map: coreT, color: '#f4f8ff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
-    const glowM = new THREE.SpriteMaterial({ map: softTex([[0, .8], [.25, .3], [1, 0]], 128), color: '#fff3dc', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
-    const cores = [.72, -.72].map(xx => { const c = new THREE.Sprite(coreM); c.position.set(xx, .8, 2.66); c.scale.set(.42, .3, 1); c.name = 'fx'; body.add(c);
-      const g = new THREE.Sprite(glowM); g.position.set(xx, .8, 2.7); g.scale.set(1.5, 1.1, 1); g.name = 'fx'; body.add(g); return c; });
+    // soft lamp: no hard dot, just a gentle bright centre that melts into a wide glow
+    const coreT = softTex([[0, .9], [.2, .6], [.45, .22], [.75, .05], [1, 0]], 128);
+    const coreM = new THREE.SpriteMaterial({ map: coreT, color: '#fbf6ec', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+    const glowM = new THREE.SpriteMaterial({ map: softTex([[0, .55], [.3, .22], [.65, .06], [1, 0]], 128), color: '#fff0d6', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+    const cores = [.72, -.72].map(xx => { const c = new THREE.Sprite(coreM); c.position.set(xx, .8, 2.7); c.scale.set(.9, .55, 1); c.name = 'fx'; body.add(c);
+      const g = new THREE.Sprite(glowM); g.position.set(xx, .78, 2.9); g.scale.set(3.4, 1.8, 1); g.name = 'fx'; body.add(g); return c; });
     // tail lamps and a faint red wash on the road behind
-    const tailM = new THREE.SpriteMaterial({ map: coreT, color: '#ff2a40', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
-    [.74, -.74].forEach(xx => { const t = new THREE.Sprite(tailM); t.position.set(xx, 1.05, -2.82); t.scale.set(.7, .4, 1); t.name = 'fx'; body.add(t); });
+    const tailM = new THREE.SpriteMaterial({ map: coreT, color: '#ff3a50', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+    const tailGM = new THREE.SpriteMaterial({ map: softTex([[0, .5], [.35, .18], [1, 0]], 128), color: '#ff3048', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+    [.74, -.74].forEach(xx => { const t = new THREE.Sprite(tailM); t.position.set(xx, 1.05, -2.84); t.scale.set(1, .5, 1); t.name = 'fx'; body.add(t);
+      const g = new THREE.Sprite(tailGM); g.position.set(xx, 1.02, -3); g.scale.set(2.6, 1.3, 1); g.name = 'fx'; body.add(g); });
+    // Sport: a soft red light trail streaming back from the tail lamps, like a long-exposure photo
+    const trailT = tex(512, 64, (u, vv) => Math.pow(1 - u, 1.4) * smooth(0, .06, u) * Math.exp(-Math.pow((vv - .5) * 4.2, 2)), [255, 70, 92]);
+    const trailM = new THREE.MeshBasicMaterial({ map: trailT, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+    [1.03, .96].forEach((yy, i) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(9, .55 + i * .25), trailM); m.rotation.y = Math.PI / 2; m.position.set(.9, yy, -2.9 - 4.5); m.name = 'fx'; body.add(m); });
     const redM = new THREE.MeshBasicMaterial({ map: tex(64, 128, (u, vv) => Math.exp(-Math.pow((u - .5) * 3, 2)) * Math.pow(vv, 2) * .8, [255, 60, 80]), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
     const redPool = new THREE.Mesh(new THREE.PlaneGeometry(3, 3.5), redM); redPool.rotation.x = -Math.PI / 2; redPool.position.set(0, .02, -2.9 - 1.75); redPool.name = 'fx'; car.add(redPool);
-    beams = { poolM, coreM, glowM, tailM, redM }; }
+    beams = { poolM, coreM, glowM, tailM, tailGM, redM, trailM }; }
   const proj = new THREE.Vector3();
   const v = {
     el, canvas: cv, P,
@@ -980,7 +1014,7 @@ export async function mount(el, opt = {}) {
       if (S.haz > 0) moving = true;
       if (Object.values(S.warn).some(x => x > 0)) moving = true;
       if (world && world.update(dt, now)) moving = true;
-      if (opt.scene === 'drive') { wheelA += dt * world.speed() / .4; Object.values(P.wheels).forEach(wh => wh.spin.rotation.x = wheelA); }
+      if (opt.scene === 'drive') { wheelA = (wheelA + Math.min(dt, .05) * Math.min(world.speed() / .4, 5.2)) % (Math.PI * 2); Object.values(P.wheels).forEach(wh => wh.spin.rotation.x = wheelA); }   /* the true spin (up to 55 turns a second) strobes against the screen's frame rate and looks like jitter, so the spokes turn at a calm, readable pace */
       else if (spin) { wheelA += dt * 6; Object.values(P.wheels).forEach(wh => wh.spin.rotation.x = wheelA); moving = true; }
       if (opt.drift) { sph.theta = sph0.theta + Math.sin((now - t0) / 7000) * .22; moving = true; }
       if (drag || inertia) { if (!drag) { sph.theta += vel * dt; vel *= Math.pow(.04, dt); if (Math.abs(vel) < .02) inertia = false; } moving = true; }
