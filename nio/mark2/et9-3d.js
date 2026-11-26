@@ -490,21 +490,21 @@ const LOCK = (() => { const R = rng(11), H = [];
     day:   { top: '#9db7df', mid: '#cbd6ee', bot: '#ecebf4', fog: '#d9dbee', glow: '#fff3e2', sky: '#dfe8ff', gnd: '#6b8f45', sun: '#fff4e0', shadow: '#24452c',
              gs: '#2f6a2c', gm: '#5f9b33', gl: '#a6cf55', daisy: '#ffffff', daisyS: '#c9d3d6', podium: '#f2f2f6', cloud: '#ffffff', cloudB: '#c9cde3' },
     night: { top: '#1a1d4a', mid: '#5b4f8e', bot: '#e6a9ae', fog: '#7c6d9e', glow: '#ffb59a', sky: '#7d83c4', gnd: '#1e2a26', sun: '#ffb38c', shadow: '#0d1220',
-             gs: '#142a2b', gm: '#233d33', gl: '#5b5c45', daisy: '#e8def8', daisyS: '#7e78a8', podium: '#c9c2df', cloud: '#f6c6c6', cloudB: '#6b5f9a' },
+             gs: '#183031', gm: '#2a4639', gl: '#696a4e', daisy: '#e8def8', daisyS: '#7e78a8', podium: '#c9c2df', cloud: '#f6c6c6', cloudB: '#6b5f9a' },
   }; })();
 /* Home (reference 2): long smooth rolling dunes of grass, a low sun throwing long shadows across the valleys, a pale sky */
 const HOME = (() => { const R = rng(23), H = [];
-  for (let i = 0; i < 70; i++) { const a = R() * 6.283, d = 80 + R() * 260, r = 30 + R() * 40 + d * .1; H.push([Math.cos(a) * d, Math.sin(a) * d, r, 1 + d * (.015 + R() * .03)]); }
+  for (let i = 0; i < 70; i++) { const a = R() * 6.283, d = 80 + R() * 260, r = 30 + R() * 40 + d * .1; H.push([Math.cos(a) * d, Math.sin(a) * d, r, .6 + d * (.009 + R() * .022)]); }
   return {
     seed: 9, flat: 20, fogNear: 30, fogFar: 480, sun: [.86, .19, -.36], glow: [.82, .62, .7],
-    height: (x, z) => { const r = Math.hypot(x, z); let h = (Math.sin(x * .034 + 1) * Math.cos(z * .027) * 1.3 + (fbm(x * .011, z * .011, 3) - .5) * 3.5) * smooth(10, 45, r) - smooth(40, 120, r) * 2;
+    height: (x, z) => { const r = Math.hypot(x, z); let h = (Math.sin(x * .034 + 1) * Math.cos(z * .027) * 1.1 + (fbm(x * .011, z * .011, 3) - .5) * 2.8) * smooth(10, 45, r) - smooth(30, 110, r) * 3.2;
       for (const [cx, cz, rr, hh] of H) h += bump(x, z, cx, cz, rr, hh) * smooth(20, 60, r); return h; },
     grass: [[0, 0, 13, 34000, .09, .22, 0], [0, 0, 28, 18000, .12, .28, 0]],
     clouds: [[2.6, 300, 40, 1], [-.6, 320, 44, .9], [1.2, 280, 36, .8], [-2.4, 300, 42, 1.1]],
     day:   { top: '#a9bde6', mid: '#d9e2f1', bot: '#f2efe6', fog: '#dfdfee', glow: '#fff1d0', sky: '#e6efff', gnd: '#6f9a3e', sun: '#fff0d2', shadow: '#1f3d22',
              gs: '#2e5e26', gm: '#6aa12f', gl: '#b9da5a', cloud: '#ffffff', cloudB: '#cdd0e6' },
     night: { top: '#171b45', mid: '#4d4687', bot: '#d99aa6', fog: '#6e6394', glow: '#ffae8e', sky: '#757cbf', gnd: '#1a2622', sun: '#ffaa82', shadow: '#0b1020',
-             gs: '#122728', gm: '#223b31', gl: '#5e5a44', cloud: '#f2bfc2', cloudB: '#615894' },
+             gs: '#172e2f', gm: '#2a4638', gl: '#6c684e', cloud: '#f2bfc2', cloudB: '#615894' },
   }; })();
 
 /* no downloaded lighting any more: the car uses the soft built-in studio everywhere (Adi: no hard reflections) */
