@@ -1588,6 +1588,7 @@
   // Settings › Display › Car colour (stored in this browser; the 3D car repaints everywhere)
   const PAINTN = { ceramic: 'Midnight Ceramic Blue', lavender: 'Lavender silver', cloud: 'Cloud White', black: 'Deep Black', moon: 'New Moon Silver', southern: 'Southern Star Blue', gold: 'Sunlight Gold' };
   function paintSync() { let k = 'ceramic'; try { k = localStorage.getItem('nio-paint') || k; } catch (e) {} if (!PAINTN[k]) k = 'ceramic';
+    document.documentElement.style.setProperty('--paint', { ceramic: '#1d2540', lavender: '#b8b1d2', cloud: '#f2f1f5', black: '#202027', moon: '#a3a5ac', southern: '#33548c', gold: '#c8ad7c' }[k]);   /* the car in the camera feeds takes this colour */
     document.querySelectorAll('.pt-sw').forEach(s => s.classList.toggle('on', s.dataset.paint === k)); document.querySelectorAll('.pt-n').forEach(n => n.textContent = PAINTN[k]); }
   document.addEventListener('click', e => { const sw = e.target.closest('[data-paint]'); if (!sw) return; const k = sw.dataset.paint;
     try { localStorage.setItem('nio-paint', k); } catch (er) {} if (window.ET9) ET9.setPaint(k); paintSync(); toast(frameOf(sw), 'Car colour · ' + PAINTN[k]); });
@@ -1992,3 +1993,7 @@
   document.addEventListener('selectstart', e => { if (e.target.closest && e.target.closest('.frame') && !e.target.closest('input, textarea')) e.preventDefault(); });
   document.querySelectorAll('.frame img').forEach(i => i.draggable = false);
 })();
+
+/* camera feeds: the car seen at the edge of a view is tinted to the colour chosen in Settings › Display › Car colour */
+document.querySelectorAll('.camv').forEach(c => { const m = (c.getAttribute('style') || '').match(/img\/camera\/(blindspot-right|left|right)\.jpg(\?v=\d+)?/); if (!m) return;
+  const t = document.createElement('i'); t.className = 'camtint'; const u = `img/camera/${m[1]}-car.png${m[2] || ''}`; t.style.webkitMaskImage = t.style.maskImage = `url(${u})`; c.appendChild(t); });

@@ -577,6 +577,7 @@ html[data-theme="dark"] .camv{background-color:hsl(var(--nh) var(--ns) calc(24% 
 html[data-theme="dark"] .camv::after{background-image:radial-gradient(ellipse at center,rgba(4,3,10,0.00) 55%,rgba(4,3,10,0.60) 100%)}
 html[data-theme="dark"] .camtag{background-color:rgba(4,3,10,0.60)}
 html[data-theme="dark"] .camlive{background-color:#e34f5f}
+html[data-theme="dark"] .camtint{background-color:var(--paint,#c0c8e2)}
 html[data-theme="dark"] [fill="#1f1c29"]{fill:hsl(var(--nh) var(--ns) calc(25% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d2840"]{fill:hsl(var(--nh) var(--ns) calc(27% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d6bb5"]{fill:#3277c9}

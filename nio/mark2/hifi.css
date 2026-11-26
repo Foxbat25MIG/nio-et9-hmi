@@ -2110,3 +2110,5 @@ html[data-theme="dark"] .qc-btns .qbtn.hz.on,html[data-theme="dark"] .qc-btns .q
 .camv{background-size:cover!important;background-position:center!important;animation:none!important}
 .camv::before{content:"";position:absolute;inset:0;background:inherit;background-size:cover;background-position:center;animation:camDrift2 9s ease-in-out infinite alternate}
 @keyframes camDrift2{from{transform:scale(1.03) translateX(-.6%)}to{transform:scale(1.07) translateX(.6%)}}
+.camtint{position:absolute;inset:0;pointer-events:none;background:var(--paint,#1d2540);mix-blend-mode:multiply;opacity:.88;-webkit-mask-size:cover;mask-size:cover;-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;animation:camDrift2 9s ease-in-out infinite alternate}
+.camtag,.camlive,.camv .warnbar{z-index:2}
