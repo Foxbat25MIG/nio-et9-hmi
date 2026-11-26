@@ -297,9 +297,14 @@ async function buildCar() {
   // dark cabin, so open windows and the glass roof show an interior, not the far side of the car
   // a soft, frosted-glass volume for the cabin: reads as an interior through the roof and windows, never as a box,
   // and sits high enough that it never shows in the wheel arches
-  { const g = new THREE.SphereGeometry(1, 48, 24); g.scale(.64, .29, 1.34);
-    const m = new THREE.MeshPhysicalMaterial({ color: '#c9c8cf', roughness: .6, transparent: true, opacity: .5, depthWrite: false, clearcoat: .4, clearcoatRoughness: .3 });
-    const cab = new THREE.Mesh(g, m); cab.position.set(0, 1.06, -.4); cab.renderOrder = 1; body.add(cab); P.cabin = cab; }
+  { const seatM = new THREE.MeshStandardMaterial({ color: '#4a4652', roughness: .85, transparent: true }), darkM = new THREE.MeshStandardMaterial({ color: '#2a2830', roughness: .9, transparent: true }), lightM = new THREE.MeshStandardMaterial({ color: '#8c8697', roughness: .7, transparent: true });
+    const grp = new THREE.Group(); body.add(grp); P.cabin = grp; P.cabinMats = [seatM, darkM, lightM];
+    const box = (w, h, d, x, y, z, m, rx = 0) => { const r = Math.min(w, h, d) * .45, g = new THREE.CapsuleGeometry(r, 1, 6, 12); g.scale(w / (2 * r), h / (1 + 2 * r), d / (2 * r)); const k = new THREE.Mesh(g, m); k.position.set(x, y, z); k.rotation.x = rx; grp.add(k); return k; };
+    const seat = (x, z, rear) => { box(.5, .14, .5, x, .66, z, seatM); box(.5, .62, .14, x, .98, z - .24, seatM, -.22); box(.24, .16, .1, x, 1.33, z - .31, lightM, -.22); if (rear) box(.5, .08, .2, x, .76, z + .3, seatM); };
+    seat(.4, .45, 0); seat(-.4, .45, 0); seat(.4, -.75, 1); seat(-.4, -.75, 1);
+    box(.24, .22, 2.1, 0, .66, -.15, lightM);                      // centre console, running through to the rear
+    box(1.5, .2, .5, 0, .96, 1.25, darkM);                         // dashboard
+    const fl = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 3.2), darkM); fl.rotation.x = -Math.PI / 2; fl.position.set(0, .56, -.3); grp.add(fl); }
   // two sunshades under the roof glass (left / right), they roll back towards the rear
   P.shades = {};
   ['l', 'r'].forEach(s => { const g2 = new THREE.PlaneGeometry(.6, 1.72); g2.rotateX(-Math.PI / 2); g2.translate(0, 0, -.86);
@@ -328,22 +333,22 @@ async function buildCar() {
   const soft = softTex(), poolT = softTex([[0, 1], [.5, .45], [1, 0]]);
   const halo = (c, x, y, z, sc, parent = body) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: soft, color: c, transparent: true, opacity: 0, depthWrite: false })); sp.position.set(x, y, z); sp.scale.set(sc, sc, 1); sp.name = 'fx'; parent.add(sp); return sp; };
   const pool = (c, x, z, w, l) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, l), new THREE.MeshBasicMaterial({ map: poolT, color: c, transparent: true, opacity: 0, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(x, .006, z); m.name = 'fx'; car.add(m); return m; };
-  const bt = barTex(), bar = (c, y, z, w, h, bend) => {   // a flat ribbon along the curve of the nose or tail (seen from above it follows the car's outline)
+  const bt = barTex(), btSoft = barTex(.11, .28, .55), bar = (c, y, z, w, h, bend) => {   // a flat ribbon along the curve of the nose or tail (seen from above it follows the car's outline)
     const N = 48, pos = [], uv = [], idx = [];
     for (let i = 0; i <= N; i++) { const u = i / N, x = (u - .5) * w, zc = z + bend * (1 - Math.pow(x / (w / 2), 2));
       const dz = -2 * bend * x / Math.pow(w / 2, 2), l = Math.hypot(1, dz), nx = -dz / l, nz = 1 / l;
       pos.push(x - nx * h / 2, y, zc - nz * h / 2, x + nx * h / 2, y, zc + nz * h / 2); uv.push(u, 0, u, 1); if (i < N) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
-    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: bt, color: c, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: c === '#ff2f48' ? btSoft : bt, color: c, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
     m.userData.b = [1, 1]; m.name = 'fx'; body.add(m); return m; };
-  P.fx = { head: [bar('#fff5e0', .84, 2.3, 1.86, .3, .22)], tail: [bar('#ff2f48', 1.08, -2.55, 1.96, .28, -.16)],   // full-width light bars front and rear, not round dots
+  P.fx = { head: [bar('#fff5e0', .84, 2.3, 1.86, .3, .22)], tail: [bar('#ff2f48', 1.08, -2.55, 1.96, .4, -.16)],   // full-width light bars front and rear, not round dots
     haz: [halo('#ffa524', .88, .78, 2.44, .9), halo('#ffa524', -.88, .78, 2.44, .9), halo('#ffa524', .9, 1.04, -2.66, .9), halo('#ffa524', -.9, 1.04, -2.66, .9)],
     hazPool: [pool('#ffa524', .9, 2.5, 1.6, 1.6), pool('#ffa524', -.9, 2.5, 1.6, 1.6), pool('#ffa524', .9, -2.75, 1.6, 1.6), pool('#ffa524', -.9, -2.75, 1.6, 1.6)],
     headPool: pool('#fff0c4', 0, 4.9, 3.6, 4.8), tailPool: pool('#ff3048', 0, -3.35, 2.8, 1.5) };
   /* Charging: a cable plugged into the left-rear port with soft pulses of light running along it into the car, and a glowing
      battery outline in the floor whose cells fill as it charges. All hidden until charging starts. */
   { const chU = { uT: { value: 0 }, uA: { value: 0 }, uL: { value: .78 } }; P.chgU = chU; const grp = new THREE.Group(); grp.visible = false; car.add(grp); P.chg = grp;
-    const path = new THREE.CatmullRomCurve3([[1.0, 1.0, -2.14], [1.28, .96, -2.16], [1.55, .7, -2.1], [1.75, .25, -1.85], [1.95, .05, -1.3], [2.15, .04, -.5], [2.3, .04, .6], [2.4, .04, 2.2], [2.45, .04, 4]].map(a => new THREE.Vector3(...a)), false, 'centripetal');
+    const path = new THREE.CatmullRomCurve3([[1.0, 1.0, -2.14], [1.22, .97, -2.2], [1.42, .74, -2.42], [1.52, .36, -2.78], [1.5, .08, -3.25], [1.42, .04, -3.9], [1.3, .04, -5], [1.2, .04, -7]].map(a => new THREE.Vector3(...a)), false, 'centripetal');
     const cable = new THREE.Mesh(new THREE.TubeGeometry(path, 260, .03, 16), new THREE.MeshStandardMaterial({ color: '#2b2833', roughness: .45 })); cable.castShadow = true; cable.name = 'chg'; grp.add(cable);
     const plug = new THREE.Mesh(new THREE.CylinderGeometry(.06, .07, .16, 20), new THREE.MeshStandardMaterial({ color: '#3a3644', roughness: .35, metalness: .3 })); plug.rotation.z = Math.PI / 2; plug.position.set(1.07, 1.0, -2.15); plug.name = 'chg'; grp.add(plug);
     const ring = new THREE.Mesh(new THREE.TorusGeometry(.068, .012, 10, 32), new THREE.MeshBasicMaterial({ color: '#58e39a' })); ring.rotation.y = Math.PI / 2; ring.position.set(1.155, 1.0, -2.15); ring.name = 'chg'; grp.add(ring); P.chgRing = ring;
@@ -400,9 +405,9 @@ function paintGrad(G, top, mid, bot, sun) { const x = G.c.getContext('2d'), W = 
 function softTex(stops = [[0, 1], [.45, .55], [1, 0]], size = 128) { const c = document.createElement('canvas'); c.width = c.height = size; const x = c.getContext('2d'), h = size / 2, g = x.createRadialGradient(h, h, 0, h, h, h);
   stops.forEach(([o, a]) => g.addColorStop(o, `rgba(255,255,255,${a})`)); x.fillStyle = g; x.fillRect(0, 0, size, size); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
 /* a light bar, the way the ET9's full-width lamps glow: a thin bright line with a soft halo, fading out at both ends */
-function barTex() { const W = 256, H = 64, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'), im = x.createImageData(W, H);
+function barTex(core = .045, gl = .2, ca = .95) { const W = 256, H = 64, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'), im = x.createImageData(W, H);
   for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { const u = i / (W - 1), v = j / (H - 1), ends = smooth(0, .14, u) * smooth(1, .86, u), d = Math.abs(v - .5);
-    const a = (Math.exp(-Math.pow(d / .045, 2)) * .95 + Math.exp(-Math.pow(d / .2, 2)) * .32) * ends, o = (j * W + i) * 4; im.data[o] = im.data[o + 1] = im.data[o + 2] = 255; im.data[o + 3] = Math.min(255, a * 255); }
+    const a = (Math.exp(-Math.pow(d / core, 2)) * ca + Math.exp(-Math.pow(d / gl, 2)) * .32) * ends, o = (j * W + i) * 4; im.data[o] = im.data[o + 1] = im.data[o + 2] = 255; im.data[o + 3] = Math.min(255, a * 255); }
   x.putImageData(im, 0, 0); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
 function puffTex() { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
   for (let i = 0; i < 26; i++) { const px = 30 + Math.random() * 68, py = 34 + Math.random() * 60, r = 14 + Math.random() * 28, g = x.createRadialGradient(px, py, 0, px, py, r);
@@ -999,10 +1004,11 @@ export async function mount(el, opt = {}) {
     Object.keys(P.doors).forEach(k => { P.doors[k].rotation.y = D[k] * IO(S.door[k]) * 1.0;
       doorPaint[k].copy(M.paint); PAINT_MATS.add(doorPaint[k]); doorPaint[k].side = THREE.DoubleSide; doorPaint[k].emissive.set('#d23a48'); doorPaint[k].emissiveIntensity = S.door[k] * .13; });
     const PW = { dfl: 'fl', dfr: 'fr', drl: 'rl', drr: 'rr' };
-    Object.entries(P.panes).forEach(([k, p]) => { p.position.y = -S.win[PW[k]] * .4; });
+    Object.entries(P.panes).forEach(([k, p]) => { const d = S.win[PW[k]] * .4; p.position.y = -d; p.position.x = (k[2] === 'l' ? 1 : -1) * d * .3; });   // the glass leans in at the top, so it moves out a little as it drops
     P.frunk.rotation.x = -IO(S.frunk) * .9;
     P.boot.rotation.x = IO(S.boot) * 1.1;
     P.port.rotation.y = IO(S.port) * 1.75; P.port.visible = S.port > .01; P.portGlow.material.opacity = S.port * .7; P.portHalo.material.opacity = S.port * (.75 + .2 * Math.sin(now / 420));
+    P.cabinMats.forEach(m => { m.opacity = 1 - S.chg * .9; m.depthWrite = S.chg < .5; }); P.cabin.visible = S.chg < .98;
     P.chg.visible = S.chg > .005; if (P.chg.visible) { P.chgU.uA.value = S.chg; P.chgU.uT.value = now / 1000; P.chgU.uL.value = S.lvl; P.chgRing.material.color.setRGB(.35, .9 + .05 * Math.sin(now / 300), .6); }
     P.mirrors.l.rotation.y = IO(S.mir) * 1.02; P.mirrors.r.rotation.y = -IO(S.mir) * 1.02;
     ['l', 'r'].forEach(s => { P.shades[s].scale.z = 1 - S.shade[s] * .9; });
@@ -1052,7 +1058,7 @@ export async function mount(el, opt = {}) {
     const trailT = tex(512, 64, (u, vv) => Math.pow(1 - u, 1.4) * smooth(0, .06, u) * Math.exp(-Math.pow((vv - .5) * 4.2, 2)), [255, 70, 92]);
     const trailM = new THREE.MeshBasicMaterial({ map: trailT, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
     [1.03, .96].forEach((yy, i) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(9, .55 + i * .25), trailM); m.rotation.y = Math.PI / 2; m.position.set(.9, yy, -2.9 - 4.5); m.name = 'fx'; body.add(m); });
-    const redM = new THREE.MeshBasicMaterial({ map: tex(64, 128, (u, vv) => Math.exp(-Math.pow((u - .5) * 3, 2)) * Math.pow(vv, 2) * .8, [255, 60, 80]), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+    const redM = new THREE.MeshBasicMaterial({ map: tex(64, 128, (u, vv) => Math.exp(-Math.pow((u - .5) * 3, 2)) * smooth(0, .15, vv) * Math.pow(1 - vv, 1.8) * .8, [255, 60, 80]), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
     const redPool = new THREE.Mesh(new THREE.PlaneGeometry(3, 3.5), redM); redPool.rotation.x = -Math.PI / 2; redPool.position.set(0, .02, -2.9 - 1.75); redPool.name = 'fx'; car.add(redPool);
     beams = { poolM, coreM, glowM, tailM, tailGM, redM, trailM }; }
   const proj = new THREE.Vector3();

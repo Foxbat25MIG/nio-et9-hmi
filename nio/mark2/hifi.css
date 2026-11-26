@@ -2092,3 +2092,11 @@ html[data-theme="dark"] .hb-bar,html[data-theme="dark"] .hb-tr{background:rgba(2
 .tr-tab rect{fill:#7a6fd0!important}.tr-dir{stroke:#7a6fd0;stroke-width:2;stroke-linecap:round;opacity:0}
 .tr-seat{transition:fill .4s var(--ease)}.tray-out.aim-l .tr-sl,.tray-out.aim-r .tr-sr{fill:#d9d2fa}
 .tr-l{font:600 9px "Red Hat Text",sans-serif;fill:var(--t3);text-anchor:middle}
+/* Home: no driver photos */
+.hm-head [data-drv]{display:none!important}
+/* Quick controls: a single lock button across the full width */
+.qc2 .qc-lockw{display:none!important}
+.qc2 .qc-all{grid-column:1 / -1;height:64px!important;min-height:64px}
+.qc2 .qc-all.locked{background:var(--s1)!important;color:var(--t1)!important;border:1px solid var(--line)!important}
+.qc2 .qc-all.locked .ms{color:var(--t1)!important}
+html[data-theme="dark"] .qc-btns .qbtn.hz.on,html[data-theme="dark"] .qc-btns .qbtn.hz.on .ms{color:#2a2410!important}

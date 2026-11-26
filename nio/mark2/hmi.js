@@ -1678,6 +1678,7 @@
     const lk = qc.querySelector('.qc-lock'); lk.classList.toggle('un', !Q.lock);
     lk.querySelector('.ms').textContent = Q.lock ? 'lock' : 'lock_open';
     lk.querySelector('.qc-lt').textContent = Q.lock ? 'Locked' : 'Unlocked';
+    { const all = qc.querySelector('.qc-all'); if (all) { all.querySelector('.ms').textContent = Q.lock ? 'lock_open' : 'lock'; all.lastElementChild.textContent = Q.lock ? 'Locked · tap to unlock' : 'Close all and lock'; all.classList.toggle('locked', Q.lock); } }
     const sub = open.length ? (open.length === 1 ? open[0][0].toUpperCase() + open[0].slice(1) + ' open' : open.length + ' open: ' + open.join(', ')) : (Q.lock ? 'All doors closed' : 'Tap to lock');
     lk.querySelector('.qc-ls').textContent = sub;
     const cs = fr._csEl || (fr._csEl = [...fr.querySelectorAll('.ctx *')].find(e => !e.children.length && /doors closed/i.test(e.textContent)));
@@ -1699,6 +1700,7 @@
   function qcClick(t) {
     const qc = t.closest('[data-screen="car"] .qc:not(.ty)'); if (!qc) return false;
     const fr = frameOf(t), Q = qcOf(fr);
+    if (t.closest('[data-qcall]') && Q.lock) { Q.lock = false; qcPaint(fr); toast(fr, 'Unlocked'); return true; }   // one button: Close all and lock, or Unlock when locked
     if (t.closest('[data-qcall]')) { Q.open = {}; Q.port = false; Object.keys(Q.wins).forEach(n => Q.wins[n] = 0); Q.shade = { l: false, r: false }; Q.rUntil = Date.now() + 2600; Q.wcard = false;
       Q.lock = true; Q.mir = 'fold'; qcPaint(fr); toast(fr, 'Doors, frunk, boot, windows and sunshades closing · locked');
       setTimeout(() => { if (Q.lock) { Q.mir = 'out'; qcPaint(fr); } }, 1800); return true; }
