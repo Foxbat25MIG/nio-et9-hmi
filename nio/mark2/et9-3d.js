@@ -588,7 +588,7 @@ export function ready() { return loadRaw(); }
 const DRIVE = {   // sky top / middle / horizon, fog, grass shadow / mid / lit, road, flowers, sun, speed (m/s shown), trees, flower amount
   Comfort: { top: '#a9bfe6', mid: '#d9e2f1', bot: '#f2efe6', fog: '#e0e0ee', gs: '#3a7150', gm: '#72ad3a', gl: '#c0de63', road: '#6e6a7b', fl: '#ffffff', sun: '#fff0d2', glow: '#fff1d0', cloud: '#ffffff', cloudB: '#d3d1ea', v: 11, trees: .45, flowers: .12, snow: 0 },
   Eco:     { top: '#9fc3ea', mid: '#d6e8f0', bot: '#eef5e4', fog: '#dfe9e6', gs: '#3b7a55', gm: '#7cbc45', gl: '#cfe878', road: '#75717f', fl: '#fff7d0', sun: '#fff6dc', glow: '#fff6d8', cloud: '#ffffff', cloudB: '#d0dbe8', v: 8, trees: 1, flowers: .75, snow: 0 },
-  Sport:   { top: '#5d5ea8', mid: '#e7a08e', bot: '#ffd29b', fog: '#efb59e', gs: '#46523f', gm: '#8f9440', gl: '#f2c25e', road: '#564f60', fl: '#ffd9a0', sun: '#ffb070', glow: '#ffb27a', cloud: '#ffd2b4', cloudB: '#b77f9e', v: 22, trees: .3, flowers: .08, snow: 0 },
+  Sport:   { top: '#5d5ea8', mid: '#e7a08e', bot: '#ffd29b', fog: '#efb59e', gs: '#4a5a46', gm: '#7f8f47', gl: '#d9b45e', road: '#564f60', fl: '#ffd9a0', sun: '#ffb070', glow: '#ffb27a', cloud: '#ffd2b4', cloudB: '#b77f9e', v: 22, trees: .3, flowers: .08, snow: 0 },
   Snow:    { top: '#a6bde4', mid: '#dfe7f3', bot: '#f4f6fb', fog: '#e8edf6', gs: '#a4b3d3', gm: '#dfe6f3', gl: '#ffffff', road: '#8b90a1', fl: '#ffffff', sun: '#fff6ea', glow: '#ffffff', cloud: '#ffffff', cloudB: '#c9d2e6', v: 6, trees: 1, flowers: 0, snow: 1 },
   Custom:  { top: '#5b58a4', mid: '#b49ad0', bot: '#f2c8d4', fog: '#c6aed2', gs: '#4b5470', gm: '#6e8063', gl: '#c0aa72', road: '#5e5872', fl: '#a780e0', sun: '#ffc6a8', glow: '#ffb6c4', cloud: '#ffd7e2', cloudB: '#8f7ab8', v: 11, trees: .35, flowers: 1, snow: 0 },
 };
@@ -632,7 +632,7 @@ function driveScene(scene) {
     void main() { float t = clamp(vS * 1.15, 0., 1.); vec3 c = t < .5 ? mix(uGs, uGm, t * 2.) : mix(uGm, uGl, (t - .5) * 2.);
       float n = sin(vW.x * .11 + sin(vW.y * .05) * 2.) * .5 + .5; c *= .9 + .16 * n;
       float g = sin(dot(vW, vec2(.38, .92)) * .23 - uT * 1.25) * .5 + .5; c *= 1. + g * g * .06;
-      c *= .97 + .06 * hsh(floor(vW * 6.)); c *= .8 + .2 * smoothstep(7., 30., abs(vW.x + 1.6));
+      c *= .8 + .2 * smoothstep(7., 30., abs(vW.x + 1.6));
       gl_FragColor = vec4(mix(c, uFog, smoothstep(uFogN, uFogF, vD)), 1.);
       #include <tonemapping_fragment>
       #include <colorspace_fragment>
@@ -679,7 +679,7 @@ function driveScene(scene) {
   const leafM = [lamb('#6fae4a'), lamb('#88c25a'), lamb('#5d9c45')], trunkM = lamb('#7a6150');
   add('trees', i => { const g = new THREE.Group(), s = .9 + Math.random() * .8; g.scale.setScalar(s);
     const t = new THREE.Mesh(new THREE.CylinderGeometry(.12, .2, 1.8, 7), trunkM); t.position.y = .9; t.castShadow = true; g.add(t);
-    for (let k = 0; k < 6; k++) { const b = new THREE.Mesh(new THREE.SphereGeometry(.75 + (k % 3) * .22, 16, 12), leafM[(i + k) % 3]); b.position.set(Math.cos(k * 2.1) * .55, 2.2 + (k % 3) * .4, Math.sin(k * 2.1) * .55); b.castShadow = true; g.add(b); } return g; }, 30, [-46, -13]);
+    for (let k = 0; k < 6; k++) { const b = new THREE.Mesh(new THREE.SphereGeometry(.75 + (k % 3) * .22, 16, 12), leafM[(i + k) % 3]); b.position.set(Math.cos(k * 2.1) * .55, 2.2 + (k % 3) * .4, Math.sin(k * 2.1) * .55); b.castShadow = true; g.add(b); } return g; }, 34, [-70, -18]);
   const ornM = ['#e0344b', '#ffc94d', '#6fa8ff', '#ffffff'].map(c => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: .9, roughness: .3 }));
   const starM = new THREE.MeshStandardMaterial({ color: '#ffd76a', emissive: '#ffd76a', emissiveIntensity: 1.6 }), deerM = lamb('#8a6a55'), antM = lamb('#d9cbb8');
   const deer = () => { const g = new THREE.Group(), b = (w, h, d, x, y, z, m = deerM) => { const k = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); k.position.set(x, y, z); g.add(k); return k; };
@@ -739,7 +739,7 @@ function driveScene(scene) {
       roadM.color.copy(cur.road); kerbM.color.setScalar(.35 + .5 * day);
       U.uFlA.value = amt.flowers * (mode === 'Snow' ? 0 : 1); U.uT.value = t;
       puffs.forEach(p => p.material.color.copy(cur.cloudB).lerp(cur.cloud, .35 + p.userData.h * .65)); glowSun.material.color.copy(cur.glow).multiplyScalar(.3 + .15 * (mode === 'Sport' ? 1 : 0));
-      leafM.forEach((m, i) => m.color.set(['#6fae4a', '#88c25a', '#5d9c45'][i]).multiplyScalar(.3 + .7 * day));
+      leafM.forEach((m, i) => m.color.set(['#6fae4a', '#88c25a', '#5d9c45'][i]).lerp(cur.gl, .18).multiplyScalar(.3 + .7 * day));
       v += (vT - v) * k; off += v * dt; U.uOff.value = off;
       rt.offset.y = -(off / 400 * 20) % 1;
       snow.material.opacity = amt.snow * .9;
