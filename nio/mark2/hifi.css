@@ -2100,3 +2100,9 @@ html[data-theme="dark"] .hb-bar,html[data-theme="dark"] .hb-tr{background:rgba(2
 .qc2 .qc-all.locked{background:var(--s1)!important;color:var(--t1)!important;border:1px solid var(--line)!important}
 .qc2 .qc-all.locked .ms{color:var(--t1)!important}
 html[data-theme="dark"] .qc-btns .qbtn.hz.on,html[data-theme="dark"] .qc-btns .qbtn.hz.on .ms{color:#2a2410!important}
+/* camera feeds: stills rendered from cameras on the 3D car, with a slow drift so they read as live */
+.camv{position:relative;border-radius:14px;overflow:hidden;background:#1c1b22 center/cover no-repeat;animation:camDrift 9s ease-in-out infinite alternate}
+.camv::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(10,8,20,.42) 100%)}
+@keyframes camDrift{from{background-size:104%;background-position:48% 50%}to{background-size:108%;background-position:52% 48%}}
+.camtag{position:absolute;left:12px;top:10px;z-index:1;font:600 13px "Red Hat Text",sans-serif;color:#fff;padding:3px 10px;border-radius:999px;background:rgba(20,18,30,.45);backdrop-filter:blur(8px)}
+.camlive{position:absolute;right:12px;top:10px;z-index:1;font:700 11px "Red Hat Text",sans-serif;color:#fff;padding:3px 8px;border-radius:999px;background:#e0394b;letter-spacing:.06em}

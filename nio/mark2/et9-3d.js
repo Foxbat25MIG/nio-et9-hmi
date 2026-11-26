@@ -1087,7 +1087,10 @@ export async function mount(el, opt = {}) {
     beams = { poolM, coreM, glowM, tailM, tailGM, redM, trailM }; }
   const proj = new THREE.Vector3();
   const v = {
-    el, canvas: cv, P,
+    el, canvas: cv, P, scene, car,
+    shot(pos, look, fov, w, h) {   // a still from a camera on the car (used to make the camera-feed images)
+      apply(performance.now()); const c = new THREE.PerspectiveCamera(fov, w / h, .05, 900); c.position.set(...pos); c.lookAt(new THREE.Vector3(...look)); car.updateMatrixWorld(true); c.position.applyMatrix4(car.matrixWorld);
+      const lk = new THREE.Vector3(...look).applyMatrix4(car.matrixWorld); c.lookAt(lk); const r = shared(); r.setPixelRatio(1); r.setSize(w, h, false); r.setScissorTest(false); r.setClearColor(0x000000, 1); r.clear(); r.render(scene, c); return r.domElement.toDataURL('image/jpeg', .86); },
     tick(now) {
       const w = el.clientWidth, h = el.clientHeight; if (!w || !h || !cv.isConnected) return false;
       if (w !== W || h !== H) { W = w; H = h; cam.aspect = w / h; if (V.shift) cam.setViewOffset(w, h, -V.shift[0] * w, V.shift[1] * h, w, h); cam.updateProjectionMatrix(); dirty = true; if (opt.onResize) setTimeout(() => opt.onResize(v), 0); }

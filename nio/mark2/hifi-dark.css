@@ -573,6 +573,10 @@ html[data-theme="dark"] .hm-bat.chg .hb-bar i{background-image:linear-gradient(9
 html[data-theme="dark"] .tr-tab rect{fill:#2f2673!important}
 html[data-theme="dark"] .tr-dir{stroke:#8c82d6}
 html[data-theme="dark"] .tray-out.aim-l .tr-sl,html[data-theme="dark"] .tray-out.aim-r .tr-sr{fill:#2c2357}
+html[data-theme="dark"] .camv{background-color:hsl(var(--nh) var(--ns) calc(24% + var(--nl))) center/cover no-repeat}
+html[data-theme="dark"] .camv::after{background-image:radial-gradient(ellipse at center,rgba(4,3,10,0.00) 55%,rgba(4,3,10,0.60) 100%)}
+html[data-theme="dark"] .camtag{background-color:rgba(4,3,10,0.60)}
+html[data-theme="dark"] .camlive{background-color:#e34f5f}
 html[data-theme="dark"] [fill="#1f1c29"]{fill:hsl(var(--nh) var(--ns) calc(25% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d2840"]{fill:hsl(var(--nh) var(--ns) calc(27% + var(--nl)))}
 html[data-theme="dark"] [fill="#2d6bb5"]{fill:#3277c9}
