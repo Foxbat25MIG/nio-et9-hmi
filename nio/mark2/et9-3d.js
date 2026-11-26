@@ -418,11 +418,14 @@ function hillsScene(scene, K) {
     out.multiplyScalar(.86 + .28 * n).multiplyScalar(.82 + .18 * ny); return out; };
   const paintTerrain = () => { for (let v = 0; v < NV; v++) { grassCol(tc, SH[v], NZ[v], NY[v]); cols[v * 3] = tc.r; cols[v * 3 + 1] = tc.g; cols[v * 3 + 2] = tc.b; } tg.attributes.color.needsUpdate = true; };
   // a fine, soft stroke texture so close grass reads as grass, not plastic
-  const strokes = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.fillStyle = '#e9e9e9'; x.fillRect(0, 0, 256, 256);
-    for (let i = 0; i < 2600; i++) { const v = 205 + Math.random() * 50 | 0; x.strokeStyle = `rgba(${v},${v},${v},.55)`; x.lineWidth = .8 + Math.random() * 1.4; x.lineCap = 'round';
+  const strokes = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.fillStyle = '#f1f1f1'; x.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 2600; i++) { const v = 222 + Math.random() * 33 | 0; x.strokeStyle = `rgba(${v},${v},${v},.5)`; x.lineWidth = .8 + Math.random() * 1.4; x.lineCap = 'round';
       const px = Math.random() * 256, py = Math.random() * 256, l = 5 + Math.random() * 9, a = -Math.PI / 2 + (Math.random() - .5) * .7; x.beginPath(); x.moveTo(px, py); x.lineTo(px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(260, 260); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; })();
-  const terrain = new THREE.Mesh(tg, new THREE.MeshBasicMaterial({ vertexColors: true, map: strokes })); scene.add(terrain);
+  const terrainM = new THREE.MeshBasicMaterial({ vertexColors: true, map: strokes });
+  terrainM.onBeforeCompile = sh => { sh.uniforms.uT = wind; sh.vertexShader = 'varying vec2 vW;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n  vW = (modelMatrix * vec4(transformed, 1.0)).xz;');
+    sh.fragmentShader = WIND_GLSL.replace('varying float vG;\n', '') + 'varying vec2 vW;\n' + sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n  gl_FragColor.rgb *= 1.0 + gust(vW) * .07;'); };
+  const terrain = new THREE.Mesh(tg, terrainM); scene.add(terrain);
   // the car's own shadow, live, on a clear catcher over the flat ground round the car
   const catcher = new THREE.Mesh(new THREE.CircleGeometry(K.flat, 64), new THREE.ShadowMaterial({ color: cur.shadow, opacity: .42, depthWrite: false }));
   catcher.rotation.x = -Math.PI / 2; catcher.position.y = K.podium ? .004 : hgt(0, 0) + .004; catcher.receiveShadow = true; catcher.renderOrder = 1; scene.add(catcher);
@@ -433,31 +436,82 @@ function hillsScene(scene, K) {
     const bev = new THREE.Mesh(new THREE.TorusGeometry(K.podium - .02, .03, 12, 160), podM); bev.rotation.x = Math.PI / 2; bev.position.y = -.03; scene.add(bev); }
   // grass blades: their colour comes from the lit ground under them; they sway in the shader, so it costs nothing on the CPU
   const rnd = rng(K.seed || 7), wind = { value: 0 };
-  const swayMat = m => { m.onBeforeCompile = sh => { sh.uniforms.uT = wind; sh.vertexShader = 'uniform float uT;\n' + sh.vertexShader.replace('#include <begin_vertex>',
-    '#include <begin_vertex>\n  float ph = instanceMatrix[3].x * .37 + instanceMatrix[3].z * .23;\n  transformed.x += (sin(uT * 1.3 + ph) * .6 + sin(uT * 2.9 + ph * 1.7) * .25) * .14 * transformed.y * transformed.y;'); }; return m; };
+  /* Wind: soft gusts roll across the field in long waves (like wind over a meadow in a film). The same field bends the
+     grass, bobs the daisies and brightens the ground where a gust passes, all in the shader. */
+  const WIND_GLSL = 'uniform float uT;\nvarying float vG;\nfloat gust(vec2 p) { float a = sin(dot(p, vec2(.38, .92)) * .23 - uT * 1.25) * .5 + .5; float b = sin(dot(p, vec2(-.6, .8)) * .11 - uT * .7 + 1.7) * .5 + .5; float g = a * (.55 + .45 * b); return g * g * (3. - 2. * g); }\n';
+  const swayMat = (m, kind) => { m.onBeforeCompile = sh => { sh.uniforms.uT = wind;
+    sh.vertexShader = WIND_GLSL + sh.vertexShader.replace('#include <project_vertex>', `
+  vec4 mvPosition = vec4(transformed, 1.0);
+  #ifdef USE_INSTANCING
+  mvPosition = instanceMatrix * mvPosition;
+  float g = gust(mvPosition.xz), hf = ${kind === 'flower' ? '1.0' : 'transformed.y'}, bh = ${kind === 'flower' ? '.5' : 'length(instanceMatrix[1].xyz)'};
+  float flick = sin(uT * 3.1 + mvPosition.x * 1.7 + mvPosition.z * 1.3) * .5;
+  mvPosition.xz += vec2(.38, .92) * (.12 + .55 * g + .08 * flick) * hf * hf * bh;
+  mvPosition.y -= (.1 + .3 * g) * hf * hf * bh * .35;
+  vG = g * hf;
+  #endif
+  mvPosition = modelViewMatrix * mvPosition;
+  gl_Position = projectionMatrix * mvPosition;`);
+    sh.fragmentShader = 'varying float vG;\n' + sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n  gl_FragColor.rgb *= 1.0 + vG * .16;'); }; return m; };
   const blades = [], flowers = [];
   K.grass.forEach(([cx, cz, rad, n, hmin, hmax, flw]) => { for (let i = 0; i < n; i++) { const a = rnd() * 6.283, r = Math.sqrt(rnd()) * rad, x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r;
       if (Math.abs(x) < 1.25 && Math.abs(z) < 2.85) continue; if (K.podium && Math.hypot(x, z) < K.podium + .05) continue;
       const edge = 1 - (r / rad) ** 2; blades.push({ x, z, y: hAt(x, z), h: (hmin + rnd() * (hmax - hmin)) * (.45 + .55 * edge), c: rnd() });
       if (flw && rnd() < flw * (.25 + .75 * edge)) flowers.push({ x: x + (rnd() - .5) * .3, z: z + (rnd() - .5) * .3, h: blades[blades.length - 1].h * (.75 + rnd() * .35), s: .045 + rnd() * .04 }); } });
-  const bm = swayMat(new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })), grass = new THREE.InstancedMesh(bladeGeo(.011, 1), bm, blades.length), d = new THREE.Object3D();
+  const bm = swayMat(new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }), 'blade'), grass = new THREE.InstancedMesh(bladeGeo(.011, 1), bm, blades.length), d = new THREE.Object3D();
   blades.forEach((b, i) => { d.position.set(b.x, b.y - .02, b.z); d.rotation.set((rnd() - .5) * .35, rnd() * 6.3, (rnd() - .5) * .25); d.scale.set(1, b.h, 1); d.updateMatrix(); grass.setMatrixAt(i, d.matrix); });
   grass.frustumCulled = false; scene.add(grass);
   const lightAt = (x, z) => { const y = hAt(x, z), e = .6, nx = hAt(x - e, z) - hAt(x + e, z), nz = hAt(x, z - e) - hAt(x, z + e), l = Math.hypot(nx, 2 * e, nz); return shadeOf(x, y, z, nx / l, 2 * e / l, nz / l); };
   blades.forEach(b => { b.sh = lightAt(b.x, b.z); b.n = fbm(b.x * .05, b.z * .05, 3); });
   const paintGrass = () => { blades.forEach((b, i) => { grassCol(tc, Math.min(1, b.sh + .08), b.n, 1).multiplyScalar(.9 + b.c * .3); grass.setColorAt(i, tc); }); grass.instanceColor.needsUpdate = true; };
+  const hgtB = (x, z) => hAt(x, z);
   let daisies = null;
-  if (flowers.length) { const fm = swayMat(new THREE.MeshBasicMaterial({ map: daisyTex(), alphaTest: .5, side: THREE.DoubleSide })), fg = new THREE.PlaneGeometry(1, 1); fg.rotateX(-Math.PI / 2);
+  if (flowers.length) { const fm = swayMat(new THREE.MeshBasicMaterial({ map: daisyTex(), alphaTest: .5, side: THREE.DoubleSide }), 'flower'), fg = new THREE.PlaneGeometry(1, 1); fg.rotateX(-Math.PI / 2);
     daisies = new THREE.InstancedMesh(fg, fm, flowers.length);
     flowers.forEach((f, i) => { d.position.set(f.x, hAt(f.x, f.z) + f.h, f.z); d.rotation.set((rnd() - .5) * .9, rnd() * 6.3, (rnd() - .5) * .9); d.scale.set(f.s, 1, f.s); d.updateMatrix(); daisies.setMatrixAt(i, d.matrix); f.sh = lightAt(f.x, f.z); });
     daisies.frustumCulled = false; scene.add(daisies); }
   const paintFlowers = () => { if (!daisies) return; flowers.forEach((f, i) => { tc.copy(cur.daisyS).lerp(cur.daisy, Math.min(1, f.sh * 1.3)); daisies.setColorAt(i, tc); }); daisies.instanceColor.needsUpdate = true; };
-  // a few soft clouds low over the hills
-  const pt = softTex([[0, .95], [.5, .7], [.8, .25], [1, 0]]), puffs = [], clouds = new THREE.Group(); scene.add(clouds);
-  (K.clouds || []).forEach(([ang, dist, y, w]) => { const cx = Math.cos(ang) * dist, cz = Math.sin(ang) * dist;
-    for (let i = 0; i < 22; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: pt, transparent: true, depthWrite: false, fog: false })), u = rnd() * 2 - 1, h = rnd();
-      const sz = (10 + rnd() * 12) * w * (1 - Math.abs(u) * .45); sp.scale.set(sz * 1.7, sz * .6, 1);
-      sp.position.set(cx + u * 26 * w * -Math.sin(ang), y + h * 6 * w, cz + u * 26 * w * Math.cos(ang)); sp.userData.h = h; sp.renderOrder = Math.round(h * 50); clouds.add(sp); puffs.push(sp); } });
+  // fluffy cumulus, film-style: each puff is shaded, bright on top and a soft lavender-grey underneath
+  const pt = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+    const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.62, 'rgba(255,255,255,.96)'); g.addColorStop(.82, 'rgba(255,255,255,.45)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 128, 128); x.globalCompositeOperation = 'source-atop';
+    const s2 = x.createLinearGradient(0, 18, 0, 118); s2.addColorStop(0, 'rgba(255,255,255,0)'); s2.addColorStop(.55, 'rgba(150,150,175,.12)'); s2.addColorStop(1, 'rgba(110,110,150,.5)'); x.fillStyle = s2; x.fillRect(0, 0, 128, 128);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  const puffs = [], clouds = new THREE.Group(); scene.add(clouds);
+  (K.clouds || []).forEach(([ang, dist, y, w]) => { const cx = Math.cos(ang) * dist, cz = Math.sin(ang) * dist, tx = -Math.sin(ang), tz = Math.cos(ang);
+    for (let i = 0; i < 26; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: pt, transparent: true, depthWrite: false, fog: false })), u = rnd() * 2 - 1, h = Math.pow(rnd(), .9) * (1 - u * u * .7);
+      const sz = (9 + rnd() * 9) * w * (1.15 - h * .35); sp.scale.set(sz, sz * .92, 1);
+      sp.position.set(cx + u * 24 * w * tx, y + h * 11 * w, cz + u * 24 * w * tz); sp.userData.h = h; sp.renderOrder = -10 + Math.round(h * 20); clouds.add(sp); puffs.push(sp); }
+    for (let i = 0; i < 8; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: pt, transparent: true, depthWrite: false, fog: false })), u = rnd() * 2 - 1;   // flat base
+      const sz = (12 + rnd() * 8) * w; sp.scale.set(sz * 1.8, sz * .5, 1); sp.position.set(cx + u * 26 * w * tx, y - 2 * w, cz + u * 26 * w * tz); sp.userData.h = 0; sp.renderOrder = -11; clouds.add(sp); puffs.push(sp); } });
+  // sun glow in the sky, and a warm haze where the sun sits
+  const glowSun = new THREE.Sprite(new THREE.SpriteMaterial({ map: softTex([[0, 1], [.2, .55], [.55, .14], [1, 0]]), transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
+  glowSun.scale.set(260, 260, 1); glowSun.position.copy(S).multiplyScalar(380); glowSun.renderOrder = -12; scene.add(glowSun);
+  // floating pollen by day, fireflies at dusk: soft specks drifting round the car
+  const NP = 260, pp = new Float32Array(NP * 3), ps = new Float32Array(NP);
+  for (let i = 0; i < NP; i++) { const a = rnd() * 6.283, r = 2.5 + rnd() * 13; pp[i * 3] = Math.cos(a) * r; pp[i * 3 + 1] = .2 + rnd() * 2.6; pp[i * 3 + 2] = Math.sin(a) * r; ps[i] = rnd() * 100; }
+  const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pp, 3)); pg.setAttribute('seed', new THREE.BufferAttribute(ps, 1));
+  const pm = new THREE.PointsMaterial({ map: softTex([[0, 1], [.3, .6], [1, 0]], 64), size: .07, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: .55 });
+  const pU = { value: 1 };
+  pm.onBeforeCompile = sh => { sh.uniforms.uT = wind; sh.uniforms.uN = pU; sh.vertexShader = 'uniform float uT, uN;\nattribute float seed;\nvarying float vA;\n' + sh.vertexShader.replace('#include <begin_vertex>',
+    '#include <begin_vertex>\n  transformed += vec3(sin(uT * .21 + seed) * 1.6 + uT * .12, sin(uT * .37 + seed * 1.7) * .45, cos(uT * .17 + seed * .7) * 1.4);\n  transformed.x = mod(transformed.x + 16., 32.) - 16.;\n  vA = .35 + .65 * (sin(uT * (1.2 + uN * 1.8) + seed * 3.) * .5 + .5);')
+    .replace('gl_PointSize = size;', 'gl_PointSize = size * (1. + uN * 1.4);');
+    sh.fragmentShader = 'varying float vA;\n' + sh.fragmentShader.replace('#include <premultiplied_alpha_fragment>', '#include <premultiplied_alpha_fragment>\n  gl_FragColor.a *= vA;'); };
+  const pollen = new THREE.Points(pg, pm); pollen.frustumCulled = false; scene.add(pollen);
+  // butterflies near the car (by day)
+  const wingT = (() => { const c = document.createElement('canvas'); c.width = 64; c.height = 64; const x = c.getContext('2d'); x.fillStyle = '#fff';
+    x.beginPath(); x.ellipse(30, 22, 26, 18, -.35, 0, Math.PI * 2); x.fill(); x.beginPath(); x.ellipse(24, 46, 17, 13, .4, 0, Math.PI * 2); x.fill();
+    x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(0, 0, 8, 64); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  const BF = (K.butterflies || ['#c9b2f2', '#ffffff', '#fbe6a2', '#b7d6ff', '#f6c3dc']).map((col, i) => {
+    const g = new THREE.Group(), wg = new THREE.PlaneGeometry(.16, .16); wg.translate(.08, 0, 0); wg.rotateX(-Math.PI / 2);
+    const mat = new THREE.MeshBasicMaterial({ map: wingT, color: col, transparent: true, alphaTest: .3, side: THREE.DoubleSide });
+    const L1 = new THREE.Mesh(wg, mat), R1 = new THREE.Mesh(wg, mat); R1.scale.x = -1; g.add(L1, R1); scene.add(g);
+    return { g, L1, R1, ph: rnd() * 100, cx: (rnd() - .5) * 10, cz: (rnd() - .5) * 10, r: 2.4 + rnd() * 3, sp: .25 + rnd() * .2, prev: new THREE.Vector3() }; });
+  // a few birds far off now and then
+  const birdG = new THREE.BufferGeometry(); birdG.setAttribute('position', new THREE.Float32BufferAttribute([-1, 0, 0, 0, -.12, .25, 0, 0, 0, 0, 0, 0, 0, -.12, .25, 1, 0, 0], 3));
+  const birdM = new THREE.MeshBasicMaterial({ color: '#4d4a5e', side: THREE.DoubleSide, transparent: true, opacity: .8 }), flock = new THREE.Group(); scene.add(flock);
+  const birds = [0, 1, 2, 3, 4].map(i => { const m = new THREE.Mesh(birdG, birdM); m.position.set(-i * 2.2 + (i % 2) * .6, (i % 2) * 1.2 - i * .3, i * 1.4); m.scale.setScalar(.9); flock.add(m); return m; });
+  const flight = { t0: -1e9, a: 0 };
   const paintClouds = () => puffs.forEach(p => { p.material.color.copy(cur.cloudB).lerp(cur.cloud, .35 + p.userData.h * .65); p.material.opacity = .9; });
   return {
     shadows: true,
@@ -469,7 +523,17 @@ function hillsScene(scene, K) {
         scene.fog.color.copy(cur.fog); scene.fog.far = K.fogFar * (.6 + .4 * L); hemi.color.copy(cur.sky); hemi.groundColor.copy(cur.gnd); sun.color.copy(cur.sun); sun.intensity = .5 + 1.9 * L; hemi.intensity = .45 + .7 * L;
         catcher.material.color.copy(cur.shadow); if (podM) podM.color.copy(cur.podium);
         paintTerrain(); paintGrass(); paintFlowers(); paintClouds(); scene.environmentIntensity = .3 + .3 * L; }
-      wind.value = now / 1000; clouds.position.x = Math.sin(now / 70000) * 8; return true;
+      const t = now / 1000; wind.value = t; clouds.position.x = Math.sin(now / 90000) * 14; pU.value = 1 - L;
+      pm.color.copy(cur.pollen); pm.opacity = .35 + .45 * (1 - L); glowSun.material.color.copy(cur.glow).multiplyScalar(.28 + .2 * (1 - L));
+      BF.forEach(b => { const vis = L > .45; b.g.visible = vis; if (!vis) return; const q = t * b.sp + b.ph;
+        b.g.position.set(b.cx + Math.cos(q) * b.r + Math.sin(q * 2.3) * .8, hgtB(b.cx, b.cz) + .5 + Math.sin(q * 1.7) * .35 + Math.sin(t * 6 + b.ph) * .05, b.cz + Math.sin(q * 1.3) * b.r);
+        if (b.g.position.distanceToSquared(b.prev) > 1e-6) b.g.rotation.y = Math.atan2(b.g.position.x - b.prev.x, b.g.position.z - b.prev.z) + Math.PI / 2; b.prev.copy(b.g.position);
+        const f = Math.sin(t * 17 + b.ph) * .95; b.L1.rotation.z = f; b.R1.rotation.z = -f; });
+      if (t - flight.t0 > 34) { flight.t0 = t; flight.a = K.birdsAt + (rnd() - .5) * .8; }
+      { const k = (t - flight.t0) / 26, vis = k < 1; flock.visible = vis; if (vis) { const d = 170, a = flight.a, x0 = Math.cos(a) * d, z0 = Math.sin(a) * d, tx = -Math.sin(a), tz = Math.cos(a);
+          flock.position.set(x0 + tx * (k - .5) * 260, 26 + Math.sin(k * 3) * 3, z0 + tz * (k - .5) * 260); flock.rotation.y = Math.atan2(tx, tz) - Math.PI / 2;
+          birds.forEach((m, i) => { m.scale.y = .9 * Math.sin(t * 7 + i * 1.3); }); birdM.color.copy(cur.bird); } }
+      return true;
     },
   };
 }
@@ -480,31 +544,31 @@ const LOCK = (() => { const R = rng(11), H = [];
   [[-70, -66, 22, 6], [-22, -100, 24, 6.5], [-110, -14, 26, 7], [36, -110, 24, 4.5], [-150, -115, 34, 10], [80, -170, 36, 8]].forEach(h => H.push(h));
   const mounds = [[-6.5, -1.5, 4.8, 1.1], [-3.5, 6.8, 4.2, .8], [5.5, -6, 5.5, 1.2], [9, 3, 4, .6]];
   return {
-    seed: 5, podium: 3.6, flat: 20, fogNear: 25, fogFar: 430, sun: [-.79, .5, .2], glow: [.25, .62, .6],
+    seed: 5, birdsAt: -2.3, podium: 3.6, flat: 20, fogNear: 25, fogFar: 430, sun: [-.79, .5, .2], glow: [.25, .62, .6],
     height: (x, z) => { const r = Math.hypot(x, z); let h = (fbm(x * .012, z * .012, 3) - .5) * 3 * smooth(12, 50, r) - .3;
       for (const [cx, cz, rr, hh] of H) h += bump(x, z, cx, cz, rr, hh) * smooth(20, 60, r);
       for (const [cx, cz, rr, hh] of mounds) h += bump(x, z, cx, cz, rr, hh);
       return h + smooth(300, 480, r) * 26 * fbm(Math.atan2(z, x) * 4, 1, 3); },
     grass: [[0, 0, 14, 26000, .1, .24, 0], [-6.5, -1.5, 4.6, 7000, .24, .46, .9], [-3.5, 6.8, 4, 5500, .22, .42, .9], [5.5, -6, 5.2, 7500, .24, .46, .9], [9, 3, 3.8, 4000, .2, .38, .8], [0, 0, 28, 14000, .12, .3, .03]],
-    clouds: [[-2.2, 260, 38, 1.2], [-1.6, 300, 46, 1], [-2.9, 240, 30, .8], [-.9, 280, 42, .9]],
+    clouds: [[-2.05, 280, 40, 1.1], [-1.55, 310, 48, .9], [-2.75, 260, 32, .8], [-.9, 290, 44, .9], [.8, 300, 40, 1]],
     day:   { top: '#9db7df', mid: '#cbd6ee', bot: '#ecebf4', fog: '#d9dbee', glow: '#fff3e2', sky: '#dfe8ff', gnd: '#6b8f45', sun: '#fff4e0', shadow: '#24452c',
-             gs: '#2f6a2c', gm: '#5f9b33', gl: '#a6cf55', daisy: '#ffffff', daisyS: '#c9d3d6', podium: '#f2f2f6', cloud: '#ffffff', cloudB: '#c9cde3' },
+             gs: '#3b7656', gm: '#6daa3f', gl: '#b5dc62', daisy: '#ffffff', daisyS: '#d4dbe6', podium: '#f3f2f7', cloud: '#ffffff', cloudB: '#d3d1ea', pollen: '#fff3c4', bird: '#5a5870' },
     night: { top: '#1a1d4a', mid: '#5b4f8e', bot: '#e6a9ae', fog: '#7c6d9e', glow: '#ffb59a', sky: '#7d83c4', gnd: '#1e2a26', sun: '#ffb38c', shadow: '#0d1220',
-             gs: '#183031', gm: '#2a4639', gl: '#696a4e', daisy: '#e8def8', daisyS: '#7e78a8', podium: '#c9c2df', cloud: '#f6c6c6', cloudB: '#6b5f9a' },
+             gs: '#152c35', gm: '#213b35', gl: '#4f5546', daisy: '#ece3fb', daisyS: '#8780b4', podium: '#cbc4e2', cloud: '#f6c6c6', cloudB: '#6b5f9a', pollen: '#ffd27a', bird: '#2b2840' },
   }; })();
 /* Home (reference 2): long smooth rolling dunes of grass, a low sun throwing long shadows across the valleys, a pale sky */
 const HOME = (() => { const R = rng(23), H = [];
   for (let i = 0; i < 70; i++) { const a = R() * 6.283, d = 80 + R() * 260, r = 30 + R() * 40 + d * .1; H.push([Math.cos(a) * d, Math.sin(a) * d, r, .6 + d * (.009 + R() * .022)]); }
   return {
-    seed: 9, flat: 20, fogNear: 30, fogFar: 480, sun: [.86, .19, -.36], glow: [.82, .62, .7],
+    seed: 9, birdsAt: -1.05, flat: 20, fogNear: 30, fogFar: 480, sun: [.86, .19, -.36], glow: [.82, .62, .7],
     height: (x, z) => { const r = Math.hypot(x, z); let h = (Math.sin(x * .034 + 1) * Math.cos(z * .027) * 1.1 + (fbm(x * .011, z * .011, 3) - .5) * 2.8) * smooth(10, 45, r) - smooth(30, 110, r) * 3.2;
       for (const [cx, cz, rr, hh] of H) h += bump(x, z, cx, cz, rr, hh) * smooth(20, 60, r); return h; },
     grass: [[0, 0, 13, 34000, .09, .22, 0], [0, 0, 28, 18000, .12, .28, 0]],
-    clouds: [[2.6, 300, 40, 1], [-.6, 320, 44, .9], [1.2, 280, 36, .8], [-2.4, 300, 42, 1.1]],
+    clouds: [[-1.25, 300, 34, 1.1], [-.55, 320, 40, .9], [-1.85, 290, 30, .8], [2.6, 300, 40, 1], [1.2, 280, 36, .8], [-2.6, 300, 42, 1]],
     day:   { top: '#a9bde6', mid: '#d9e2f1', bot: '#f2efe6', fog: '#dfdfee', glow: '#fff1d0', sky: '#e6efff', gnd: '#6f9a3e', sun: '#fff0d2', shadow: '#1f3d22',
-             gs: '#2e5e26', gm: '#6aa12f', gl: '#b9da5a', cloud: '#ffffff', cloudB: '#cdd0e6' },
+             gs: '#3a7150', gm: '#72ad3a', gl: '#c0de63', cloud: '#ffffff', cloudB: '#d3d1ea', pollen: '#fff3c4', bird: '#5a5870' },
     night: { top: '#171b45', mid: '#4d4687', bot: '#d99aa6', fog: '#6e6394', glow: '#ffae8e', sky: '#757cbf', gnd: '#1a2622', sun: '#ffaa82', shadow: '#0b1020',
-             gs: '#172e2f', gm: '#2a4638', gl: '#6c684e', cloud: '#f2bfc2', cloudB: '#615894' },
+             gs: '#152c35', gm: '#223c35', gl: '#535546', cloud: '#f2bfc2', cloudB: '#615894', pollen: '#ffd27a', bird: '#26233a' },
   }; })();
 
 /* no downloaded lighting any more: the car uses the soft built-in studio everywhere (Adi: no hard reflections) */
