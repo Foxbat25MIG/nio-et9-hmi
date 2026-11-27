@@ -631,6 +631,11 @@
     });
   }, 700);
   document.querySelectorAll('.sf-card').forEach(sfPaint);
+  /* status bar: Bluetooth and signal open Settings → Connections; Settings → Sound opens the one Sound page in Car */
+  document.querySelectorAll('.frame').forEach(fr => {
+    fr.querySelectorAll('.status .ms').forEach(e => { const t = e.textContent.trim(); if (t === 'bluetooth' || t === 'signal_cellular_alt') { e.dataset.go = 'settings:Connections'; e.setAttribute('data-tap', ''); e.style.cursor = 'pointer'; } });
+    const ss = fr.querySelector('[data-screen="settings"]'); if (ss) [...ss.querySelectorAll('.snav div')].filter(d => d.textContent.trim().endsWith('Sound')).forEach(d => d.addEventListener('click', e => { e.stopPropagation(); route(fr, 'car:Sound'); }));
+  });
   document.querySelectorAll('.frame').forEach(fr => { const on = fr.querySelector('.scr.on'); if (on) fr.dataset.scr = on.dataset.screen; });
   document.querySelectorAll('.player').forEach(p => { const h = p.querySelector('.h3'), i = h ? SONGS.findIndex(x => x[0] === h.textContent) : -1, s = SONGS[i]; if (i >= 0) { const fr = frameOf(p); if (fr._song == null) fr._song = i; } if (s && s[3]) setArt(p, { img: s[3] }); });
   { const music = SONGS.map((x, i) => x[4] ? -1 : i).filter(i => i >= 0);   /* a random song each time the page loads */
@@ -1823,7 +1828,7 @@
   function wideUpdate() {
     document.querySelectorAll('.frame.proto').forEach(fr => {
       const scr = fr.querySelector('.scr.on'); if (!scr) return; const k = scr.dataset.screen;
-      const wide = k === 'climate' || k === 'car' || k === 'settings' || k === 'home' || k === 'apps';   /* Apps: full width, no music or battery column */
+      const wide = k === 'climate' || k === 'car' || k === 'settings' || k === 'home' || k === 'apps' || k === 'appview';   /* Apps: full width, no music or battery column */
       if (wide) fr.dataset.wide = ''; else delete fr.dataset.wide;
       homePaint(fr);
       { const pg = scr.querySelector('.pg.on'), page = pg && pg.dataset.page, set = (sel, on) => fr.querySelectorAll(sel).forEach(d => d.classList.toggle('on', !!on));
