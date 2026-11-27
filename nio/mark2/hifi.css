@@ -2112,3 +2112,9 @@ html[data-theme="dark"] .qc-btns .qbtn.hz.on,html[data-theme="dark"] .qc-btns .q
 @keyframes camDrift2{from{transform:scale(1.03) translateX(-.6%)}to{transform:scale(1.07) translateX(.6%)}}
 .camtint{position:absolute;inset:0;pointer-events:none;background:var(--paint,#1d2540);mix-blend-mode:multiply;opacity:.88;-webkit-mask-size:cover;mask-size:cover;-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;animation:camDrift2 9s ease-in-out infinite alternate}
 .camtag,.camlive,.camv .warnbar{z-index:2}
+/* embedded in the project page (prototype.html?embed=1): just the screen */
+html.embed,html.embed body{background:transparent!important}
+html.embed body{padding:0;min-height:0;display:block}
+html.embed .sitebar,html.embed .disc{display:none!important}
+html.embed .wrap{width:100%}
+html.embed .scaler{box-shadow:none}
