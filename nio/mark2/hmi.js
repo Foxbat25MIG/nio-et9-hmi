@@ -480,8 +480,9 @@
       if (t0 === null) t0 = ts;
       const t = ((ts - t0) / 1000 + off) % T;
       const active = navOn();
-      if (!app.classList.contains('v-car')) { fr.classList.toggle('bs-sig', active && t > 1.8 && t < 10.8); if (ind) ind.textContent = 'turn_right'; }
-      setBS(active && t > 2.6 && t < 6.6);
+      const mp = !app.classList.contains('v-car') && (app.matches('[data-navmap]') ? app : app.querySelector('[data-navmap]')), mb = mp && mp._bs;   /* Map and Serene views: the cyclist follows the car's place on the map */
+      if (!app.classList.contains('v-car')) { fr.classList.toggle('bs-sig', !!(active && (mb ? mb.sig : t > 1.8 && t < 10.8))); if (ind) ind.textContent = 'turn_right'; }
+      setBS(!!(active && (mb ? mb.on : t > 2.6 && t < 6.6)));
       const green = t > 9.4; cv.classList.toggle('tl-green', green); cv.classList.toggle('tl-red', !green);
       const isCar = app.classList.contains('v-car') && active; app.classList.toggle('dash-car', isCar);
       if (isCar) {
