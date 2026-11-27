@@ -1126,7 +1126,21 @@
     const set = (k, v) => pf.querySelectorAll(`[data-pv="${k}"]`).forEach(x => x.textContent = v);
     set('name', name); set('until', end); set('span', `${at} – ${end}`); set('total', '€' + (rate * h).toFixed(2));
   }
+  /* step 2 map: Mudam and the three garages on the real OpenStreetMap data (positions of Coque and Kirchberg Shopping approximate) */
+  const PPIN = [[445, -420], [835, -560], [640, -545]];
+  function pMap(pf) {
+    const host = pf.querySelector('.pmap'), M = window.LUXMAP; if (!host || host.firstChild || !M) return; const L = M.L;
+    const pin = (k, [x, y]) => { const [n, r] = GAR[k]; const rec = k === 0;
+      return `<g class="ppin${rec ? ' rec' : ''}" data-pgo="3" data-pset="g|${k}" data-f="${pf.querySelectorAll('[data-f]')[k]?.dataset.f || ''}" data-tap transform="translate(${x} ${y})"><rect x="-15" y="-15" width="30" height="30" rx="9"/><text y="6" text-anchor="middle" class="pp-p">P</text><text x="22" y="-3" class="pp-n">${n.replace('Parking ', '')}</text><text x="22" y="13" class="pp-s">€${r.toFixed(2)}/h</text></g>`; };
+    host.innerHTML = `<svg viewBox="330 -610 640 215" preserveAspectRatio="xMidYMid slice">
+      <rect x="0" y="-1000" width="1400" height="1000" fill="var(--map-land)"/>
+      <path d="${L.g}" fill="var(--map-green)"/><path d="${L.park}" fill="var(--map-park)"/><path d="${L.w}" fill="var(--map-water)"/><path d="${L.b}" fill="var(--map-bldg)"/>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="var(--map-road)"><path d="${L.r6}" stroke-width="2.2"/><path d="${L.r5}" stroke-width="2.6"/><path d="${L.r4}" stroke-width="4"/><path d="${L.r3}" stroke-width="6"/><path d="${L.r2}" stroke-width="7.6"/><path d="${L.r1}" stroke-width="9.2"/></g>
+      <g class="pmud" transform="translate(436 -455)"><circle r="11"/><text x="-16" y="5" text-anchor="end">Mudam</text></g>
+      ${PPIN.map((p, k) => pin(k, p)).join('')}</svg>`;
+  }
   function pParkStep(pf, n) {   /* show step n, fill the stepper, keep the booking pane in step */
+    if (+n === 2) pMap(pf);
     pf.dataset.cur = n; pf.querySelectorAll('.pst').forEach(s => s.classList.toggle('on', s.dataset.st === String(n)));
     pf.querySelectorAll('.pstep [data-i]').forEach(d => { d.classList.toggle('done', +d.dataset.i < +n); d.classList.toggle('on', +d.dataset.i === +n); });
     const st = pf.querySelector('.pside-st'); if (st) { st.textContent = +n >= 5 ? 'Booked · Level −2 · Bay 14' : 'Not booked yet'; st.classList.toggle('ok', +n >= 5); }
@@ -1137,7 +1151,7 @@
     const fl = t.closest('[data-pfil]');
     if (fl) { if (!fl.classList.contains('lock')) fl.classList.toggle('on');   /* filters: only garages that have every ticked feature */
       const need = [...pf.querySelectorAll('[data-pfil].on:not(.lock)')].map(x => x.dataset.pfil);
-      pf.querySelectorAll('[data-f]').forEach(r => r.style.display = need.every(n => r.dataset.f.split(' ').includes(n)) ? '' : 'none'); return true; }
+      pf.querySelectorAll('[data-f]').forEach(r => r.style.display = need.every(n => r.dataset.f.split(' ').includes(n)) ? '' : 'none'); return true; }   /* pins on the map hide too */
     const ps = t.closest('[data-pset]'), pg = t.closest('[data-pgo]');
     if (!ps && !pg && !t.closest('[data-pext]')) return false;
     if (ps) {
@@ -1840,7 +1854,7 @@
   function wideUpdate() {
     document.querySelectorAll('.frame.proto').forEach(fr => {
       const scr = fr.querySelector('.scr.on'); if (!scr) return; const k = scr.dataset.screen;
-      const wide = k === 'climate' || k === 'car' || k === 'settings' || k === 'home' || k === 'apps' || k === 'appview';   /* Apps: full width, no music or battery column */
+      const wide = k !== 'nav' && k !== 'media';   /* every page is full width except Navigation, and Media keeps its Now playing controls */   /* Apps: full width, no music or battery column */
       if (wide) fr.dataset.wide = ''; else delete fr.dataset.wide;
       homePaint(fr);
       { const pg = scr.querySelector('.pg.on'), page = pg && pg.dataset.page, set = (sel, on) => fr.querySelectorAll(sel).forEach(d => d.classList.toggle('on', !!on));

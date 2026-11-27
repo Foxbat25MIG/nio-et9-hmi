@@ -2143,3 +2143,15 @@ html.embed .scaler{box-shadow:none}
 .pbig b{font:600 72px/1 'Red Hat Display';color:var(--t1)}
 .phint{padding:14px 16px;border-radius:14px;background:var(--route-soft)}
 .pbody .pst .kv>div{padding-top:9px;padding-bottom:9px}
+.pmap{height:230px;border-radius:14px;overflow:hidden;margin-bottom:12px;background:var(--map-land)}
+.pmap svg{width:100%;height:100%;display:block}
+.ppin{cursor:pointer}
+.ppin rect{fill:var(--s1);stroke:var(--route);stroke-width:2.5;transition:transform var(--dur-press) var(--ease)}
+.ppin:active rect{transform:scale(.92)}
+.ppin .pp-p{font:700 16px 'Red Hat Display';fill:var(--route)}
+.ppin.rec rect{fill:var(--route)}.ppin.rec .pp-p{fill:#fff}
+.ppin .pp-n{font:600 13px 'Red Hat Text';fill:var(--t1);paint-order:stroke;stroke:var(--map-land);stroke-width:4px}
+.ppin .pp-s{font:500 11px 'Red Hat Text';fill:var(--t2);paint-order:stroke;stroke:var(--map-land);stroke-width:4px}
+.pmud circle{fill:var(--ink);stroke:#fff;stroke-width:3}
+.pmud text{font:600 13px 'Red Hat Text';fill:var(--t1);paint-order:stroke;stroke:var(--map-land);stroke-width:4px}
+.frame[data-wide] .callov{width:auto;right:24px}   /* full-width pages: the call screen covers the whole page */
