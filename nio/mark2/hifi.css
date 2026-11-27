@@ -2118,3 +2118,6 @@ html.embed body{padding:0;min-height:0;display:block}
 html.embed .sitebar,html.embed .disc{display:none!important}
 html.embed .wrap{width:100%}
 html.embed .scaler{box-shadow:none}
+
+/* dock dividers stay visible when the dashboard is scaled down */
+.dock .sep{width:2px;border-radius:1px;background:var(--t3);opacity:.45}
