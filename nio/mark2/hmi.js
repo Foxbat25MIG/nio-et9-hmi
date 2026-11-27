@@ -464,8 +464,8 @@
       if (ui.lanes) { ui.lanes.style.visibility = 'visible'; ui.lanes.innerHTML = lanesHTML(c[2]); } if (ui.then) ui.then.textContent = c[3];
     }
     const navOn = () => !fr.querySelector('[data-screen]') || fr.querySelector('[data-screen="nav"].on');
-    let t0 = null, bsWas = false, wasCar = false;
-    app._dashRestart = () => { t0 = null; phase = ''; };
+    let t0 = null, off = 0, bsWas = false, wasCar = false;
+    app._dashRestart = (at = 0) => { t0 = null; off = at; phase = ''; };   /* at: start the loop this many seconds in */
     function setBS(on) {
       if (on === bsWas) return; bsWas = on;
       fr.classList.toggle('bs-on', on); if (pl) pl.classList.toggle('compact', on);
@@ -478,7 +478,7 @@
     const spd = fr.querySelector('[data-nav="speed"]') || fr.querySelector('.status .speed b'), ind = fr.querySelector('.bs-ind .ms');
     function frame(ts) {
       if (t0 === null) t0 = ts;
-      const t = ((ts - t0) / 1000) % T;
+      const t = ((ts - t0) / 1000 + off) % T;
       const active = navOn();
       if (!app.classList.contains('v-car')) { fr.classList.toggle('bs-sig', active && t > 1.8 && t < 10.8); if (ind) ind.textContent = 'turn_right'; }
       setBS(active && t > 2.6 && t < 6.6);

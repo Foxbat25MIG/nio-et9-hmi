@@ -179,12 +179,10 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
     fr.scrollIntoView({ behavior: 'smooth', block: 'center' });
     const lk = d.querySelector('[data-lockov]'), locked = lk && lk.classList.contains('on');
     const [scr, sub] = b.dataset.go.split(':');
-    const f = d.querySelector('.frame'); clearTimeout(window.__bsT); if (f && f.dataset.tourBs) { f.classList.remove('bs-on', 'bs-sig'); delete f.dataset.tourBs; }   /* the alert only belongs to the Navigation button */
     if (scr === 'lock') { if (!locked) { d.querySelector('[data-lockscr]')?.click(); } return; }
     if (locked) { for (let i = 0; i < 12 && lk.classList.contains('on'); i++) { lk.click(); await wait(600); } await wait(400); }
     d.querySelector(`.dk[data-go="${scr}"]`)?.click(); await wait(450);
-    if (sub === 'bsd' && !d.__bsHook) { d.__bsHook = 1; d.addEventListener('click', e => { if (e.target.closest('.dk') && !e.target.closest('.dk[data-go="nav"]')) { clearTimeout(window.__bsT); const g = d.querySelector('.frame'); if (g.dataset.tourBs) { g.classList.remove('bs-on', 'bs-sig'); delete g.dataset.tourBs; } } }, true); }   /* leaving Navigation from the dock closes the alert too */
-    if (sub === 'bsd') { window.__bsT = setTimeout(() => { f.dataset.tourBs = '1'; f.classList.add('bs-sig', 'bs-on'); }, 2000); }   /* 2 s on the map first, then the cyclist alert opens */
+    if (sub === 'bsd') d.querySelector('[data-screen="nav"] .app')?._dashRestart?.(2.6);   /* jump the map loop to the moment the cyclist is in the blind spot; the loop carries on from there */
     if (scr === 'car' && sub) { const it = [...d.querySelectorAll('[data-screen="car"] .snav div')].find(e => e.textContent.trim().endsWith(sub)); it?.click(); await wait(350);
       if (sub === 'Quick controls') { const ws = d.querySelector('[data-screen="car"] .qc-wsec.on'); if (ws) ws.querySelector('[data-wopen]')?.click(); } }   /* make sure it shows the top view with the door buttons, not the Windows view */
   }));
