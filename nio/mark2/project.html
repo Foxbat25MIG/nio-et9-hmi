@@ -25,7 +25,8 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
 .p-head{display:grid;grid-template-columns:1fr 1fr;column-gap:var(--pad);padding:clamp(60px,10vw,150px) var(--pad) clamp(60px,8vw,110px);align-items:start}
 .p-title h1{font-weight:400;font-size:clamp(28px,3.3vw,46px);letter-spacing:-.02em}
 .p-over{font-size:12px}.p-over>*{max-width:34em}.p-over small{display:block;font-size:10px;letter-spacing:.04em;margin-bottom:6px;text-transform:uppercase}
-.p-top{padding:0 var(--pad)}.p-top .media{aspect-ratio:16/10}
+.p-top{padding:0 var(--pad)}.p-top .media{aspect-ratio:16/9;background:#2a2633}
+.p-top picture,.p-top img{display:block;width:100%;height:100%;object-fit:cover}
 .about{display:grid;grid-template-columns:1fr 1fr;column-gap:var(--pad);padding:clamp(80px,12vw,180px) var(--pad);align-items:start}
 .about h2,.sec h2{font-weight:400;font-size:clamp(26px,3vw,44px);letter-spacing:-.02em}
 .about .body{font-size:12px;max-width:34em}.about .body p{margin-bottom:1em}.about strong{font-weight:700}
@@ -87,7 +88,11 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
     <div class="p-title"><h1>Nio</h1></div>
     <div class="p-over"><small>Overview</small><p>A modular, intelligent centre console for the NIO ET9, focused on clarity, comfort and seamless interaction across driving, navigation, media and lifestyle, built as a live, clickable prototype with a real-time 3D car.</p></div>
   </section>
-  <section class="p-top"><div class="media"><img alt="NIO ET9" src="img/cover.jpg"></div></section>
+  <section class="p-top"><div class="media"><picture>
+  <source type="image/avif" srcset="img/cover/et9-640.avif 640w, img/cover/et9-960.avif 960w, img/cover/et9-1280.avif 1280w, img/cover/et9-1920.avif 1920w, img/cover/et9-2560.avif 2560w, img/cover/et9-3840.avif 3840w" sizes="(max-width: 760px) 100vw, calc(100vw - 2 * var(--pad, 24px))">
+  <source type="image/webp" srcset="img/cover/et9-640.webp 640w, img/cover/et9-960.webp 960w, img/cover/et9-1280.webp 1280w, img/cover/et9-1920.webp 1920w, img/cover/et9-2560.webp 2560w, img/cover/et9-3840.webp 3840w" sizes="(max-width: 760px) 100vw, calc(100vw - 2 * var(--pad, 24px))">
+  <img alt="NIO ET9 in lavender, studio render" src="img/cover/et9-1920.jpg" width="1920" height="1080" fetchpriority="high" decoding="async">
+</picture></div></section>
   <section class="about">
     <h2>About the project</h2>
     <div class="body">
