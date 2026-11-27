@@ -2121,3 +2121,25 @@ html.embed .scaler{box-shadow:none}
 
 /* dock dividers stay visible when the dashboard is scaled down */
 .dock .sep{width:2px;border-radius:1px;background:var(--t3);opacity:.45}
+
+/* parking: six-step progress, booking pane beside the steps, filters, arrival */
+.pflow{display:flex;flex-direction:column;gap:14px}
+.pstep{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.pstep>div{display:flex;flex-direction:column;gap:6px;font:500 13px 'Red Hat Text';color:var(--t3)}
+.pstep i{height:6px;border-radius:3px;background:var(--s3);transition:background var(--dur-hover) var(--ease)}
+.pstep .done i{background:var(--route);opacity:.4}.pstep .done{color:var(--t2)}
+.pstep .on i{background:var(--route)}.pstep .on{color:var(--t1);font-weight:600}
+.pbody{flex:1;display:flex;gap:16px;min-height:0}
+.pmain{flex:1.5;min-width:0}
+.pside{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px;align-self:flex-start}
+.pside-st{padding:10px 14px;border-radius:12px;background:var(--s2)}
+.pside-st.ok{background:#dff3e7;color:#1d6b42}
+.pfil{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.pfil>div{height:40px;padding:0 16px;display:flex;align-items:center;border-radius:20px;background:var(--s2);color:var(--t2);font:500 15px 'Red Hat Text';cursor:pointer;transition:background var(--dur-hover) var(--ease),color var(--dur-hover) var(--ease)}
+.pfil>div:active{transform:scale(.97);transition-duration:var(--dur-press)}
+.pfil>div.on{background:var(--sel);color:var(--on-sel)}
+.pbig{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pbig>div{display:flex;flex-direction:column;gap:4px;padding:18px 22px;border-radius:18px;background:var(--s2)}
+.pbig b{font:600 72px/1 'Red Hat Display';color:var(--t1)}
+.phint{padding:14px 16px;border-radius:14px;background:var(--route-soft)}
+.pbody .pst .kv>div{padding-top:9px;padding-bottom:9px}

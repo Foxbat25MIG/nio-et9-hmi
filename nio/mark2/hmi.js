@@ -163,6 +163,7 @@
     const rd = t.closest('[data-read]'); if (rd) { say(fr0, rd.dataset.read); return; }
     if (t.closest('[data-nomi]')) { openNomi(fr0); return; }
     if (t.closest('.nomi-x') || t.classList.contains('nomiov')) { fr0.querySelector('.nomiov').classList.remove('on'); return; }
+    const po = t.closest('[data-parkopen]'); if (po) { fr0.querySelector('.nomiov')?.classList.remove('on'); window.nioParkOpen(fr0, po.dataset.parkopen); return; }
     const ask = t.closest('[data-ask]'); if (ask) { nomiAsk(fr0, ask.dataset.ask, ask.textContent); return; }
     const go = t.closest('[data-go]');
     if (go) { route(go.closest('.frame'), go.dataset.go); return; }
@@ -200,7 +201,7 @@
       st.textContent = 'NOMI';
       let a = '';
       if (k === 'park') a = 'Parking Trois Glands is a 5 minute walk from Mudam and fits the ET9. Reserve a space from 13:55?<div class="acts" style="margin-top:10px"><div class="btn pri sm" data-ask="reserve">Reserve</div><div class="btn sec sm nomi-x">Not now</div></div>';
-      if (k === 'reserve') a = 'Done. Level −2, bay 14, from 13:55 until 15:55. I’ve added it to your trip.';
+      if (k === 'reserve') a = 'Done. Level −2, bay 14, from 13:55 until 15:55. I’ve added it to your trip.<div class="acts" style="margin-top:10px"><div class="btn sec sm" data-parkopen="5">View booking</div></div>';
       if (k === 'seat') { a = 'Driver seat heat set to 2.'; const sw = fr.querySelector('.st-wrap'); if (sw) { const S = stOf(sw); S.s.Driver.heat = '2'; S.s.Driver.vent = 'Off'; stPaint(sw); } }
       if (k === 'calm') { a = 'Playing Memory Box by Peter Cat Recording Co.'; setSong(fr, songIndex('Memory Box', 'Peter Cat Recording Co.'), true); }
       if (k === 'air') { const q = document.querySelector('[data-live="aqi"]'), x = document.querySelector('[data-live="aqitext"]'); a = q && q.textContent.trim() && q.textContent !== 'AQI –' ? `Outside air is ${q.textContent}${x ? ', ' + x.textContent : ''}. Cabin filtering is on.` : 'Outside air quality is good today. Cabin filtering is on.'; }
@@ -1125,8 +1126,18 @@
     const set = (k, v) => pf.querySelectorAll(`[data-pv="${k}"]`).forEach(x => x.textContent = v);
     set('name', name); set('until', end); set('span', `${at} – ${end}`); set('total', '€' + (rate * h).toFixed(2));
   }
+  function pParkStep(pf, n) {   /* show step n, fill the stepper, keep the booking pane in step */
+    pf.dataset.cur = n; pf.querySelectorAll('.pst').forEach(s => s.classList.toggle('on', s.dataset.st === String(n)));
+    pf.querySelectorAll('.pstep [data-i]').forEach(d => { d.classList.toggle('done', +d.dataset.i < +n); d.classList.toggle('on', +d.dataset.i === +n); });
+    const st = pf.querySelector('.pside-st'); if (st) { st.textContent = +n >= 5 ? 'Booked · Level −2 · Bay 14' : 'Not booked yet'; st.classList.toggle('ok', +n >= 5); }
+  }
+  window.nioParkOpen = (fr, n) => { openApp(fr, 'Parking'); const pf = fr.querySelector('[data-screen="appview"] .pflow'); if (pf) { pPaint(pf); pParkStep(pf, n); } };
   function pClick(t) {
     const pf = t.closest('.pflow'); if (!pf) return false;
+    const fl = t.closest('[data-pfil]');
+    if (fl) { if (!fl.classList.contains('lock')) fl.classList.toggle('on');   /* filters: only garages that have every ticked feature */
+      const need = [...pf.querySelectorAll('[data-pfil].on:not(.lock)')].map(x => x.dataset.pfil);
+      pf.querySelectorAll('[data-f]').forEach(r => r.style.display = need.every(n => r.dataset.f.split(' ').includes(n)) ? '' : 'none'); return true; }
     const ps = t.closest('[data-pset]'), pg = t.closest('[data-pgo]');
     if (!ps && !pg && !t.closest('[data-pext]')) return false;
     if (ps) {
@@ -1136,7 +1147,7 @@
     if (t.closest('[data-pext]')) { pf.dataset.ext = (+pf.dataset.ext || 0) + 1; toast(frameOf(pf), 'Booking extended by 1 hour'); }
     if (pg) {
       if (pg.hasAttribute('data-pcancel')) { pf.dataset.ext = 0; toast(frameOf(pf), 'Booking cancelled · refunded to saved payment method'); }
-      pf.querySelectorAll('.pst').forEach(s => s.classList.toggle('on', s.dataset.st === pg.dataset.pgo));
+      pParkStep(pf, pg.dataset.pgo);
     }
     pPaint(pf); return true;
   }
@@ -1241,6 +1252,7 @@
     if (name === 'Trivia') tvNext(c.querySelector('.trivia'));
     if (name === '2048') g2048New(gw);
     if (name === 'Calendar') calInit(c.querySelector('.calw'));
+    if (name === 'Parking') { const pf = c.querySelector('.pflow'); if (pf) { pPaint(pf); pParkStep(pf, 1); } }
     if (name === 'Weather') weatherCities(c);
     if (name === 'Minesweeper') minesNew(gw);
     if (name === 'YouTube') { const box = c.querySelector('.ytbox'); if (isParked(fr)) { box.classList.add('playing'); loadYT(box, c.querySelector('[data-yt].on').dataset.yt); } }
