@@ -632,6 +632,8 @@
   document.querySelectorAll('.sf-card').forEach(sfPaint);
   document.querySelectorAll('.frame').forEach(fr => { const on = fr.querySelector('.scr.on'); if (on) fr.dataset.scr = on.dataset.screen; });
   document.querySelectorAll('.player').forEach(p => { const h = p.querySelector('.h3'), i = h ? SONGS.findIndex(x => x[0] === h.textContent) : -1, s = SONGS[i]; if (i >= 0) { const fr = frameOf(p); if (fr._song == null) fr._song = i; } if (s && s[3]) setArt(p, { img: s[3] }); });
+  { const music = SONGS.map((x, i) => x[4] ? -1 : i).filter(i => i >= 0);   /* a random song each time the page loads */
+    setTimeout(() => document.querySelectorAll('.frame').forEach(fr => { if (fr.querySelector('.player')) setSong(fr, music[Math.floor(Math.random() * music.length)], true); })); }
   document.querySelectorAll('[data-song] .ph:not(.cov)').forEach(ph => { const s = SONGS.find(x => x[0] === ph.closest('[data-song]').dataset.song.split('|')[0]); if (s && s[3]) { ph.classList.add('cov'); ph.style.backgroundImage = `url(${s[3]})`; ph.textContent = ''; } });
 
   // previews: short tones at the row's own level
