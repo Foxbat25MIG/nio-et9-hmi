@@ -918,7 +918,6 @@ const VIEWS = {   // camera position, target, field of view
   side: { p: [7.4, 1.05, .1], t: [-.4, .72, .1], fov: 27, ls: 2.4 },        // driver's side, whole car (ride height shown 2.4× so it reads)
   home: { p: [-4.9, 1.85, 8.6], t: [0, .72, 0], fov: 32, shift: [.17, .07] },   // front three-quarter; orbits the car itself, drawn right of centre (clear of the Next card)
   chg:  { p: [0, 16.2, -.001], t: [.5, 0, .2], fov: 25, up: [0, 0, 1] },   // Charging: the same top view as Quick controls              // Charging: rear three-quarter from the left, so the port and cable are in view
-  cover: { p: [6.4, 1.35, 6.0], t: [.05, .95, -.25], fov: 30 },          // project-page cover: front three-quarter, studio
   lock: { p: [7.3, 2.2, 7.7], t: [0, 1.45, .2], fov: 28 },                   // car in the lower half, under the clock
 };
 const viewers = new Set();

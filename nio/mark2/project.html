@@ -105,7 +105,7 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
       <button data-go="home"><b>Home</b><span>Car on rolling hills</span></button>
       <button data-go="car:Quick controls"><b>Quick controls</b><span>Doors from above</span></button>
       <button data-go="car:Driving"><b>SkyRide</b><span>Five drive modes</span></button>
-      <button data-go="nav:bsd"><b>Navigation</b><span>Blind Spot Detection</span></button>
+      <button data-go="nav"><b>Navigation</b><span>Blind Spot Detection</span></button>
       <button data-go="media"><b>Music</b><span>Now playing</span></button>
       <button data-go="car:Seats"><b>Seats</b><span>Heat, massage, position</span></button>
       <button data-go="climate"><b>Climate</b><span>Four zones, vents</span></button>
@@ -185,7 +185,6 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
     d.querySelector(`.dk[data-go="${scr}"]`)?.click(); await wait(450);
     if (scr === 'car' && sub) { const it = [...d.querySelectorAll('[data-screen="car"] .snav div')].find(e => e.textContent.trim().endsWith(sub)); it?.click(); await wait(350);
       if (sub === 'Quick controls') { const ws = d.querySelector('[data-screen="car"] .qc-wsec.on'); if (ws) ws.querySelector('[data-wopen]')?.click(); } }   /* make sure it shows the top view with the door buttons, not the Windows view */
-    if (sub === 'bsd') { const f = d.querySelector('.frame'); f.classList.add('bs-sig', 'bs-on'); }   // show the cyclist in the blind spot straight away
   }));
 })();
 </script>
