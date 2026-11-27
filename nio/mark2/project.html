@@ -42,7 +42,7 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
 .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .frame .load{position:absolute;inset:0;display:grid;place-items:center;font:12px var(--mono);color:#6b6880;transition:opacity .6s}
 .frame.ready .load{opacity:0;pointer-events:none}
-.tour{width:min(100%,1120px);display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.tour{width:min(100%,1120px);display:grid;grid-template-columns:repeat(9,1fr);gap:8px}
 .tour button{border:1px solid var(--line);border-radius:6px;padding:10px 12px;text-align:left;font-size:12px;background:var(--pill);transition:background .2s,color .2s}
 .tour button:hover{background:var(--fg);color:var(--bg)}.tour b{display:block;font-weight:500;margin-bottom:2px}.tour span{color:var(--muted);font-size:11px}
 .tour button:hover span{color:inherit;opacity:.7}
@@ -54,7 +54,7 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
 .card small{display:block;color:var(--muted);font:10px var(--mono);margin-bottom:10px}
 .card h3{font-weight:400;font-size:clamp(18px,1.6vw,24px);letter-spacing:-.01em;margin-bottom:8px}
 .card p{color:var(--muted);line-height:1.4}
-.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--pad);padding:clamp(32px,4vw,56px) var(--pad) 0;font-size:12px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--pad);padding:clamp(32px,4vw,56px) var(--pad) 0;font-size:12px}
 .steps div{border-top:1px solid var(--fg);padding-top:14px}.steps b{display:block;font:400 clamp(22px,2.2vw,32px) var(--font);margin-bottom:10px}
 .steps p{color:var(--muted)}
 .sw{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;padding:clamp(32px,4vw,56px) var(--pad) 0;font:11px var(--mono)}
@@ -66,6 +66,7 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
 .foot .art{max-width:min(720px,70vw);margin:0 auto 24px;aspect-ratio:16/6}
 .contact{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;font-size:12px;gap:var(--pad)}
 .contact .pills{justify-self:center}.contact time{justify-self:end;color:var(--muted);font-variant-numeric:tabular-nums}
+@media(max-width:1000px){.tour{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.p-head,.about,.sec{grid-template-columns:1fr;row-gap:20px}.facts{grid-template-columns:1fr 1fr}.cards{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}.sw{grid-template-columns:repeat(3,1fr)}.tour{grid-template-columns:1fr 1fr}.contact{grid-template-columns:1fr;gap:16px}.contact .pills,.contact time{justify-self:start}}
 </style>
 </head>
@@ -77,22 +78,22 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
 <main>
   <section class="p-head">
     <div class="p-title"><h1>Nio</h1></div>
-    <div class="p-over"><small>Overview</small><p>A modular, intelligent centre console for the NIO ET9, focused on clarity, comfort and seamless interaction across driving, navigation, media and lifestyle. Rebuilt in 2026 as a live, clickable prototype with a real-time 3D car.</p></div>
+    <div class="p-over"><small>Overview</small><p>A modular, intelligent centre console for the NIO ET9, focused on clarity, comfort and seamless interaction across driving, navigation, media and lifestyle, built as a live, clickable prototype with a real-time 3D car.</p></div>
   </section>
-  <section class="p-top"><div class="media"><img alt="NIO ET9 centre console HMI" src="https://designbyashish.com/media/nio/image-1.jpg"></div></section>
+  <section class="p-top"><div class="media"><img alt="NIO ET9" src="img/cover.jpg"></div></section>
   <section class="about">
     <h2>About the project</h2>
     <div class="body">
       <p>Create a calm, intuitive and visually balanced interface that delivers essential vehicle and lifestyle information with minimal distraction, while reflecting NIO’s premium, tech-forward, human-centric design philosophy.</p>
-      <p>The first version (2024) was a set of static screens. This rebuild studies NIO’s design language and turns it into a working centre screen for the <strong>ET9 flagship sedan</strong>: one design system, light and dusk themes, and a real-time 3D model of the car that responds to every control — doors, windows, sunshades, lights, ride height and charging.</p>
+      <p>The project studies NIO’s design language and turns it into a working centre screen for the <strong>ET9 flagship sedan</strong>: one design system, light and dusk themes, and a real-time 3D model of the car that responds to every control — doors, windows, sunshades, lights, ride height and charging.</p>
       <p>The story follows Emma, a driver in Luxembourg City, through one afternoon: unlocking the car, driving to the Mudam with a cyclist in her blind spot, reserving parking and charging.</p>
     </div>
   </section>
   <section class="facts">
     <div><small>Role</small>HMI and interaction design, prototyping</div>
     <div><small>Vehicle</small>NIO ET9 · 15.6" centre screen</div>
-    <div><small>Year</small>2024 · rebuilt 2026</div>
-    <div><small>Built with</small>HTML, CSS, JavaScript, three.js · Apple HIG as reference</div>
+    <div><small>Year</small>2025</div>
+    <div><small>Built with</small>Figma, Blender, GitHub, Claude Code</div>
   </section>
 
   <section class="demo" id="demo">
@@ -100,26 +101,27 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
       <div class="pills"><button class="pill on" data-hmi-theme="light">Day</button><button class="pill" data-hmi-theme="dark">Dusk</button><a class="pill" href="prototype.html" target="_blank" rel="noopener">Open full screen ↗</a></div></div>
     <div class="frame" id="hmiFrame"><div class="load">Loading the ET9…</div><iframe id="hmi" title="NIO ET9 HMI prototype" src="prototype.html?embed=1&theme=light" loading="eager" allow="fullscreen"></iframe></div>
     <div class="tour">
+      <button data-go="lock"><b>Lock</b><span>Lock screen</span></button>
       <button data-go="home"><b>Home</b><span>Car on rolling hills</span></button>
-      <button data-go="car"><b>Quick controls</b><span>Doors, windows, sunshades</span></button>
+      <button data-go="car:Quick controls"><b>Quick controls</b><span>Doors from above</span></button>
       <button data-go="car:Driving"><b>SkyRide</b><span>Five drive modes</span></button>
-      <button data-go="nav"><b>Navigation</b><span>Blind-spot cyclist</span></button>
-      <button data-go="car:Charging"><b>Charging</b><span>Plug in and watch</span></button>
-      <button data-go="car:Climate"><b>Climate</b><span>Four zones, vents</span></button>
+      <button data-go="nav:bsd"><b>Navigation</b><span>Blind Spot Detection</span></button>
+      <button data-go="media"><b>Music</b><span>Now playing</span></button>
+      <button data-go="car:Seats"><b>Seats</b><span>Heat, massage, position</span></button>
+      <button data-go="climate"><b>Climate</b><span>Four zones, vents</span></button>
+      <button data-go="apps"><b>Apps</b><span>Explore the apps</span></button>
     </div>
   </section>
 
   <section class="sec">
     <h2>Design approach</h2>
-    <div class="body"><p>Driving comes first. Everything the driver needs at speed sits in the status bar and the bottom dock; everything else lives one tap away in calm, card-based pages. Controls are large touch targets with clear states, and every panel opens and closes with the same easing, so the screen always feels like one system.</p>
-      <p>The car is the centre of the experience. Instead of icons, the 3D ET9 shows what is happening: a door opening, a window going down, the cable plugging in.</p></div>
+    <div class="body"><p>Driving comes first. Everything the driver needs at speed sits in the status bar and the bottom dock; everything else lives one tap away in calm, card-based pages. Controls are large touch targets with clear states, and every panel opens and closes with the same easing, so the screen always feels like one system.</p></div>
   </section>
   <div class="steps">
     <div><b>01</b>Research<p>NIO’s design language, ET9 features, real routes in Luxembourg City.</p></div>
     <div><b>02</b>Wireframes<p>Batches of low-fidelity screens, reviewed one by one.</p></div>
-    <div><b>03</b>Design system<p>Lavender palette, Red Hat type, components, light and dusk themes.</p></div>
-    <div><b>04</b>Hi-fi prototype<p>One clickable dashboard, every control working.</p></div>
-    <div><b>05</b>3D and motion<p>The real ET9 model, film-style scenes, live camera feeds.</p></div>
+    <div><b>03</b>Design system<p>Lavender palette, the Red Hat Display and Red Hat Text typefaces, components, light and dusk themes.</p></div>
+    <div><b>04</b>Hi-fi prototype<p>One clickable dashboard with a real-time 3D ET9; every control works.</p></div>
   </div>
 
   <section class="sec">
@@ -172,13 +174,19 @@ a{color:inherit;text-decoration:none}img,video,iframe{display:block;max-width:10
   document.querySelectorAll('[data-hmi-theme]').forEach(b => b.addEventListener('click', () => { const d = doc(); if (!d) return; const want = b.dataset.hmiTheme;
     if (d.documentElement.dataset.theme !== want) { const tg = d.querySelector('[data-theme-tg]'); if (tg) tg.click(); }
     document.querySelectorAll('[data-hmi-theme]').forEach(x => x.classList.toggle('on', x === b)); }));
-  // guided tour: unlock if needed, then open the screen
-  document.querySelectorAll('.tour [data-go]').forEach(b => b.addEventListener('click', () => { const d = doc(); if (!d) return;
-    const lk = d.querySelector('.lockov.on.ready, .lockov.ready:not(.off)'); if (lk && getComputedStyle(lk).opacity !== '0' && lk.classList.contains('on')) lk.click();
+  // guided tour: each button opens one feature inside the live dashboard
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  document.querySelectorAll('.tour [data-go]').forEach(b => b.addEventListener('click', async () => { const d = doc(); if (!d) return;
+    fr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const lk = d.querySelector('[data-lockov]'), locked = lk && lk.classList.contains('on');
     const [scr, sub] = b.dataset.go.split(':');
-    setTimeout(() => { const dk = d.querySelector(`.dk[data-go="${scr}"]`); if (dk) dk.click();
-      if (sub) setTimeout(() => { const s = [...d.querySelectorAll('.snav div, [data-go]')].find(e => e.offsetParent && e.textContent.trim() === sub); if (s) s.click(); }, 450); }, 700);
-    fr.scrollIntoView({ behavior: 'smooth', block: 'center' }); }));
+    if (scr === 'lock') { if (!locked) { d.querySelector('[data-lockscr]')?.click(); } return; }
+    if (locked) { for (let i = 0; i < 12 && lk.classList.contains('on'); i++) { lk.click(); await wait(600); } await wait(400); }
+    d.querySelector(`.dk[data-go="${scr}"]`)?.click(); await wait(450);
+    if (scr === 'car' && sub) { const it = [...d.querySelectorAll('[data-screen="car"] .snav div')].find(e => e.textContent.trim().endsWith(sub)); it?.click(); await wait(350);
+      if (sub === 'Quick controls') { const ws = d.querySelector('[data-screen="car"] .qc-wsec.on'); if (ws) ws.querySelector('[data-wopen]')?.click(); } }   /* make sure it shows the top view with the door buttons, not the Windows view */
+    if (sub === 'bsd') { const f = d.querySelector('.frame'); f.classList.add('bs-sig', 'bs-on'); }   // show the cyclist in the blind spot straight away
+  }));
 })();
 </script>
 </body>
